@@ -57,7 +57,7 @@ task quast {
 
 	>>>
 	output {
-		File outputTarball = flatten([glob("*.quast.tar.gz")])[0]
+		File outputTarball = [glob("*.quast.tar.gz")[0]
 	}
     runtime {
         cpu: threadCount

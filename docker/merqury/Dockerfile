@@ -73,5 +73,6 @@ ENV PATH="/opt/merqury/merqury-1.1:${PATH}"
 # Final environment setup
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
 ENV PATH="/root/bin/python_3.6.0/bin:${PATH}"
+ENV MERQURY="/opt/merqury/merqury-1.1"
 
 WORKDIR /data

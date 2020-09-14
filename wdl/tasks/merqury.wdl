@@ -11,7 +11,6 @@ task merqury {
         File kmerTarball
         File? matKmerTarball
         File? patKmerTarball
-        Int threadCount
         String dockerImage
     }
 
@@ -63,10 +62,10 @@ task merqury {
 
 	>>>
 	output {
-		File outputTarball = flatten([glob("*.merqury.tar.gz")])[0]
+		File outputTarball = glob("*.merqury.tar.gz")[0]
 	}
     runtime {
-        cpu: threadCount
+        cpu: 1
         memory: "8 GB"
         docker: dockerImage
     }

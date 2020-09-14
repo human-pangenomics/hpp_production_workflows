@@ -66,7 +66,7 @@ task busco {
 
 	>>>
 	output {
-		File outputTarball = flatten([glob("*.busco.tar.gz")])[0]
+		File outputTarball = glob("*.busco.tar.gz")[0]
 	}
     runtime {
         cpu: threadCount
