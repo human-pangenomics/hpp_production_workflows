@@ -73,7 +73,7 @@ task dipcall {
 	}
     runtime {
         cpu: 2
-        memory: "4 GB"
+        memory: "32 GB"
         docker: dockerImage
     }
 }

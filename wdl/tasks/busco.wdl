@@ -26,9 +26,9 @@ task busco {
         set -o xtrace
 
         # file initialization
-        ln -s ~{assemblyFasta}
         FILENAME=$(basename -- "~{assemblyFasta}")
         if [[ $FILENAME =~ \.gz$ ]]; then
+            cp ~{assemblyFasta} .
             gunzip $FILENAME
             FILENAME="${FILENAME%\.gz}"
         fi
