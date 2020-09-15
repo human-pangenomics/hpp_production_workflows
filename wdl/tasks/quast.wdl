@@ -28,12 +28,13 @@ task quast {
         set -o xtrace
 
         # initilization
-        ln -s ~{assemblyFasta}
         ASM_FILENAME=$(basename -- "~{assemblyFasta}")
         if [[ $ASM_FILENAME =~ \.gz$ ]]; then
             cp ~{assemblyFasta} .
             gunzip $ASM_FILENAME
             ASM_FILENAME="${ASM_FILENAME%.gz}"
+        else
+            ln -s ~{assemblyFasta}
         fi
         PREFIX="${ASM_FILENAME%.*}"
 
