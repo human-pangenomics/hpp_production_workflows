@@ -72,8 +72,8 @@ task dipcall {
 		File outputBED = glob("*.dipcall.bed")[0]
 	}
     runtime {
-        cpu: 2
-        memory: "32 GB"
+        cpu: 16
+        memory: "64 GB"
         docker: dockerImage
     }
 }
