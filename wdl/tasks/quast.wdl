@@ -30,7 +30,7 @@ task quast {
         # initilization
         ln -s ~{assemblyFasta}
         ASM_FILENAME=$(basename -- "~{assemblyFasta}")
-        if [[ $file =~ \.gz$ ]]; then
+        if [[ $ASM_FILENAME =~ \.gz$ ]]; then
             cp ~{assemblyFasta} .
             gunzip $ASM_FILENAME
             ASM_FILENAME="${ASM_FILENAME%.gz}"
@@ -45,7 +45,7 @@ task quast {
         # include reference fasta if supplied
         if [[ -f "~{referenceFasta}" ]]; then
             REF_FILENAME=$(basename -- "~{referenceFasta}")
-            if [[ $file =~ \.gz$ ]]; then
+            if [[ $REF_FILENAME =~ \.gz$ ]]; then
                 cp ~{referenceFasta} .
                 gunzip $REF_FILENAME
                 REF_FILENAME="${REF_FILENAME%.gz}"
