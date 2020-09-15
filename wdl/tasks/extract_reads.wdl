@@ -4,6 +4,7 @@ workflow runExtractReads {
     input {
         Array[File] inputFiles
         File? referenceFile
+        Int threadCount=1
         String dockerImage
     }
 
@@ -12,6 +13,7 @@ workflow runExtractReads {
             input:
                 readFile=file,
                 referenceFile=referenceFile,
+                threadCount=threadCount,
                 dockerImage=dockerImage
         }
     }
@@ -25,6 +27,7 @@ task extractReads {
     input {
         File readFile
         File? referenceFile
+        Int threadCount=1
         String dockerImage
     }
 
@@ -50,14 +53,14 @@ task extractReads {
         mkdir output
 
         if [[ "$SUFFIX" == "bam" ]] ; then
-            samtools fastq ~{readFile} > output/${PREFIX}.fq
+            samtools fastq -@~{threadCount} ~{readFile} > output/${PREFIX}.fq
         elif [[ "$SUFFIX" == "cram" ]] ; then
             if [[ ! -f "~{referenceFile}" ]] ; then
                 echo "Could not extract $FILENAME, reference file not supplied"
                 exit 1
             fi
             ln -s ~{referenceFile}
-            samtools fastq --reference `basename ~{referenceFile}` ~{readFile} > output/${PREFIX}.fq
+            samtools fastq -@~{threadCount} --reference `basename ~{referenceFile}` ~{readFile} > output/${PREFIX}.fq
         elif [[ "$SUFFIX" == "gz" ]] ; then
             gunzip -k -c ~{readFile} > output/${PREFIX}
         elif [[ "$SUFFIX" != "fastq" ]] && [[ "$SUFFIX" != "fq" ]] && [[ "$SUFFIX" != "fasta" ]] && [[ "$SUFFIX" != "fa" ]] ; then
@@ -72,7 +75,7 @@ task extractReads {
 
     runtime {
         docker: dockerImage
-        cpu: 1
+        cpu: threadCount
     }
 
     parameter_meta {

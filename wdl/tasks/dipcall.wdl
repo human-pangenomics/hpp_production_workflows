@@ -1,10 +1,10 @@
 version 1.0
 
-workflow runBusco {
-	call busco
+workflow runDipcall {
+	call dipcall
 }
 
-task busco {
+task dipcall {
     input {
         File assemblyFastaPat
         File assemblyFastaMat

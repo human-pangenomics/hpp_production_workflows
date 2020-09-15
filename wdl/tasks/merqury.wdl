@@ -1,7 +1,7 @@
 version 1.0
 
 workflow runMerqury {
-	call merqury
+    call merqury
 }
 
 task merqury {
@@ -11,6 +11,7 @@ task merqury {
         File kmerTarball
         File? matKmerTarball
         File? patKmerTarball
+        Int threadCount
         String dockerImage
     }
 
@@ -25,6 +26,7 @@ task merqury {
         # echo each line of the script to stdout so we can see what is happening
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
+        OMP_NUM_THREADS=~{threadCount}
 
         # get filename
         FILENAME=$(basename -- "~{assemblyFasta}")
@@ -65,8 +67,9 @@ task merqury {
 		File outputTarball = glob("*.merqury.tar.gz")[0]
 	}
     runtime {
-        cpu: 1
+        cpu: threadCount
         memory: "8 GB"
         docker: dockerImage
     }
 }
+
