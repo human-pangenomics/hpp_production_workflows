@@ -11,8 +11,10 @@ task merqury {
         File kmerTarball
         File? matKmerTarball
         File? patKmerTarball
-        Int threadCount
-        String dockerImage
+        Int memSizeGB = 32
+        Int threadCount = 32
+        Int diskSizeGB = 128
+        String dockerImage = "tpesout/hpp_merqury:latest"
     }
 
 	command <<<
@@ -70,8 +72,9 @@ task merqury {
 		File outputTarball = glob("*.merqury.tar.gz")[0]
 	}
     runtime {
+        memory: memSizeGB + " GB"
         cpu: threadCount
-        memory: "8 GB"
+        disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
     }
 }

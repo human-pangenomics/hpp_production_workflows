@@ -5,21 +5,25 @@ import "extract_reads.wdl" as extractReads_t
 workflow runMeryl {
 
     input {
-        Array[File] childReadsILM
+        Array[File] sampleReadsILM
         Array[File] maternalReadsILM
         Array[File] paternalReadsILM
         File? referenceFile
-        Int threadCount
-        String dockerImage
+        Int memSizeGB = 32
+        Int threadCount = 16
+        Int diskSizeGB = 64
+        String dockerImage = "tpesout/hpp_merqury:latest"
     }
 
     # actual work
-    scatter (readFile in childReadsILM) {
-        call extractReads_t.extractReads as childReadsExtracted {
+    scatter (readFile in sampleReadsILM) {
+        call extractReads_t.extractReads as sampleReadsExtracted {
             input:
                 readFile=readFile,
                 referenceFile=referenceFile,
-                threadCount=threadCount,
+                memSizeGB=8,
+                threadCount=8,
+                diskSizeGB=128,
                 dockerImage=dockerImage
         }
     }
@@ -28,7 +32,9 @@ workflow runMeryl {
             input:
                 readFile=readFile,
                 referenceFile=referenceFile,
-                threadCount=threadCount,
+                memSizeGB=8,
+                threadCount=8,
+                diskSizeGB=128,
                 dockerImage=dockerImage
         }
     }
@@ -37,15 +43,19 @@ workflow runMeryl {
             input:
                 readFile=readFile,
                 referenceFile=referenceFile,
-                threadCount=threadCount,
+                memSizeGB=8,
+                threadCount=8,
+                diskSizeGB=128,
                 dockerImage=dockerImage
         }
     }
-    call merylCount as childMerylCount {
+    call merylCount as sampleMerylCount {
         input:
-            readFiles=childReadsExtracted.extractedRead,
-            identifier="child",
+            readFiles=sampleReadsExtracted.extractedRead,
+            identifier="sample",
             threadCount=threadCount,
+            memSizeGB=memSizeGB,
+            diskSizeGB=diskSizeGB,
             dockerImage=dockerImage
     }
     call merylCount as maternalMerylCount {
@@ -53,6 +63,8 @@ workflow runMeryl {
             readFiles=maternalReadsExtracted.extractedRead,
             identifier="maternal",
             threadCount=threadCount,
+            memSizeGB=memSizeGB,
+            diskSizeGB=diskSizeGB,
             dockerImage=dockerImage
     }
     call merylCount as paternalMerylCount {
@@ -60,19 +72,23 @@ workflow runMeryl {
             readFiles=paternalReadsExtracted.extractedRead,
             identifier="paternal",
             threadCount=threadCount,
+            memSizeGB=memSizeGB,
+            diskSizeGB=diskSizeGB,
             dockerImage=dockerImage
     }
     call merylHapmer as merylHapmer {
         input:
-            childMerylDB=childMerylCount.merylDb,
+            sampleMerylDB=sampleMerylCount.merylDb,
             maternalMerylDB=maternalMerylCount.merylDb,
             paternalMerylDB=paternalMerylCount.merylDb,
             threadCount=threadCount,
+            memSizeGB=memSizeGB,
+            diskSizeGB=diskSizeGB,
             dockerImage=dockerImage
     }
 
 	output {
-		File childMerylDB = childMerylCount.merylDb
+		File sampleMerylDB = sampleMerylCount.merylDb
 		File maternalHapmer = merylHapmer.maternalHapmers
 		File paternalHapmer = merylHapmer.paternalHapmers
 		File hapmerImage = merylHapmer.hapmerImage
@@ -85,8 +101,10 @@ task merylCount {
         Array[File] readFiles
         String identifier
         Int kmerSize=21
-        Int threadCount
-        String dockerImage
+        Int memSizeGB = 32
+        Int threadCount = 16
+        Int diskSizeGB = 64
+        String dockerImage = "tpesout/hpp_merqury:latest"
     }
 
 	command <<<
@@ -119,9 +137,9 @@ task merylCount {
 		File merylDb = identifier + ".meryl.tar"
 	}
     runtime {
+        memory: memSizeGB + " GB"
         cpu: threadCount
-        memory: "8 GB"
-        docker: dockerImage
+        disks: "local-disk " + diskSizeGB + " SSD"
     }
 }
 
@@ -130,9 +148,11 @@ task merylHapmer {
     input {
         File maternalMerylDB
         File paternalMerylDB
-        File childMerylDB
-        Int threadCount
-        String dockerImage
+        File sampleMerylDB
+        Int memSizeGB = 32
+        Int threadCount = 16
+        Int diskSizeGB = 64
+        String dockerImage = "tpesout/hpp_merqury:latest"
     }
 
 	command <<<
@@ -151,11 +171,11 @@ task merylHapmer {
         # extract meryl dbs
         tar xvf ~{maternalMerylDB} &
         tar xvf ~{paternalMerylDB} &
-        tar xvf ~{childMerylDB} &
+        tar xvf ~{sampleMerylDB} &
         wait
 
         # generate hapmers
-        $MERQURY/trio/hapmers.sh maternal.meryl paternal.meryl child.meryl
+        $MERQURY/trio/hapmers.sh maternal.meryl paternal.meryl sample.meryl
 
         # package
         tar vf mat.hapmers.meryl.tar mat.hapmers.meryl &
@@ -168,8 +188,9 @@ task merylHapmer {
 		File hapmerImage = "inherited_hapmers.png"
 	}
     runtime {
+        memory: memSizeGB + " GB"
         cpu: threadCount
-        memory: "8 GB"
+        disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
     }
 }

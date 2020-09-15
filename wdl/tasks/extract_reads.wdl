@@ -27,8 +27,10 @@ task extractReads {
     input {
         File readFile
         File? referenceFile
-        Int threadCount=1
-        String dockerImage
+        Int memSizeGB = 4
+        Int threadCount = 8
+        Int diskSizeGB = 128
+        String dockerImage = "tpesout/hpp_base:latest"
     }
 
 
@@ -74,8 +76,10 @@ task extractReads {
     }
 
     runtime {
-        docker: dockerImage
+        memory: memSizeGB + " GB"
         cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: dockerImage
     }
 
     parameter_meta {

@@ -9,8 +9,10 @@ task quast {
         File assemblyFasta
         File? referenceFasta
         String extraArguments="--min-identity 80 --fragmented --large"
-        Int threadCount
-        String dockerImage
+        Int memSizeGB = 32
+        Int threadCount = 16
+        Int diskSizeGB = 64
+        String dockerImage = "tpesout/hpp_merqury:latest"
     }
 
 	command <<<
@@ -72,8 +74,9 @@ task quast {
 		File outputTarball = glob("*.quast.tar.gz")[0]
 	}
     runtime {
+        memory: memSizeGB + " GB"
         cpu: threadCount
-        memory: "8 GB"
+        disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
     }
 }

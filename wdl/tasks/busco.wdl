@@ -9,8 +9,10 @@ task busco {
         File assemblyFasta
         String? customDatasetURL
         String extraArguments="-m geno -sp human"
-        Int threadCount
-        String dockerImage
+        Int memSizeGB = 32
+        Int threadCount = 16
+        Int diskSizeGB = 64
+        String dockerImage = "tpesout/hpp_busco:latest"
     }
 
 	command <<<
@@ -75,8 +77,9 @@ task busco {
 		File outputTarball = glob("*.busco.tar.gz")[0]
 	}
     runtime {
+        memory: memSizeGB + " GB"
         cpu: threadCount
-        memory: "42 GB"
+        disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
     }
 }
