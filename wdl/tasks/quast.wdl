@@ -45,8 +45,7 @@ task quast {
 
         # include reference fasta if supplied
         if [[ -f "~{referenceFasta}" ]]; then
-            REF_FILENAME=$(basename -- "~{referenceFasta}")
-            cmd+=( -r $REF_FILENAME )
+            cmd+=( -r ~{referenceFasta} )
         fi
 
         # include extra arguments if supplied
