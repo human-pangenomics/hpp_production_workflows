@@ -9,3 +9,9 @@ workflows:
    -  name: Quast
       subclass: WDL
       primaryDescriptorPath: /wdl/tasks/quast.wdl
+   -  name: Meryl
+      subclass: WDL
+      primaryDescriptorPath: /wdl/tasks/meryl.wdl
+   -  name: Merqury
+      subclass: WDL
+      primaryDescriptorPath: /wdl/tasks/merqury.wdl
