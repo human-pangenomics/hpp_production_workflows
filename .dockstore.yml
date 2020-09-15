@@ -1,0 +1,11 @@
+version: 1.2
+workflows:
+   -  name: Dipcall
+      subclass: WDL
+      primaryDescriptorPath: /wdl/tasks/dipcall.wdl
+   -  name: BUSCO
+      subclass: WDL
+      primaryDescriptorPath: /wdl/tasks/busco.wdl
+   -  name: Quast
+      subclass: WDL
+      primaryDescriptorPath: /wdl/tasks/quast.wdl
