@@ -140,6 +140,7 @@ task merylCount {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
+        docker: dockerImage
     }
 }
 
