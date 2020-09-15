@@ -26,9 +26,13 @@ task quast {
         set -o xtrace
 
         # initilization
-        FILENAME=$(basename -- "~{assemblyFasta}")
-        PREFIX="${FILENAME%.*}"
         ln -s ~{assemblyFasta}
+        ASM_FILENAME=$(basename -- "~{assemblyFasta}")
+        if [[ $file =~ \.gz$ ]]; then
+            gunzip $ASM_FILENAME
+            ASM_FILENAME="${ASM_FILENAME%.gz}"
+        fi
+        PREFIX="${ASM_FILENAME%.*}"
 
         # init quast command
         cmd=(python /root/tools/quast/quast-5.0.2/quast-lg.py )
@@ -38,7 +42,12 @@ task quast {
         # include reference fasta if supplied
         if [[ -f "~{referenceFasta}" ]]; then
             ln -s ~{referenceFasta}
-            cmd+=( -r $(basename ~{referenceFasta}) )
+            REF_FILENAME=$(basename -- "~{assemblyFasta}")
+            if [[ $file =~ \.gz$ ]]; then
+                gunzip $REF_FILENAME
+                REF_FILENAME="${REF_FILENAME%.gz}"
+            fi
+            cmd+=( -r $REF_FILENAME )
         fi
 
         # include extra arguments if supplied
@@ -47,7 +56,7 @@ task quast {
         fi
 
         # finalize command
-        cmd+=( $(basename ~{assemblyFasta}) )
+        cmd+=( $ASM_FILENAME )
 
         # run command
         "${cmd[@]}"

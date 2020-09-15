@@ -25,7 +25,13 @@ task busco {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
 
+        # file initialization
+        ln -s ~{assemblyFasta}
         FILENAME=$(basename -- "~{assemblyFasta}")
+        if [[ $FILENAME =~ \.gz$ ]]; then
+            gunzip $FILENAME
+            FILENAME="${FILENAME%\.gz}"
+        fi
         PREFIX="${FILENAME%.*}"
         SUFFIX="${FILENAME##*.}"
 
@@ -35,7 +41,7 @@ task busco {
 
         # initialize script
         cmd=(  python3 /root/tools/BUSCO/busco/scripts/run_BUSCO.py )
-        cmd+=( -i ~{assemblyFasta} )
+        cmd+=( -i $FILENAME )
         cmd+=( -o $PREFIX.busco )
         cmd+=( -c ~{threadCount} )
 
