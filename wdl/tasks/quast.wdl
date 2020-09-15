@@ -12,7 +12,7 @@ task quast {
         Int memSizeGB = 32
         Int threadCount = 16
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_merqury:latest"
+        String dockerImage = "tpesout/hpp_quast:latest"
     }
 
 	command <<<
