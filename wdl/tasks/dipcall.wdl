@@ -11,7 +11,10 @@ task dipcall {
         File referenceFasta
         Boolean isMaleSample
         Boolean referenceIsHS38 = true
-        String dockerImage
+        Int memSizeGB = 64
+        Int threadCount = 16
+        Int diskSizeGB = 64
+        String dockerImage = "tpesout/hpp_dipcall:latest"
     }
 
 	command <<<
@@ -72,8 +75,9 @@ task dipcall {
 		File outputBED = glob("*.dipcall.bed")[0]
 	}
     runtime {
-        cpu: 16
-        memory: "64 GB"
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
     }
 }
