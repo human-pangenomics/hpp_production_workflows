@@ -32,15 +32,18 @@ task merqury {
         FILENAME=$(basename -- "~{assemblyFasta}")
         PREFIX="${FILENAME%.*}"
 
+        # extract kmers
+        tar xvf ~{kmerTarball} &
+        if [[ -f "~{matKmerTarball}" && -f "~{patKmerTarball}" ]]; then
+            tar xvf ~{matKmerTarball} &
+            tar xvf ~{patKmerTarball} &
+        fi
+        wait
+
         # initilize command
         cmd=( merqury.sh )
-
-        # get kmers
-        tar xvf ~{kmerTarball}
         cmd+=( $(basename ~{kmerTarball} | sed 's/.gz$//' | sed 's/.tar$//') )
         if [[ -f "~{matKmerTarball}" && -f "~{patKmerTarball}" ]]; then
-            tar xvf ~{matKmerTarball}
-            tar xvf ~{patKmerTarball}
             cmd+=( $(basename ~{matKmerTarball} | sed 's/.gz$//' | sed 's/.tar$//') )
             cmd+=( $(basename ~{patKmerTarball} | sed 's/.gz$//' | sed 's/.tar$//') )
         fi
