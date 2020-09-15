@@ -46,13 +46,6 @@ task quast {
         # include reference fasta if supplied
         if [[ -f "~{referenceFasta}" ]]; then
             REF_FILENAME=$(basename -- "~{referenceFasta}")
-            if [[ $REF_FILENAME =~ \.gz$ ]]; then
-                cp ~{referenceFasta} .
-                gunzip $REF_FILENAME
-                REF_FILENAME="${REF_FILENAME%.gz}"
-            else
-                ln -s ~{referenceFasta}
-            fi
             cmd+=( -r $REF_FILENAME )
         fi
 
