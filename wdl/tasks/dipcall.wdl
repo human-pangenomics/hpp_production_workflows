@@ -41,9 +41,9 @@ task dipcall {
         # male samples need PAR region excluded
         if [[ ~{isMaleSample} == true ]]; then
             if [[ ~{referenceIsHS38} ]]; then
-                cmd+=( -x /root/tools/dipcall/dipcall.kit/hs38.PAR.bed )
+                cmd+=( -x /opt/dipcall/dipcall.kit/hs38.PAR.bed )
             else
-                cmd+=( -x /root/tools/dipcall/dipcall.kit/hs37d5.PAR.bed )
+                cmd+=( -x /opt/dipcall/dipcall.kit/hs37d5.PAR.bed )
             fi
 
         fi
