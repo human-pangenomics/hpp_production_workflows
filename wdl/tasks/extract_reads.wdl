@@ -98,7 +98,7 @@ task sum {
     input {
         Array[Int] integers
     }
-    
+
     command <<<
         python -c "print(~{sep="+" integers})"
     >>>
