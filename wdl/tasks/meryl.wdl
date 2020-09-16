@@ -15,7 +15,7 @@ workflow runMeryl {
         String dockerImage = "tpesout/hpp_merqury:latest"
     }
 
-    # actual work
+    # extract reads
     scatter (readFile in sampleReadsILM) {
         call extractReads_t.extractReads as sampleReadsExtracted {
             input:
@@ -49,13 +49,33 @@ workflow runMeryl {
                 dockerImage=dockerImage
         }
     }
+
+    # get file size of results
+    call extractReads_t.sum as sampleReadSize {
+        input:
+            integers=sampleReadsExtracted.fileSizeGB
+    }
+    call extractReads_t.sum as maternalReadSize {
+        input:
+            integers=maternalReadsExtracted.fileSizeGB
+    }
+    call extractReads_t.sum as paternalReadSize {
+        input:
+            integers=paternalReadsExtracted.fileSizeGB
+    }
+    call extractReads_t.sum as allReadSize {
+        input:
+            integers=[sampleReadSize.value, maternalReadSize.value, paternalReadSize.value]
+    }
+
+    # do the actual meryl work
     call merylCount as sampleMerylCount {
         input:
             readFiles=sampleReadsExtracted.extractedRead,
             identifier="sample",
             threadCount=threadCount,
             memSizeGB=memSizeGB,
-            diskSizeGB=diskSizeGB,
+            diskSizeGB=sampleReadSize.value * 2,
             dockerImage=dockerImage
     }
     call merylCount as maternalMerylCount {
@@ -64,7 +84,7 @@ workflow runMeryl {
             identifier="maternal",
             threadCount=threadCount,
             memSizeGB=memSizeGB,
-            diskSizeGB=diskSizeGB,
+            diskSizeGB=maternalReadSize.value * 2,
             dockerImage=dockerImage
     }
     call merylCount as paternalMerylCount {
@@ -73,7 +93,7 @@ workflow runMeryl {
             identifier="paternal",
             threadCount=threadCount,
             memSizeGB=memSizeGB,
-            diskSizeGB=diskSizeGB,
+            diskSizeGB=maternalReadSize.value * 2,
             dockerImage=dockerImage
     }
     call merylHapmer as merylHapmer {
@@ -83,7 +103,7 @@ workflow runMeryl {
             paternalMerylDB=paternalMerylCount.merylDb,
             threadCount=threadCount,
             memSizeGB=memSizeGB,
-            diskSizeGB=diskSizeGB,
+            diskSizeGB=allReadSize.value,
             dockerImage=dockerImage
     }
 

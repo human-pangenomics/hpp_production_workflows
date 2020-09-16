@@ -69,10 +69,17 @@ task extractReads {
             echo "Unsupported file type: ${SUFFIX}"
             exit 1
         fi
+
+        OUTPUTSIZE=`du -s -BG output/ | sed 's/G.*//'`
+        if [[ "0" == $OUTPUTSIZE ]] ; then
+            OUTPUTSIZE=`du -s -BG ~{readFile} | sed 's/G.*//'`
+        fi
+        echo $OUTPUTSIZE >outputsize
     >>>
 
     output {
         File extractedRead = flatten([glob("output/*"), [readFile]])[0]
+        Int fileSizeGB = read_int("outputsize")
     }
 
     runtime {
@@ -84,5 +91,17 @@ task extractReads {
 
     parameter_meta {
         readFile: {description: "Reads file in BAM, FASTQ, or FASTA format (optionally gzipped)"}
+    }
+}
+
+task sum {
+    input {
+        Array[Int] integers
+    }
+    command <<<
+        python -c "print(~{sep="+" integers})"
+    >>>
+    output {
+        Int value = read_int(stdout())
     }
 }
