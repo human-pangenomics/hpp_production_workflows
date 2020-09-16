@@ -224,8 +224,7 @@ task sum {
     }
 
     command <<<
-        PATH="/root/bin/python_3.6.0/bin/:${PATH}"
-        python -c "print(~{sep="+" integers})"
+        echo $((~{sep="+" integers}))
     >>>
 
     output {
