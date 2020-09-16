@@ -98,10 +98,16 @@ task sum {
     input {
         Array[Int] integers
     }
+    
     command <<<
         python -c "print(~{sep="+" integers})"
     >>>
+
     output {
         Int value = read_int(stdout())
+    }
+
+    runtime {
+        docker: "tpesout/hpp_base:latest"
     }
 }

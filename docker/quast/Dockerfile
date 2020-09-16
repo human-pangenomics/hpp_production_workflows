@@ -17,5 +17,10 @@ RUN wget https://downloads.sourceforge.net/project/quast/quast-5.0.2.tar.gz && \
     ./setup.py install && \
     ./quast.py -h
 
+# locale configuration
+RUN apt-get install -y locales && \
+    locale-gen en_US.UTF-8 && \
+    dpkg-reconfigure locales
+
 
 WORKDIR /data
