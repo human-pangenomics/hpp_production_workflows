@@ -51,19 +51,19 @@ workflow runMeryl {
     }
 
     # get file size of results
-    call extractReads_t.sum as sampleReadSize {
+    call sum as sampleReadSize {
         input:
             integers=sampleReadsExtracted.fileSizeGB
     }
-    call extractReads_t.sum as maternalReadSize {
+    call sum as maternalReadSize {
         input:
             integers=maternalReadsExtracted.fileSizeGB
     }
-    call extractReads_t.sum as paternalReadSize {
+    call sum as paternalReadSize {
         input:
             integers=paternalReadsExtracted.fileSizeGB
     }
-    call extractReads_t.sum as allReadSize {
+    call sum as allReadSize {
         input:
             integers=[sampleReadSize.value, maternalReadSize.value, paternalReadSize.value]
     }
@@ -213,6 +213,27 @@ task merylHapmer {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+    }
+}
+
+
+
+task sum {
+    input {
+        Array[Int] integers
+    }
+
+    command <<<
+        PATH="/root/bin/python_3.6.0/bin/:${PATH}"
+        python -c "print(~{sep="+" integers})"
+    >>>
+
+    output {
+        Int value = read_int(stdout())
+    }
+
+    runtime {
+        docker: "tpesout/hpp_base:latest"
     }
 }
 
