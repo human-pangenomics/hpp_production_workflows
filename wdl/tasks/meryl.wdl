@@ -11,7 +11,7 @@ workflow runMeryl {
         File? referenceFile
         Int memSizeGB = 32
         Int threadCount = 16
-        Int diskSizeGB = 64
+        Int fileExtractionDiskSizeGB = 128
         String dockerImage = "tpesout/hpp_merqury:latest"
     }
 
@@ -21,9 +21,9 @@ workflow runMeryl {
             input:
                 readFile=readFile,
                 referenceFile=referenceFile,
-                memSizeGB=8,
-                threadCount=8,
-                diskSizeGB=128,
+                memSizeGB=4,
+                threadCount=4,
+                diskSizeGB=fileExtractionDiskSizeGB,
                 dockerImage=dockerImage
         }
     }
@@ -32,9 +32,9 @@ workflow runMeryl {
             input:
                 readFile=readFile,
                 referenceFile=referenceFile,
-                memSizeGB=8,
-                threadCount=8,
-                diskSizeGB=128,
+                memSizeGB=4,
+                threadCount=4,
+                diskSizeGB=fileExtractionDiskSizeGB,
                 dockerImage=dockerImage
         }
     }
@@ -43,9 +43,9 @@ workflow runMeryl {
             input:
                 readFile=readFile,
                 referenceFile=referenceFile,
-                memSizeGB=8,
-                threadCount=8,
-                diskSizeGB=128,
+                memSizeGB=4,
+                threadCount=4,
+                diskSizeGB=fileExtractionDiskSizeGB,
                 dockerImage=dockerImage
         }
     }
