@@ -143,7 +143,7 @@ task merylCount {
         # generate meryl db for each read
         i=0
         for r in ~{sep=" " readFiles} ; do
-            meryl k=~{kmerSize} cpus=~{threadCount} count output reads$i.meryl $r
+            meryl k=~{kmerSize} threads=~{threadCount} count output reads$i.meryl $r
             i=$(($i + 1))
         done
 
