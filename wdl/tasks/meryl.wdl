@@ -103,7 +103,7 @@ workflow runMeryl {
             paternalMerylDB=paternalMerylCount.merylDb,
             threadCount=threadCount,
             memSizeGB=memSizeGB,
-            diskSizeGB=allReadSize.value,
+            diskSizeGB=allReadSize.value * 2,
             dockerImage=dockerImage
     }
 
