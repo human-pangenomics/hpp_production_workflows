@@ -34,9 +34,36 @@ task dipcall {
         PREFIX=$(basename ~{assemblyFastaPat} | sed 's/.gz$//' | sed 's/.fa\(sta\)*$//' | sed 's/.[pm]at$//')
         mkdir dipcall_$PREFIX
 
-        # prep fastas
-        ln -s ~{referenceFasta}
-        samtools faidx `basename ~{referenceFasta}`
+        # prep paternal
+        PAT_FILENAME=$(basename -- "~{assemblyFastaPat}")
+        if [[ $PAT_FILENAME =~ \.gz$ ]]; then
+            cp ~{assemblyFastaPat} .
+            gunzip $PAT_FILENAME
+            PAT_FILENAME="${PAT_FILENAME%.gz}"
+        else
+            ln -s ~{assemblyFastaPat}
+        fi
+
+        # prep maternal
+        MAT_FILENAME=$(basename -- "~{assemblyFastaMat}")
+        if [[ $MAT_FILENAME =~ \.gz$ ]]; then
+            cp ~{assemblyFastaMat} .
+            gunzip $MAT_FILENAME
+            MAT_FILENAME="${MAT_FILENAME%.gz}"
+        else
+            ln -s ~{assemblyFastaMat}
+        fi
+
+        # prep reference
+        REF_FILENAME=$(basename -- "~{referenceFasta}")
+        if [[ $REF_FILENAME =~ \.gz$ ]]; then
+            cp ~{referenceFasta} .
+            gunzip $REF_FILENAME
+            REF_FILENAME="${REF_FILENAME%.gz}"
+        else
+            ln -s ~{referenceFasta}
+        fi
+        samtools faidx $REF_FILENAME
 
         # initialize script
         cmd=( /opt/dipcall/dipcall.kit/run-dipcall )
@@ -53,9 +80,9 @@ task dipcall {
 
         # finalize script
         cmd+=( dipcall_$PREFIX/$PREFIX )
-        cmd+=( `basename ~{referenceFasta}` )
-        cmd+=( ~{assemblyFastaPat} )
-        cmd+=( ~{assemblyFastaMat} )
+        cmd+=( $REF_FILENAME )
+        cmd+=( $PAT_FILENAME )
+        cmd+=( $MAT_FILENAME )
 
         # generate makefile
         "${cmd[@]}" >$PREFIX.mak
@@ -67,6 +94,11 @@ task dipcall {
         tar czvf $PREFIX.dipcall.tar.gz dipcall_$PREFIX/
         cp dipcall_$PREFIX/$PREFIX.dip.bed $PREFIX.dipcall.bed
         cp dipcall_$PREFIX/$PREFIX.dip.vcf.gz $PREFIX.dipcall.vcf.gz
+
+        # cleanup
+        rm $REF_FILENAME
+        rm $MAT_FILENAME
+        rm $PAT_FILENAME
 
 	>>>
 	output {
