@@ -9,7 +9,7 @@ task quast {
         File assemblyFasta
         File? referenceFasta
         String extraArguments="--min-identity 80 --fragmented --large"
-        Int memSizeGB = 32
+        Int memSizeGB = 64
         Int threadCount = 16
         Int diskSizeGB = 64
         String dockerImage = "tpesout/hpp_quast:latest"

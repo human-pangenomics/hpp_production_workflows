@@ -9,9 +9,9 @@ workflow runMeryl {
         Array[File] maternalReadsILM
         Array[File] paternalReadsILM
         File? referenceFile
-        Int memSizeGB = 32
+        Int memSizeGB = 64
         Int threadCount = 16
-        Int fileExtractionDiskSizeGB = 128
+        Int fileExtractionDiskSizeGB = 256
         String dockerImage = "tpesout/hpp_merqury:latest"
     }
 
@@ -75,7 +75,7 @@ workflow runMeryl {
             identifier="sample",
             threadCount=threadCount,
             memSizeGB=memSizeGB,
-            diskSizeGB=sampleReadSize.value * 2,
+            diskSizeGB=sampleReadSize.value * 4,
             dockerImage=dockerImage
     }
     call merylCount as maternalMerylCount {
@@ -84,7 +84,7 @@ workflow runMeryl {
             identifier="maternal",
             threadCount=threadCount,
             memSizeGB=memSizeGB,
-            diskSizeGB=maternalReadSize.value * 2,
+            diskSizeGB=maternalReadSize.value * 4,
             dockerImage=dockerImage
     }
     call merylCount as paternalMerylCount {
@@ -93,7 +93,7 @@ workflow runMeryl {
             identifier="paternal",
             threadCount=threadCount,
             memSizeGB=memSizeGB,
-            diskSizeGB=maternalReadSize.value * 2,
+            diskSizeGB=maternalReadSize.value * 4,
             dockerImage=dockerImage
     }
     call merylHapmer as merylHapmer {
@@ -121,7 +121,7 @@ task merylCount {
         Array[File] readFiles
         String identifier
         Int kmerSize=21
-        Int memSizeGB = 32
+        Int memSizeGB = 64
         Int threadCount = 16
         Int diskSizeGB = 64
         String dockerImage = "tpesout/hpp_merqury:latest"
@@ -143,7 +143,7 @@ task merylCount {
         # generate meryl db for each read
         i=0
         for r in ~{sep=" " readFiles} ; do
-            meryl k=~{kmerSize} threads=~{threadCount} count output reads$i.meryl $r
+            meryl k=~{kmerSize} threads=~{threadCount} memory=$((~{memSizeGB}-12)) count output reads$i.meryl $r
             i=$(($i + 1))
         done
 
@@ -170,7 +170,7 @@ task merylHapmer {
         File maternalMerylDB
         File paternalMerylDB
         File sampleMerylDB
-        Int memSizeGB = 32
+        Int memSizeGB = 64
         Int threadCount = 16
         Int diskSizeGB = 64
         String dockerImage = "tpesout/hpp_merqury:latest"
