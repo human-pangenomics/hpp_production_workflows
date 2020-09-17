@@ -10,7 +10,7 @@ workflow runMeryl {
         Array[File] paternalReadsILM
         File? referenceFile
         Int memSizeGB = 64
-        Int threadCount = 16
+        Int threadCount = 64
         Int fileExtractionDiskSizeGB = 256
         String dockerImage = "tpesout/hpp_merqury:latest"
     }
@@ -122,7 +122,7 @@ task merylCount {
         String identifier
         Int kmerSize=21
         Int memSizeGB = 64
-        Int threadCount = 16
+        Int threadCount = 32
         Int diskSizeGB = 64
         String dockerImage = "tpesout/hpp_merqury:latest"
     }
@@ -143,15 +143,15 @@ task merylCount {
         # generate meryl db for each read
         i=0
         for r in ~{sep=" " readFiles} ; do
-            meryl k=~{kmerSize} threads=~{threadCount} memory=$((~{memSizeGB}-12)) count output reads$i.meryl $r
+            meryl k=~{kmerSize} threads=~{threadCount} memory=$((~{memSizeGB}-10)) count output reads$i.meryl $r
             i=$(($i + 1))
         done
 
         # merge meryl dbs
-        meryl cpus=~{threadCount} union-sum output ~{identifier}.meryl reads*.meryl
+        meryl union-sum output ~{identifier}.meryl reads*.meryl
 
         # package
-        tar vf ~{identifier}.meryl.tar ~{identifier}.meryl
+        tar cvf ~{identifier}.meryl.tar ~{identifier}.meryl
 	>>>
 	output {
 		File merylDb = identifier + ".meryl.tar"
@@ -170,8 +170,8 @@ task merylHapmer {
         File maternalMerylDB
         File paternalMerylDB
         File sampleMerylDB
-        Int memSizeGB = 64
-        Int threadCount = 16
+        Int memSizeGB = 32
+        Int threadCount = 32
         Int diskSizeGB = 64
         String dockerImage = "tpesout/hpp_merqury:latest"
     }
