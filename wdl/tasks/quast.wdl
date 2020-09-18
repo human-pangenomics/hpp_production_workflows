@@ -8,7 +8,7 @@ task quast {
     input {
         File assemblyFasta
         File? referenceFasta
-        String extraArguments="--min-identity 80 --fragmented --large"
+        String extraArguments="--large"
         Int memSizeGB = 64
         Int threadCount = 16
         Int diskSizeGB = 64
