@@ -196,7 +196,7 @@ task merylHapmer {
         wait
 
         # generate hapmers
-        $MERQURY/trio/hapmers.sh maternal.meryl paternal.meryl sample.meryl
+        bash $MERQURY/trio/hapmers.sh maternal.meryl paternal.meryl sample.meryl
 
         # package
         tar vf mat.hapmers.meryl.tar mat.hapmers.meryl &
