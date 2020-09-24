@@ -1,6 +1,8 @@
 version 1.0
 
 import "extract_reads.wdl" as extractReads_t
+import "shard_reads.wdl" as shardReads_t
+import "sum.wdl" as sum_t
 
 workflow runMeryl {
 
@@ -50,57 +52,116 @@ workflow runMeryl {
         }
     }
 
-    # get file size of results
-    call sum as sampleReadSize {
+    # get file size of results (for union sum)
+    call sum_t.sum as sampleReadSize {
         input:
             integers=sampleReadsExtracted.fileSizeGB
     }
-    call sum as maternalReadSize {
+    call sum_t.sum as maternalReadSize {
         input:
             integers=maternalReadsExtracted.fileSizeGB
     }
-    call sum as paternalReadSize {
+    call sum_t.sum as paternalReadSize {
         input:
             integers=paternalReadsExtracted.fileSizeGB
     }
-    call sum as allReadSize {
+    call sum_t.sum as allReadSize {
         input:
             integers=[sampleReadSize.value, maternalReadSize.value, paternalReadSize.value]
     }
 
-    # do the actual meryl work
-    call merylCount as sampleMerylCount {
+    # shard reads
+    scatter (readFile in sampleReadsExtracted.extractedRead) {
+        call shardReads_t.shardReads as sampleShardReads {
+            input:
+                readFile=readFile,
+                diskSizeGB=fileExtractionDiskSizeGB*2,
+                dockerImage=dockerImage
+        }
+    }
+    scatter (readFile in maternalReadsExtracted.extractedRead) {
+        call shardReads_t.shardReads as maternalShardReads {
+            input:
+                readFile=readFile,
+                diskSizeGB=fileExtractionDiskSizeGB*2,
+                dockerImage=dockerImage
+        }
+    }
+    scatter (readFile in paternalReadsExtracted.extractedRead) {
+        call shardReads_t.shardReads as paternalShardReads {
+            input:
+                readFile=readFile,
+                diskSizeGB=fileExtractionDiskSizeGB*2,
+                dockerImage=dockerImage
+        }
+    }
+
+    # do the meryl counting
+    scatter (readFile in flatten(sampleShardReads.shardedReads)) {
+        call merylCount as sampleMerylCount {
+            input:
+                readFile=readFile,
+                threadCount=threadCount,
+                memSizeGB=memSizeGB,
+                diskSizeGB=sampleShardReads.fileSizeGB[0] * 4,
+                dockerImage=dockerImage
+        }
+    }
+    scatter (readFile in flatten(maternalShardReads.shardedReads)) {
+        call merylCount as maternalMerylCount {
+            input:
+                readFile=readFile,
+                threadCount=threadCount,
+                memSizeGB=memSizeGB,
+                diskSizeGB=maternalShardReads.fileSizeGB[0] * 4,
+                dockerImage=dockerImage
+        }
+    }
+    scatter (readFile in flatten(paternalShardReads.shardedReads)) {
+        call merylCount as paternalMerylCount {
+            input:
+                readFile=readFile,
+                threadCount=threadCount,
+                memSizeGB=memSizeGB,
+                diskSizeGB=paternalShardReads.fileSizeGB[0] * 4,
+                dockerImage=dockerImage
+        }
+    }
+
+    # do the meryl merging
+    call merylUnionSum as sampleMerylUnionSum {
         input:
-            readFiles=sampleReadsExtracted.extractedRead,
+            merylCountFiles=sampleMerylCount.merylDb,
             identifier="sample",
             threadCount=threadCount,
             memSizeGB=memSizeGB,
             diskSizeGB=sampleReadSize.value * 4,
             dockerImage=dockerImage
     }
-    call merylCount as maternalMerylCount {
+    call merylUnionSum as maternalMerylUnionSum {
         input:
-            readFiles=maternalReadsExtracted.extractedRead,
+            merylCountFiles=maternalMerylCount.merylDb,
             identifier="maternal",
             threadCount=threadCount,
             memSizeGB=memSizeGB,
             diskSizeGB=maternalReadSize.value * 4,
             dockerImage=dockerImage
     }
-    call merylCount as paternalMerylCount {
+    call merylUnionSum as paternalMerylUnionSum {
         input:
-            readFiles=paternalReadsExtracted.extractedRead,
+            merylCountFiles=paternalMerylCount.merylDb,
             identifier="paternal",
             threadCount=threadCount,
             memSizeGB=memSizeGB,
-            diskSizeGB=maternalReadSize.value * 4,
+            diskSizeGB=paternalReadSize.value * 4,
             dockerImage=dockerImage
     }
+
     call merylHapmer as merylHapmer {
         input:
-            sampleMerylDB=sampleMerylCount.merylDb,
-            maternalMerylDB=maternalMerylCount.merylDb,
-            paternalMerylDB=paternalMerylCount.merylDb,
+            sampleMerylDB=sampleMerylUnionSum.merylDb,
+            maternalMerylDB=maternalMerylUnionSum.merylDb,
+            paternalMerylDB=paternalMerylUnionSum.merylDb,
             threadCount=threadCount,
             memSizeGB=memSizeGB,
             diskSizeGB=allReadSize.value * 2,
@@ -108,7 +169,7 @@ workflow runMeryl {
     }
 
 	output {
-		File sampleMerylDB = sampleMerylCount.merylDb
+		File sampleMerylDB = sampleMerylUnionSum.merylDb
 		File maternalHapmer = merylHapmer.maternalHapmers
 		File paternalHapmer = merylHapmer.paternalHapmers
 		File hapmerImage = merylHapmer.hapmerImage
@@ -118,7 +179,52 @@ workflow runMeryl {
 
 task merylCount {
     input {
-        Array[File] readFiles
+        File readFile
+        Int kmerSize=21
+        Int memSizeGB = 32
+        Int threadCount = 16
+        Int diskSizeGB = 64
+        String dockerImage = "tpesout/hpp_merqury:latest"
+    }
+
+	command <<<
+        # Set the exit code of a pipeline to that of the rightmost command
+        # to exit with a non-zero status, or zero if all commands of the pipeline exit
+        set -o pipefail
+        # cause a bash script to exit immediately when a command fails
+        set -e
+        # cause the bash shell to treat unset variables as an error and exit immediately
+        set -u
+        # echo each line of the script to stdout so we can see what is happening
+        # to turn off echo do 'set +o xtrace'
+        set -o xtrace
+        OMP_NUM_THREADS=~{threadCount}
+
+        # generate meryl db for each read
+        ID=`basename ~{readFile} | sed 's/.gz$//' | sed 's/.f[aq]\(st[aq]\)*$//'`
+        meryl k=~{kmerSize} threads=~{threadCount} memory=$((~{memSizeGB}-10)) count output $ID.meryl ~{readFile}
+
+        # package
+        tar cvf $ID.meryl.tar $ID.meryl
+
+        # cleanup
+        rm -rf $ID.meryl
+	>>>
+	output {
+		File merylDb = glob("*.meryl.tar")[0]
+	}
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: dockerImage
+    }
+}
+
+
+task merylUnionSum {
+    input {
+        Array[File] merylCountFiles
         String identifier
         Int kmerSize=21
         Int memSizeGB = 64
@@ -140,18 +246,23 @@ task merylCount {
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
 
-        # generate meryl db for each read
-        i=0
-        for r in ~{sep=" " readFiles} ; do
-            meryl k=~{kmerSize} threads=~{threadCount} memory=$((~{memSizeGB}-10)) count output reads$i.meryl $r
-            i=$(($i + 1))
+        # extract meryl dbs
+        mkdir extracted/
+        cd extracted/
+        for m in ~{sep=" " merylCountFiles} ; do
+            tar xf $m &
         done
+        wait
+        cd ../
 
         # merge meryl dbs
-        meryl union-sum output ~{identifier}.meryl reads*.meryl
+        meryl union-sum output ~{identifier}.meryl extracted/*
 
         # package
         tar cvf ~{identifier}.meryl.tar ~{identifier}.meryl
+
+        # cleanup
+        rm -rf extracted/
 	>>>
 	output {
 		File merylDb = identifier + ".meryl.tar"
@@ -213,26 +324,6 @@ task merylHapmer {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
-    }
-}
-
-
-
-task sum {
-    input {
-        Array[Int] integers
-    }
-
-    command <<<
-        echo $((~{sep="+" integers}))
-    >>>
-
-    output {
-        Int value = read_int(stdout())
-    }
-
-    runtime {
-        docker: "tpesout/hpp_base:latest"
     }
 }
 
