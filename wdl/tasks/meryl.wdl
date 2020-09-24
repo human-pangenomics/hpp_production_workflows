@@ -11,6 +11,8 @@ workflow runMeryl {
         Array[File] maternalReadsILM
         Array[File] paternalReadsILM
         File? referenceFile
+        Int kmerSize = 21
+        Int shardLinesPerFile = 256000000
         Int memSizeGB = 64
         Int threadCount = 64
         Int fileExtractionDiskSizeGB = 256
@@ -75,6 +77,9 @@ workflow runMeryl {
         call shardReads_t.shardReads as sampleShardReads {
             input:
                 readFile=readFile,
+                linesPerFile=shardLinesPerFile,
+                threadCount=1,
+                memSizeGB=4,
                 diskSizeGB=fileExtractionDiskSizeGB*2,
                 dockerImage=dockerImage
         }
@@ -83,6 +88,9 @@ workflow runMeryl {
         call shardReads_t.shardReads as maternalShardReads {
             input:
                 readFile=readFile,
+                linesPerFile=shardLinesPerFile,
+                threadCount=1,
+                memSizeGB=4,
                 diskSizeGB=fileExtractionDiskSizeGB*2,
                 dockerImage=dockerImage
         }
@@ -91,6 +99,9 @@ workflow runMeryl {
         call shardReads_t.shardReads as paternalShardReads {
             input:
                 readFile=readFile,
+                linesPerFile=shardLinesPerFile,
+                threadCount=1,
+                memSizeGB=4,
                 diskSizeGB=fileExtractionDiskSizeGB*2,
                 dockerImage=dockerImage
         }
@@ -101,6 +112,7 @@ workflow runMeryl {
         call merylCount as sampleMerylCount {
             input:
                 readFile=readFile,
+                kmerSize=kmerSize,
                 threadCount=threadCount,
                 memSizeGB=memSizeGB,
                 diskSizeGB=sampleShardReads.fileSizeGB[0] * 4,
@@ -111,6 +123,7 @@ workflow runMeryl {
         call merylCount as maternalMerylCount {
             input:
                 readFile=readFile,
+                kmerSize=kmerSize,
                 threadCount=threadCount,
                 memSizeGB=memSizeGB,
                 diskSizeGB=maternalShardReads.fileSizeGB[0] * 4,
@@ -121,6 +134,7 @@ workflow runMeryl {
         call merylCount as paternalMerylCount {
             input:
                 readFile=readFile,
+                kmerSize=kmerSize,
                 threadCount=threadCount,
                 memSizeGB=memSizeGB,
                 diskSizeGB=paternalShardReads.fileSizeGB[0] * 4,
@@ -226,7 +240,6 @@ task merylUnionSum {
     input {
         Array[File] merylCountFiles
         String identifier
-        Int kmerSize=21
         Int memSizeGB = 64
         Int threadCount = 32
         Int diskSizeGB = 64
@@ -299,6 +312,9 @@ task merylHapmer {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
+
+        # incompatibility with current meryl scripts and /bin/sh
+        ln -s /bin/bash /usr/bin/sh
 
         # extract meryl dbs
         tar xvf ~{maternalMerylDB} &
