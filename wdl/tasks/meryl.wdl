@@ -314,10 +314,8 @@ task merylHapmer {
         OMP_NUM_THREADS=~{threadCount}
 
         # temporary setup: this should be moved to dockerfile
-        echo '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.1/bin/Rscript
+        echo -e '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.1/bin/Rscript
         apt-get install -y gsfonts-x11 xfonts-base xfonts-scalable xfonts-100dpi xfonts-75dpi
-
-        # incompatibility with current meryl scripts and /bin/sh
         ln -s /bin/bash /usr/bin/sh
 
         # extract meryl dbs
