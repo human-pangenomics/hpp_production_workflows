@@ -15,3 +15,6 @@ workflows:
    -  name: Merqury
       subclass: WDL
       primaryDescriptorPath: /wdl/tasks/merqury.wdl
+   -  name: MM2GeneStats
+      subclass: WDL
+      primaryDescriptorPath: /wdl/tasks/mm2_gene_stats.wdl
