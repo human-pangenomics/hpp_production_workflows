@@ -313,6 +313,10 @@ task merylHapmer {
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
 
+        # temporary setup: this should be moved to dockerfile
+        echo '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.1/bin/Rscript
+        apt-get install -y gsfonts-x11 xfonts-base xfonts-scalable xfonts-100dpi xfonts-75dpi
+
         # incompatibility with current meryl scripts and /bin/sh
         ln -s /bin/bash /usr/bin/sh
 
@@ -326,8 +330,8 @@ task merylHapmer {
         bash $MERQURY/trio/hapmers.sh maternal.meryl paternal.meryl sample.meryl
 
         # package
-        tar vf mat.hapmers.meryl.tar mat.hapmers.meryl &
-        tar vf pat.hapmers.meryl.tar pat.hapmers.meryl &
+        tar cvf mat.hapmers.meryl.tar mat.hapmers.meryl &
+        tar cvf pat.hapmers.meryl.tar pat.hapmers.meryl &
         wait
 	>>>
 	output {

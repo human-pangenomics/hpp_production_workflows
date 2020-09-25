@@ -3,7 +3,8 @@ MAINTAINER Trevor Pesout, tpesout@ucsc.edu
 
 # update and install dependencies
 RUN apt-get update && \
-    apt-get -y install time git make wget autoconf gcc g++ vim sudo build-essential bzip2 zlib1g-dev libbz2-dev libcurl4-gnutls-dev liblzma-dev libncurses5-dev libncursesw5-dev libssl-dev
+    apt-get -y install time git make wget autoconf gcc g++ vim sudo build-essential bzip2 zlib1g-dev libbz2-dev \
+        libcurl4-gnutls-dev liblzma-dev libncurses5-dev libncursesw5-dev libssl-dev
 
 #    autopoint tcl8.6-dev python-dev \
 #                       perl \

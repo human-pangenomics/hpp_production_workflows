@@ -75,4 +75,10 @@ ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
 ENV PATH="/root/bin/python_3.6.0/bin:${PATH}"
 ENV MERQURY="/opt/merqury/merqury-1.1"
 
+# issue generating pngs with Rscript in docker container without X11
+RUN apt-get install -y xvfb gsfonts-x11 xfonts-base xfonts-scalable xfonts-100dpi xfonts-75dpi && \
+    mv /root/bin/R_3.6.1/bin/Rscript /root/bin/R_3.6.1/bin/.Rscript && \
+    echo '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.1/bin/Rscript && \
+    chmod +x /root/bin/R_3.6.1/bin/Rscript
+
 WORKDIR /data
