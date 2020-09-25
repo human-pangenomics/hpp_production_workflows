@@ -328,9 +328,12 @@ task merylHapmer {
         bash $MERQURY/trio/hapmers.sh maternal.meryl paternal.meryl sample.meryl
 
         # package
-        tar cvf mat.hapmers.meryl.tar mat.hapmers.meryl &
-        tar cvf pat.hapmers.meryl.tar pat.hapmers.meryl &
-        wait
+#        does hapmers package the tarball?
+#        tar cvf mat.hapmers.meryl.tar mat.hapmers.meryl &
+#        tar cvf pat.hapmers.meryl.tar pat.hapmers.meryl &
+#        wait
+        touch inherited_hapmers.png
+        ls -lah *
 	>>>
 	output {
 		File maternalHapmers = "mat.hapmers.meryl.tar"
