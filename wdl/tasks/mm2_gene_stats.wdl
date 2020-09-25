@@ -28,6 +28,10 @@ task mm2GeneStats {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
 
+        # name prep
+        FILENAME=$(basename -- "~{assemblyFasta}" | sed 's/.gz$//' )
+        PREFIX="${FILENAME%.*}"
+
         # determine if we need to align genes to reference
         if [[ -f "~{genesToReferencePaf}" ]] ; then
             ln -s ~{genesToReferencePaf} genesToRef.paf
