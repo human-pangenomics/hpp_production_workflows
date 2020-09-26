@@ -327,18 +327,24 @@ task merylHapmer {
         # generate hapmers
         bash $MERQURY/trio/hapmers.sh maternal.meryl paternal.meryl sample.meryl
 
-        # package
-#        does hapmers package the tarball?
-#        tar cvf mat.hapmers.meryl.tar mat.hapmers.meryl &
-#        tar cvf pat.hapmers.meryl.tar pat.hapmers.meryl &
-#        wait
-        touch inherited_hapmers.png
-        ls -lah *
+        # package images
+        tar czvf hapmers_img.tar.gz *.png *.hist
+        
+        # our desired destination is a softlink, need to move files to a real directory to tar
+        mv mat.hapmers.meryl mat.tmp
+        mkdir mat.hapmers.meryl
+        mv mat.tmp/* mat.hapmers.meryl/
+        mv pat.hapmers.meryl pat.tmp
+        mkdir pat.hapmers.meryl
+        mv pat.tmp/* pat.hapmers.meryl/
+        tar cvf mat.hapmers.meryl.tar mat.hapmers.meryl &
+        tar cvf pat.hapmers.meryl.tar pat.hapmers.meryl &
+        wait
 	>>>
 	output {
 		File maternalHapmers = "mat.hapmers.meryl.tar"
 		File paternalHapmers = "pat.hapmers.meryl.tar"
-		File hapmerImage = "inherited_hapmers.png"
+		File hapmerImage = "hapmers_img.tar.gz"
 	}
     runtime {
         memory: memSizeGB + " GB"
