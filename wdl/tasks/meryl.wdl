@@ -329,21 +329,21 @@ task merylHapmer {
 
         # package images
         tar czvf hapmers_img.tar.gz *.png *.hist
-        
+
         # our desired destination is a softlink, need to move files to a real directory to tar
-        mv mat.hapmers.meryl mat.tmp
-        mkdir mat.hapmers.meryl
-        mv mat.tmp/* mat.hapmers.meryl/
-        mv pat.hapmers.meryl pat.tmp
-        mkdir pat.hapmers.meryl
-        mv pat.tmp/* pat.hapmers.meryl/
-        tar cvf mat.hapmers.meryl.tar mat.hapmers.meryl &
-        tar cvf pat.hapmers.meryl.tar pat.hapmers.meryl &
+        mv maternal.hapmers.meryl maternal.tmp
+        mkdir maternal.hapmers.meryl
+        mv maternal.tmp/* maternal.hapmers.meryl/
+        mv paternal.hapmers.meryl paternal.tmp
+        mkdir paternal.hapmers.meryl
+        mv paternal.tmp/* paternal.hapmers.meryl/
+        tar cvf maternal.hapmers.meryl.tar maternal.hapmers.meryl &
+        tar cvf paternal.hapmers.meryl.tar paternal.hapmers.meryl &
         wait
 	>>>
 	output {
-		File maternalHapmers = "mat.hapmers.meryl.tar"
-		File paternalHapmers = "pat.hapmers.meryl.tar"
+		File maternalHapmers = "maternal.hapmers.meryl.tar"
+		File paternalHapmers = "paternal.hapmers.meryl.tar"
 		File hapmerImage = "hapmers_img.tar.gz"
 	}
     runtime {

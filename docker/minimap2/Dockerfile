@@ -7,6 +7,6 @@ RUN wget https://github.com/lh3/minimap2/releases/download/v2.17/minimap2-2.17.t
 	rm minimap2-2.17.tar.bz2 && \
 	cd minimap2-2.17 && \
 	make
-ENV PATH="/opt/minimap2/minimap2-2.17:$PATH"
+ENV PATH="/opt/minimap2/minimap2-2.17:/opt/minimap2/minimap2-2.17/misc:$PATH"
 
 WORKDIR /data
