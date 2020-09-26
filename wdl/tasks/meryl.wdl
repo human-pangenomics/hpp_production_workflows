@@ -331,10 +331,10 @@ task merylHapmer {
         tar czvf hapmers_img.tar.gz *.png *.hist
 
         # our desired destination is a softlink, need to move files to a real directory to tar
-        mv maternal.hapmers.meryl maternal.tmp
+        mv maternal.hapmer.meryl maternal.tmp
         mkdir maternal.hapmers.meryl
         mv maternal.tmp/* maternal.hapmers.meryl/
-        mv paternal.hapmers.meryl paternal.tmp
+        mv paternal.hapmer.meryl paternal.tmp
         mkdir paternal.hapmers.meryl
         mv paternal.tmp/* paternal.hapmers.meryl/
         tar cvf maternal.hapmers.meryl.tar maternal.hapmers.meryl &
