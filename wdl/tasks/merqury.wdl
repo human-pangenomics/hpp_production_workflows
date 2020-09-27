@@ -66,7 +66,7 @@ task merqury {
             if [[ $FILENAME =~ \.gz$ ]]; then
                 cp ~{altHapFasta} .
                 gunzip $FILENAME
-                mv ${FILENAME%\.gz}" altHap.fasta
+                mv ${FILENAME%\.gz} altHap.fasta
             else
                 ln -s ~{altHapFasta} altHap.fasta
             fi
