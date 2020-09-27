@@ -4,7 +4,8 @@ MAINTAINER Trevor Pesout, tpesout@ucsc.edu
 
 RUN apt-get update && \
     apt-get -y install libc-dev bzip2 libcurl4-openssl-dev openjdk-8-jdk ant fort77 gfortran build-essential xorg-dev \
-        liblzma-dev libblas-dev gcc-multilib gobjc++ aptitude libreadline-dev r-base
+        liblzma-dev libblas-dev gcc-multilib gobjc++ aptitude libreadline-dev r-base xvfb gsfonts-x11 xfonts-base \
+        xfonts-scalable xfonts-100dpi xfonts-75dpi
 
 ### R
 # 3.2.1
@@ -72,12 +73,12 @@ ENV PATH="/opt/merqury/merqury-1.1:${PATH}"
 
 # Final environment setup
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
-ENV PATH="/root/bin/python_3.6.0/bin:${PATH}"
 ENV MERQURY="/opt/merqury/merqury-1.1"
+ENV PATH="/root/bin/python_3.6.0/bin:${PATH}"
+ENV PATH="/root/bin/samtools_1.9:${PATH}"
 
 # issue generating pngs with Rscript in docker container without X11
-RUN apt-get install -y xvfb gsfonts-x11 xfonts-base xfonts-scalable xfonts-100dpi xfonts-75dpi && \
-    mv /root/bin/R_3.6.1/bin/Rscript /root/bin/R_3.6.1/bin/.Rscript && \
+RUN mv /root/bin/R_3.6.1/bin/Rscript /root/bin/R_3.6.1/bin/.Rscript && \
     echo '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.1/bin/Rscript && \
     chmod +x /root/bin/R_3.6.1/bin/Rscript
 

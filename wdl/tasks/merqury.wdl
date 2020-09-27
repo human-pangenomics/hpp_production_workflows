@@ -31,8 +31,7 @@ task merqury {
         OMP_NUM_THREADS=~{threadCount}
 
         # get filename
-        FILENAME=$(basename -- "~{assemblyFasta}")
-        PREFIX="${FILENAME%.*}"
+        ASM_ID=$(basename ~{assemblyFasta} | sed 's/.gz$//' | sed 's/.fa\(sta\)*$//' | sed 's/.[pm]at$//')
 
         # extract kmers
         tar xvf ~{kmerTarball} &
@@ -50,22 +49,38 @@ task merqury {
             cmd+=( $(basename ~{patKmerTarball} | sed 's/.gz$//' | sed 's/.tar$//') )
         fi
 
-        # link input files
-        ln -s ~{assemblyFasta} asm.fasta
+        # link primary asm file
+        FILENAME=$(basename -- "~{assemblyFasta}")
+        if [[ $FILENAME =~ \.gz$ ]]; then
+            cp ~{assemblyFasta} .
+            gunzip $FILENAME
+            mv ${FILENAME%\.gz}" asm.fasta
+        else
+            ln -s ~{assemblyFasta} asm.fasta
+        fi
         cmd+=( asm.fasta )
+
+        # link secondary asm file
         if [[ -f "~{altHapFasta}" ]]; then
-            ln ~{altHapFasta} altHap.fasta
+            FILENAME=$(basename -- "~{altHapFasta}")
+            if [[ $FILENAME =~ \.gz$ ]]; then
+                cp ~{altHapFasta} .
+                gunzip $FILENAME
+                mv ${FILENAME%\.gz}" altHap.fasta
+            else
+                ln -s ~{altHapFasta} altHap.fasta
+            fi
             cmd+=( altHap.fasta )
         fi
 
         # prep output
-        cmd+=( $PREFIX.merqury )
+        cmd+=( $ASM_ID.merqury )
 
         # run command
         ${cmd[@]}
 
         # get output
-        tar czvf $PREFIX.merqury.tar.gz $PREFIX.merqury*
+        tar czvf $ASM_ID.merqury.tar.gz $ASM_ID.merqury*
 
 	>>>
 	output {
