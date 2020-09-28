@@ -54,7 +54,7 @@ task merqury {
         if [[ $FILENAME =~ \.gz$ ]]; then
             cp ~{assemblyFasta} .
             gunzip $FILENAME
-            mv ${FILENAME%\.gz}" asm.fasta
+            mv ${FILENAME%\.gz} asm.fasta
         else
             ln -s ~{assemblyFasta} asm.fasta
         fi
