@@ -18,3 +18,6 @@ workflows:
    -  name: MM2GeneStats
       subclass: WDL
       primaryDescriptorPath: /wdl/tasks/mm2_gene_stats.wdl
+   -  name: FullQC
+      subclass: WDL
+      primaryDescriptorPath: /wdl/workflows/full_qc.wdl

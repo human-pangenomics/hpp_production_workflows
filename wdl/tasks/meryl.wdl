@@ -10,7 +10,7 @@ workflow runMeryl {
         Array[File] sampleReadsILM
         Array[File] maternalReadsILM
         Array[File] paternalReadsILM
-        File? referenceFile
+        File? referenceFasta
         Int kmerSize = 21
         Int shardLinesPerFile = 256000000
         Int memSizeGB = 64
@@ -24,7 +24,7 @@ workflow runMeryl {
         call extractReads_t.extractReads as sampleReadsExtracted {
             input:
                 readFile=readFile,
-                referenceFile=referenceFile,
+                referenceFasta=referenceFasta,
                 memSizeGB=4,
                 threadCount=4,
                 diskSizeGB=fileExtractionDiskSizeGB,
@@ -35,7 +35,7 @@ workflow runMeryl {
         call extractReads_t.extractReads as maternalReadsExtracted {
             input:
                 readFile=readFile,
-                referenceFile=referenceFile,
+                referenceFasta=referenceFasta,
                 memSizeGB=4,
                 threadCount=4,
                 diskSizeGB=fileExtractionDiskSizeGB,
@@ -46,7 +46,7 @@ workflow runMeryl {
         call extractReads_t.extractReads as paternalReadsExtracted {
             input:
                 readFile=readFile,
-                referenceFile=referenceFile,
+                referenceFasta=referenceFasta,
                 memSizeGB=4,
                 threadCount=4,
                 diskSizeGB=fileExtractionDiskSizeGB,
@@ -186,7 +186,7 @@ workflow runMeryl {
 		File sampleMerylDB = sampleMerylUnionSum.merylDb
 		File maternalHapmer = merylHapmer.maternalHapmers
 		File paternalHapmer = merylHapmer.paternalHapmers
-		File hapmerImage = merylHapmer.hapmerImage
+		File hapmerImages = merylHapmer.hapmerImages
 	}
 }
 
@@ -344,7 +344,7 @@ task merylHapmer {
 	output {
 		File maternalHapmers = "maternal.hapmers.meryl.tar"
 		File paternalHapmers = "paternal.hapmers.meryl.tar"
-		File hapmerImage = "hapmers_img.tar.gz"
+		File hapmerImages = "hapmers_img.tar.gz"
 	}
     runtime {
         memory: memSizeGB + " GB"
