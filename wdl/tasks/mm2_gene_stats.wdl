@@ -12,7 +12,7 @@ task mm2GeneStats {
         File? genesToReferencePaf
         # runtime configurations
         Int threadCount = 32
-        Int memSizeGB = 32
+        Int memSizeGB = 64
         Int diskSizeGB = 32
         String dockerImage = "tpesout/hpp_minimap2:latest"
     }
