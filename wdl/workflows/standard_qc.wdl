@@ -1,13 +1,12 @@
 version 1.0
 
-import "../tasks/busco.wdl" as busco_t
 import "../tasks/dipcall.wdl" as dipcall_t
 import "../tasks/merqury.wdl" as merqury_t
 import "../tasks/meryl.wdl" as meryl_t
 import "../tasks/mm2_gene_stats.wdl" as mm2_gene_stats_t
 import "../tasks/quast.wdl" as quast_t
 
-workflow fullQualityControl {
+workflow standardQualityControl {
 
     input {
         Array[File] sampleReadsILM
@@ -18,16 +17,6 @@ workflow fullQualityControl {
         Boolean isMaleSample
         File referenceFasta
         File geneAnnotationFile
-    }
-
-    ### BUSCO ###
-    call busco_t.busco as buscoPaternal {
-        input:
-            assemblyFasta=paternalAssembly
-    }
-    call busco_t.busco as buscoMaternal {
-        input:
-            assemblyFasta=maternalAssembly
     }
 
     ### Dipcall ###
@@ -57,12 +46,12 @@ workflow fullQualityControl {
     call quast_t.quast as quastPaternal {
         input:
             assemblyFasta=paternalAssembly,
-            referenceFasta=referenceFasta
+            extraArguments="--large --est-ref-size 3100000000 --no-icarus"
     }
     call quast_t.quast as quastMaternal {
         input:
             assemblyFasta=maternalAssembly,
-            referenceFasta=referenceFasta
+            extraArguments="--large --est-ref-size 3100000000 --no-icarus"
     }
 
     ### Merqury ###
@@ -83,8 +72,6 @@ workflow fullQualityControl {
     }
 
 	output {
-		File paternalBuscoResults = buscoPaternal.outputTarball
-		File maternalBuscoResults = buscoMaternal.outputTarball
         File dipcallVCF = dipcall.outputVCF
         File dipcallBED = dipcall.outputBED
         File dipcallFullOutput = dipcall.outputTarball

@@ -21,3 +21,6 @@ workflows:
    -  name: FullQC
       subclass: WDL
       primaryDescriptorPath: /wdl/workflows/full_qc.wdl
+   -  name: StandardQC
+      subclass: WDL
+      primaryDescriptorPath: /wdl/workflows/standard_qc.wdl
