@@ -1,10 +1,10 @@
 version 1.0
 
-workflow runMm2GeneStats {
-	call mm2GeneStats
+workflow runAsmgene {
+	call asmgene
 }
 
-task mm2GeneStats {
+task asmgene {
     input{
         File assemblyFasta
         File genesFasta

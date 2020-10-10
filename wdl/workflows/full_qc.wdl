@@ -4,7 +4,7 @@ import "../tasks/busco.wdl" as busco_t
 import "../tasks/dipcall.wdl" as dipcall_t
 import "../tasks/merqury.wdl" as merqury_t
 import "../tasks/meryl.wdl" as meryl_t
-import "../tasks/mm2_gene_stats.wdl" as mm2_gene_stats_t
+import "../tasks/asmgene.wdl" as asmgene_t
 import "../tasks/quast.wdl" as quast_t
 
 workflow fullQualityControl {
@@ -40,13 +40,13 @@ workflow fullQualityControl {
     }
 
     ### Minimap2 Gene Stats ###
-    call mm2_gene_stats_t.mm2GeneStats as mm2GeneStatsPaternal {
+    call asmgene_t.asmgene as asmgenePaternal {
         input:
             assemblyFasta=paternalAssembly,
             genesFasta=geneAnnotationFile,
             referenceFasta=referenceFasta
     }
-    call mm2_gene_stats_t.mm2GeneStats as mm2GeneStatsMaternal {
+    call asmgene_t.asmgene as asmgeneMaternal {
         input:
             assemblyFasta=maternalAssembly,
             genesFasta=geneAnnotationFile,
@@ -88,8 +88,8 @@ workflow fullQualityControl {
         File dipcallVCF = dipcall.outputVCF
         File dipcallBED = dipcall.outputBED
         File dipcallFullOutput = dipcall.outputTarball
-        File paternalGeneStats = mm2GeneStatsPaternal.geneStats
-        File maternalGeneStats = mm2GeneStatsMaternal.geneStats
+        File paternalGeneStats = asmgenePaternal.geneStats
+        File maternalGeneStats = asmgeneMaternal.geneStats
         File paternalQuastResults = quastPaternal.outputTarball
         File maternalQuastResults = quastMaternal.outputTarball
         File merylHapmerImages = meryl.hapmerImages

@@ -15,9 +15,9 @@ workflows:
    -  name: Merqury
       subclass: WDL
       primaryDescriptorPath: /wdl/tasks/merqury.wdl
-   -  name: MM2GeneStats
+   -  name: Asmgene
       subclass: WDL
-      primaryDescriptorPath: /wdl/tasks/mm2_gene_stats.wdl
+      primaryDescriptorPath: /wdl/tasks/asmgene.wdl
    -  name: FullQC
       subclass: WDL
       primaryDescriptorPath: /wdl/workflows/full_qc.wdl
