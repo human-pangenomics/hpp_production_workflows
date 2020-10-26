@@ -59,15 +59,15 @@ workflow runYakAssemblyStats {
         input:
             readFiles=maternalReadsExtracted.extractedRead,
             sampleName="mat",
-            diskSizeGB=maternalReadSize.value,
-                dockerImage=dockerImage
+            diskSizeGB=maternalReadSize.value * 2,
+            dockerImage=dockerImage
     }
     call yakCount as yakCountPat {
         input:
             readFiles=paternalReadsExtracted.extractedRead,
             sampleName="pat",
-            diskSizeGB=paternalReadSize.value,
-                dockerImage=dockerImage
+            diskSizeGB=paternalReadSize.value * 2,
+            dockerImage=dockerImage
     }
 
     # get stats
