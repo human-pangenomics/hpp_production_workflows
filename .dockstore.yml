@@ -18,6 +18,9 @@ workflows:
    -  name: Asmgene
       subclass: WDL
       primaryDescriptorPath: /wdl/tasks/asmgene.wdl
+   -  name: YakAsmStats
+      subclass: WDL
+      primaryDescriptorPath: /wdl/tasks/yak.wdl
    -  name: FullQC
       subclass: WDL
       primaryDescriptorPath: /wdl/workflows/full_qc.wdl

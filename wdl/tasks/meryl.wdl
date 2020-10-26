@@ -13,8 +13,8 @@ workflow runMeryl {
         File? referenceFasta
         Int kmerSize = 21
         Int shardLinesPerFile = 256000000
-        Int memSizeGB = 64
-        Int threadCount = 64
+        Int memSizeGB = 32
+        Int threadCount = 32
         Int fileExtractionDiskSizeGB = 256
         String dockerImage = "tpesout/hpp_merqury:latest"
     }
