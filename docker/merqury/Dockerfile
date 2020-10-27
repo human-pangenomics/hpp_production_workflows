@@ -10,17 +10,17 @@ RUN apt-get update && \
 ### R
 # 3.2.1
 WORKDIR /opt/R
-RUN wget https://cran.r-project.org/src/base/R-3/R-3.6.1.tar.gz && \
-    tar xvf R-3.6.1.tar.gz && \
-    rm -r /opt/R/R-3.6.1.tar.gz && \
-    cd R-3.6.1 && \
-    ./configure --enable-utf8  --prefix /root/bin/R_3.6.1 && \
+RUN wget https://cran.r-project.org/src/base/R-3/R-3.6.3.tar.gz && \
+    tar xvf R-3.6.3.tar.gz && \
+    rm -r /opt/R/R-3.6.3.tar.gz && \
+    cd R-3.6.3 && \
+    ./configure --enable-utf8  --prefix /root/bin/R_3.6.3 && \
     make && \
     make install && \
-  	/root/bin/R_3.6.1/bin/R -e "install.packages('argparse', repos ='http://cran.us.r-project.org', dependencies=TRUE)" \
-  	/root/bin/R_3.6.1/bin/R -e "install.packages('ggplot2', repos ='http://cran.us.r-project.org', dependencies=TRUE)" \
-  	/root/bin/R_3.6.1/bin/R -e "install.packages('scales', repos ='http://cran.us.r-project.org', dependencies=TRUE)"
-ENV PATH="/root/bin/R_3.6.1/bin:${PATH}"
+  	/root/bin/R_3.6.3/bin/R -e "install.packages('argparse', repos ='http://cran.us.r-project.org', dependencies=TRUE)" \
+  	/root/bin/R_3.6.3/bin/R -e "install.packages('ggplot2', repos ='http://cran.us.r-project.org', dependencies=TRUE)" \
+  	/root/bin/R_3.6.3/bin/R -e "install.packages('scales', repos ='http://cran.us.r-project.org', dependencies=TRUE)"
+ENV PATH="/root/bin/R_3.6.3/bin:${PATH}"
 
 ### bedtools
 # 2.29.2
@@ -78,8 +78,8 @@ ENV PATH="/root/bin/python_3.6.0/bin:${PATH}"
 ENV PATH="/root/bin/samtools_1.9:${PATH}"
 
 # issue generating pngs with Rscript in docker container without X11
-RUN mv /root/bin/R_3.6.1/bin/Rscript /root/bin/R_3.6.1/bin/.Rscript && \
-    echo '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.1/bin/Rscript && \
-    chmod +x /root/bin/R_3.6.1/bin/Rscript
+#RUN mv /root/bin/R_3.6.1/bin/Rscript /root/bin/R_3.6.1/bin/.Rscript && \
+#    echo '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.1/bin/Rscript && \
+#    chmod +x /root/bin/R_3.6.1/bin/Rscript
 
 WORKDIR /data

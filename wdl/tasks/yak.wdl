@@ -9,13 +9,12 @@ workflow runYakAssemblyStats {
     input {
         Array[File] maternalReadsILM
         Array[File] paternalReadsILM
+        Array[File] sampleReadsILM
         File assemblyFastaPat
         File assemblyFastaMat
         File? referenceFasta
         Int kmerSize = 21
         Int shardLinesPerFile = 256000000
-        Int memSizeGB = 32
-        Int threadCount = 32
         Int fileExtractionDiskSizeGB = 256
         String dockerImage = "tpesout/hpp_yak:latest"
     }
@@ -43,6 +42,17 @@ workflow runYakAssemblyStats {
                 dockerImage=dockerImage
         }
     }
+    scatter (readFile in sampleReadsILM) {
+        call extractReads_t.extractReads as sampleReadsExtracted {
+            input:
+                readFile=readFile,
+                referenceFasta=referenceFasta,
+                memSizeGB=4,
+                threadCount=4,
+                diskSizeGB=fileExtractionDiskSizeGB,
+                dockerImage=dockerImage
+        }
+    }
 
     # get file size of results (for yak counting)
     call sum_t.sum as maternalReadSize {
@@ -52,6 +62,10 @@ workflow runYakAssemblyStats {
     call sum_t.sum as paternalReadSize {
         input:
             integers=paternalReadsExtracted.fileSizeGB
+    }
+    call sum_t.sum as sampleReadSize {
+        input:
+            integers=sampleReadsExtracted.fileSizeGB
     }
 
     # do counting
@@ -69,6 +83,13 @@ workflow runYakAssemblyStats {
             diskSizeGB=paternalReadSize.value * 2,
             dockerImage=dockerImage
     }
+    call yakCount as yakCountSample {
+        input:
+            readFiles=sampleReadsExtracted.extractedRead,
+            sampleName="sample",
+            diskSizeGB=sampleReadSize.value * 2,
+            dockerImage=dockerImage
+    }
 
     # get stats
     call yakAssemblyStats {
@@ -77,11 +98,12 @@ workflow runYakAssemblyStats {
             assemblyFastaMat=assemblyFastaMat,
             patYak=yakCountPat.outputYak,
             matYak=yakCountMat.outputYak,
+            sampleYak=yakCountSample.outputYak,
             dockerImage=dockerImage
     }
 
 	output {
-		File sampleMerylDB = yakAssemblyStats.outputTarball
+		File assemblyStats = yakAssemblyStats.outputTarball
 		File maternalYak = yakCountMat.outputYak
 		File paternalYak = yakCountPat.outputYak
 	}
@@ -95,7 +117,7 @@ task yakCount {
         String sampleName
         Int bloomSize=37
         # runtime configurations
-        Int memSizeGB=32
+        Int memSizeGB=64
         Int threadCount=32
         Int diskSizeGB=256
         String dockerImage="tpesout/hpp_yak:latest"
@@ -135,10 +157,11 @@ task yakAssemblyStats {
         File assemblyFastaMat
         File patYak
         File matYak
+        File sampleYak
         String genomeSize = "3.2g"
         String minSequenceLength = "100k"
         # runtime configurations
-        Int memSizeGB = 32
+        Int memSizeGB = 64
         Int threadCount = 32
         Int diskSizeGB = 256
         String dockerImage = "tpesout/hpp_yak:latest"
@@ -163,8 +186,8 @@ task yakAssemblyStats {
         yak trioeval -t ~{threadCount} ~{patYak} ~{matYak} ~{assemblyFastaMat} > $PREFIX.mat.yak_error_stats.txt
 
         # QV
-        yak qv -t ~{threadCount} -p -K ~{genomeSize} -l ~{minSequenceLength} ~{patYak} ~{assemblyFastaPat} > $PREFIX.pat.yak_asm-sr_qv.txt
-        yak qv -t ~{threadCount} -p -K ~{genomeSize} -l ~{minSequenceLength} ~{matYak} ~{assemblyFastaMat} > $PREFIX.mat.yak_asm-sr_qv.txt
+        yak qv -t ~{threadCount} -p -K ~{genomeSize} -l ~{minSequenceLength} ~{sampleYak} ~{assemblyFastaPat} > $PREFIX.pat.yak_asm-sr_qv.txt
+        yak qv -t ~{threadCount} -p -K ~{genomeSize} -l ~{minSequenceLength} ~{sampleYak} ~{assemblyFastaMat} > $PREFIX.mat.yak_asm-sr_qv.txt
 
         # condense
         tar czvf $PREFIX.yak_stats.tar.gz *txt
