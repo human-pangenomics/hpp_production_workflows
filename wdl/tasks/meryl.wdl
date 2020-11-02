@@ -312,6 +312,7 @@ task merylHapmer {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
+        ln -s /bin/bash /usr/bin/sh
 
         # extract meryl dbs
         tar xvf ~{maternalMerylDB} &

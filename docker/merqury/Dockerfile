@@ -1,6 +1,8 @@
 FROM tpesout/hpp_base:latest
 MAINTAINER Trevor Pesout, tpesout@ucsc.edu
 
+ENV MERYL_GIT_COMMIT="1fdad3e85652f033d4abea9045ff164634b645a8"
+
 
 RUN apt-get update && \
     apt-get -y install libc-dev bzip2 libcurl4-openssl-dev openjdk-8-jdk ant fort77 gfortran build-essential xorg-dev \
@@ -47,10 +49,13 @@ ENV PATH="/opt/igvtools/IGVTools_2.3.98:${PATH}"
 ### Meryl
 # 1.0
 WORKDIR /opt/meryl/
-RUN wget https://github.com/marbl/meryl/releases/download/v1.0/meryl-1.0.Linux-amd64.tar.xz && \
-	tar xvf meryl-1.0.Linux-amd64.tar.xz && \
-	rm meryl-1.0.Linux-amd64.tar.xz
-ENV PATH="/opt/meryl/meryl-1.0/Linux-amd64/bin:${PATH}"
+RUN git clone https://github.com/marbl/meryl.git && \
+    cd meryl && \
+    git fetch && \
+    git checkout $MERYL_GIT_COMMIT && \
+    cd src && \
+    make
+ENV PATH="/opt/meryl/meryl/build/bin:${PATH}"
 
 
 ## Install OpenJDK-8
