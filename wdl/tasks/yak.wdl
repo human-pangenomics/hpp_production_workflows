@@ -103,7 +103,8 @@ workflow runYakAssemblyStats {
     }
 
 	output {
-		File assemblyStats = yakAssemblyStats.outputTarball
+		File outputTarball = yakAssemblyStats.outputTarball
+		File outputSummary = yakAssemblyStats.outputSummary
 		File maternalYak = yakCountMat.outputYak
 		File paternalYak = yakCountPat.outputYak
 	}
@@ -182,15 +183,26 @@ task yakAssemblyStats {
         PREFIX=$(basename ~{assemblyFastaPat} | sed 's/.gz$//' | sed 's/.fa\(sta\)*$//' | sed 's/.[pm]at$//')
 
         # Computing error rates
-        yak trioeval -t ~{threadCount} ~{patYak} ~{matYak} ~{assemblyFastaPat} > $PREFIX.pat.yak_error_stats.txt
-        yak trioeval -t ~{threadCount} ~{patYak} ~{matYak} ~{assemblyFastaMat} > $PREFIX.mat.yak_error_stats.txt
+        yak trioeval -t ~{threadCount} ~{patYak} ~{matYak} ~{assemblyFastaPat} > $PREFIX.pat.yak.switch-error.txt
+        yak trioeval -t ~{threadCount} ~{patYak} ~{matYak} ~{assemblyFastaMat} > $PREFIX.mat.yak.switch-error.txt
 
         # QV
-        yak qv -t ~{threadCount} -p -K ~{genomeSize} -l ~{minSequenceLength} ~{sampleYak} ~{assemblyFastaPat} > $PREFIX.pat.yak_asm-sr_qv.txt
-        yak qv -t ~{threadCount} -p -K ~{genomeSize} -l ~{minSequenceLength} ~{sampleYak} ~{assemblyFastaMat} > $PREFIX.mat.yak_asm-sr_qv.txt
+        yak qv -t ~{threadCount} -p -K ~{genomeSize} -l ~{minSequenceLength} ~{sampleYak} ~{assemblyFastaPat} > $PREFIX.pat.yak.qv.txt
+        yak qv -t ~{threadCount} -p -K ~{genomeSize} -l ~{minSequenceLength} ~{sampleYak} ~{assemblyFastaMat} > $PREFIX.mat.yak.qv.txt
 
         # condense
-        tar czvf $PREFIX.yak_stats.tar.gz *txt
+        SUMMARY=$PREFIX.summary.txt
+        echo "# mat qv" >>$SUMMARY
+        tail -n4 $PREFIX.mat.yak.qv.txt >>$SUMMARY
+        echo "# pat qv" >>$SUMMARY
+        tail -n4 $PREFIX.pat.yak.qv.txt >>$SUMMARY
+        echo "# mat switch" >>$SUMMARY
+        tail -n2 $PREFIX.mat.yak.switch-error.txt >>$SUMMARY
+        echo "# pat switch" >>$SUMMARY
+        tail -n2 $PREFIX.pat.yak.switch-error.txt >>$SUMMARY
+
+        # tar
+        tar czvf $PREFIX.yak-qc.tar.gz *txt
     >>>
 
     runtime {
@@ -201,6 +213,7 @@ task yakAssemblyStats {
     }
 
     output {
-        File outputTarball = glob("*.yak_stats.tar.gz")[0]
+        File outputTarball = glob("*.yak-qc.tar.gz")[0]
+        File outputSummary = glob("*.summary.txt")[0]
     }
 }

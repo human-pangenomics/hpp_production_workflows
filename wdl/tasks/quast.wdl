@@ -73,6 +73,7 @@ task quast {
 	>>>
 	output {
 		File outputTarball = glob("*.quast.tar.gz")[0]
+		File outputSummary = glob("*.quast/report.txt")[0]
 	}
     runtime {
         memory: memSizeGB + " GB"

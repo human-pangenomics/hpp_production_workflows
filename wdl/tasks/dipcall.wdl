@@ -79,7 +79,7 @@ task dipcall {
         fi
 
         # finalize script
-        cmd+=( dipcall_$PREFIX/$PREFIX )
+        cmd+=( $PREFIX.dipcall/$PREFIX )
         cmd+=( $REF_FILENAME )
         cmd+=( $PAT_FILENAME )
         cmd+=( $MAT_FILENAME )
@@ -91,9 +91,9 @@ task dipcall {
         make -j 2 -f $PREFIX.mak
 
         # finalize
-        tar czvf $PREFIX.dipcall.tar.gz dipcall_$PREFIX/
-        cp dipcall_$PREFIX/$PREFIX.dip.bed $PREFIX.dipcall.bed
-        cp dipcall_$PREFIX/$PREFIX.dip.vcf.gz $PREFIX.dipcall.vcf.gz
+        tar czvf $PREFIX.dipcall.tar.gz $PREFIX.dipcall/
+        cp $PREFIX.dipcall/$PREFIX.dip.bed $PREFIX.dipcall.bed
+        cp $PREFIX.dipcall/$PREFIX.dip.vcf.gz $PREFIX.dipcall.vcf.gz
 
         # cleanup
         rm $REF_FILENAME
