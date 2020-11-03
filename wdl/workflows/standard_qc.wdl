@@ -197,7 +197,7 @@ task consolidate {
     }
 
     output {
-        File allResults = glob("*.StandardQC.tar.gz")[0]
+        File allResults = glob("*_StandardQC.tar.gz")[0]
     }
 }
 

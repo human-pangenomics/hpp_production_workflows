@@ -283,7 +283,7 @@ task mashDistPlot {
         File querySketch
         File referenceSketch
         String extraArguments=""
-        Int memSizeGB = 4
+        Int memSizeGB = 8
         Int threadCount = 4
         Int diskSizeGB = 64
         String dockerImage = "tpesout/hpp_mash:latest"
@@ -301,6 +301,11 @@ task mashDistPlot {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
+
+        # this is a hack!
+        mv /root/bin/R_3.6.3/bin/Rscript /root/bin/R_3.6.3/bin/.Rscript && \
+        echo '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.3/bin/Rscript && \
+        chmod +x /root/bin/R_3.6.3/bin/Rscript
 
         # output
         OUTPUT_NAME="$(basename ~{querySketch} | sed 's/.msh$//')_to_$(basename ~{referenceSketch} | sed 's/.msh$//').tbl"
@@ -334,7 +339,7 @@ task mashScreen {
     input {
         File sketch
         String extraArguments=""
-        Int memSizeGB = 4
+        Int memSizeGB = 8
         Int threadCount = 4
         Int diskSizeGB = 64
         String dockerImage = "tpesout/hpp_mash:latest"
