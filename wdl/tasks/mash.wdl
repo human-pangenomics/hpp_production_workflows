@@ -260,7 +260,7 @@ task mashPaste {
         OMP_NUM_THREADS=~{threadCount}
 
         # ensure identifier ends with .msh
-        ID=`echo ~{identifier} | sed 's/.msh$//' | sed 's/$/.msh'`
+        ID=`echo ~{identifier} | sed 's/.msh$//' | sed 's/$/.msh/'`
 
         # paste together
         mash paste $ID ~{sep=" " sketches}
