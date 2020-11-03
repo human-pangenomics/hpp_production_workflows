@@ -32,7 +32,7 @@ task dipcall {
 
         # get output base
         PREFIX=$(basename ~{assemblyFastaPat} | sed 's/.gz$//' | sed 's/.fa\(sta\)*$//' | sed 's/.[pm]at$//')
-        mkdir dipcall_$PREFIX
+        mkdir $PREFIX.dipcall
 
         # prep paternal
         PAT_FILENAME=$(basename -- "~{assemblyFastaPat}")

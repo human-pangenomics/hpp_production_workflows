@@ -122,6 +122,7 @@ workflow runMash {
             input:
                 readFile=readFile,
                 kmerSize=kmerSize,
+                diskSizeGB=paternalReadsExtracted.fileSizeGB[0] * 2,
                 dockerImage=dockerImage
         }
     }
@@ -130,6 +131,7 @@ workflow runMash {
             input:
                 readFile=readFile,
                 kmerSize=kmerSize,
+                diskSizeGB=paternalReadsExtracted.fileSizeGB[0] * 2,
                 dockerImage=dockerImage
         }
     }
@@ -138,6 +140,7 @@ workflow runMash {
             input:
                 readFile=readFile,
                 kmerSize=kmerSize,
+                diskSizeGB=paternalReadsExtracted.fileSizeGB[0] * 2,
                 dockerImage=dockerImage
         }
     }
