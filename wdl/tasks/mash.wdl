@@ -4,7 +4,6 @@ import "extract_reads.wdl" as extractReads_t
 import "shard_reads.wdl" as shardReads_t
 import "sum.wdl" as sum_t
 
-workflow runMeryl {
 
     input {
         Array[File] sampleReadsILM
