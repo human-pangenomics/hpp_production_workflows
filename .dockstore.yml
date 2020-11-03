@@ -21,6 +21,9 @@ workflows:
    -  name: YakAsmStats
       subclass: WDL
       primaryDescriptorPath: /wdl/tasks/yak.wdl
+   -  name: Mash
+      subclass: WDL
+      primaryDescriptorPath: /wdl/tasks/mash.wdl
    -  name: FullQC
       subclass: WDL
       primaryDescriptorPath: /wdl/workflows/full_qc.wdl
