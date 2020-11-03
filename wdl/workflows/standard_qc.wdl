@@ -157,7 +157,7 @@ task consolidate {
         mkdir $OUT/dipcall
         cd $OUT/dipcall
         tar xvf ~{dipcallFullOutput}
-        mv *dipcall/* . ; rmdir dipcall*
+        mv *dipcall/* . ; rmdir *dipcall
         cd ../..
 
 #        # meryl/merqury
