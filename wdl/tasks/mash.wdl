@@ -255,8 +255,8 @@ task mashDistPlot {
 
 	>>>
 	output {
-		File table = glob("*.tbl")[01]
-		File plot = glob("*.png")[01]
+		File table = glob("*.tbl")[0]
+		File plot = glob("*.png")[0]
 	}
     runtime {
         memory: memSizeGB + " GB"
