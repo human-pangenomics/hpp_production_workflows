@@ -255,7 +255,7 @@ task mashScreen {
 
 	>>>
 	output {
-		File screenOut = glob("*.txt")[0]
+		File screenOut = glob("*.mash_screen.tsv")[0]
 	}
     runtime {
         memory: memSizeGB + " GB"
