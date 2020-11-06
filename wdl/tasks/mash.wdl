@@ -72,7 +72,7 @@ workflow runMash {
 
     call consolodateMashData {
         input:
-            screenResults=flatten(mashScreen.screenOut, [mashDistPlot.table, mashDistPlot.plot]),
+            screenResults=flatten([mashScreen.screenOut, [mashDistPlot.table, mashDistPlot.plot]]),
             sampleName=sampleName,
             dockerImage=dockerImage
     }
