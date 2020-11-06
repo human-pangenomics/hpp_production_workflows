@@ -2,7 +2,7 @@ version 1.0
 
 import "extract_reads.wdl" as extractReads_t
 import "shard_reads.wdl" as shardReads_t
-import "sum.wdl" as sum_t
+import "arithmetic.wdl" as arithmetic_t
 
 workflow runMeryl {
 
@@ -55,19 +55,19 @@ workflow runMeryl {
     }
 
     # get file size of results (for union sum)
-    call sum_t.sum as sampleReadSize {
+    call arithmetic_t.sum as sampleReadSize {
         input:
             integers=sampleReadsExtracted.fileSizeGB
     }
-    call sum_t.sum as maternalReadSize {
+    call arithmetic_t.sum as maternalReadSize {
         input:
             integers=maternalReadsExtracted.fileSizeGB
     }
-    call sum_t.sum as paternalReadSize {
+    call arithmetic_t.sum as paternalReadSize {
         input:
             integers=paternalReadsExtracted.fileSizeGB
     }
-    call sum_t.sum as allReadSize {
+    call arithmetic_t.sum as allReadSize {
         input:
             integers=[sampleReadSize.value, maternalReadSize.value, paternalReadSize.value]
     }

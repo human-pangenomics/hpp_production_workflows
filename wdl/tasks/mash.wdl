@@ -2,14 +2,12 @@ version 1.0
 
 import "extract_reads.wdl" as extractReads_t
 import "shard_reads.wdl" as shardReads_t
-import "sum.wdl" as sum_t
+import "arithmetic.wdl" as arithmetic_t
 
 workflow runMash {
 
     input {
-        Array[File] sampleReadsILM
-        Array[File] maternalReadsILM
-        Array[File] paternalReadsILM
+        Array[File] reads
         File? referenceFasta
         Int kmerSize = 21
         Int shardLinesPerFile = 256000000
@@ -18,30 +16,8 @@ workflow runMash {
     }
 
     # extract reads
-    scatter (readFile in sampleReadsILM) {
-        call extractReads_t.extractReads as sampleReadsExtracted {
-            input:
-                readFile=readFile,
-                referenceFasta=referenceFasta,
-                memSizeGB=4,
-                threadCount=4,
-                diskSizeGB=fileExtractionDiskSizeGB,
-                dockerImage=dockerImage
-        }
-    }
-    scatter (readFile in maternalReadsILM) {
-        call extractReads_t.extractReads as maternalReadsExtracted {
-            input:
-                readFile=readFile,
-                referenceFasta=referenceFasta,
-                memSizeGB=4,
-                threadCount=4,
-                diskSizeGB=fileExtractionDiskSizeGB,
-                dockerImage=dockerImage
-        }
-    }
-    scatter (readFile in paternalReadsILM) {
-        call extractReads_t.extractReads as paternalReadsExtracted {
+    scatter (readFile in reads) {
+        call extractReads_t.extractReads as readsExtracted {
             input:
                 readFile=readFile,
                 referenceFasta=referenceFasta,
@@ -53,21 +29,9 @@ workflow runMash {
     }
 
     # get file size of results
-    call sum_t.sum as sampleReadSize {
+    call arithmetic_t.max as maxReadSize {
         input:
-            integers=sampleReadsExtracted.fileSizeGB
-    }
-    call sum_t.sum as maternalReadSize {
-        input:
-            integers=maternalReadsExtracted.fileSizeGB
-    }
-    call sum_t.sum as paternalReadSize {
-        input:
-            integers=paternalReadsExtracted.fileSizeGB
-    }
-    call sum_t.sum as allReadSize {
-        input:
-            integers=[sampleReadSize.value, maternalReadSize.value, paternalReadSize.value]
+            integers=readsExtracted.fileSizeGB
     }
 
 #    # shard reads
@@ -117,56 +81,20 @@ workflow runMash {
 #    }
 
     # sketch
-    scatter (readFile in sampleReadsExtracted.extractedRead) {
-        call mashSketch as sampleMashSketch {
+    scatter (readFile in readsExtracted.extractedRead) {
+        call mashSketch {
             input:
                 readFile=readFile,
                 kmerSize=kmerSize,
-                diskSizeGB=paternalReadsExtracted.fileSizeGB[0] * 2,
-                dockerImage=dockerImage
-        }
-    }
-    scatter (readFile in maternalReadsExtracted.extractedRead) {
-        call mashSketch as maternalMashSketch {
-            input:
-                readFile=readFile,
-                kmerSize=kmerSize,
-                diskSizeGB=paternalReadsExtracted.fileSizeGB[0] * 2,
-                dockerImage=dockerImage
-        }
-    }
-    scatter (readFile in paternalReadsExtracted.extractedRead) {
-        call mashSketch as paternalMashSketch {
-            input:
-                readFile=readFile,
-                kmerSize=kmerSize,
-                diskSizeGB=paternalReadsExtracted.fileSizeGB[0] * 2,
+                diskSizeGB=maxReadSize.value + 10,
                 dockerImage=dockerImage
         }
     }
 
     # merge the paste
-    call mashPaste as sampleMashPaste {
+    call mashPaste  {
         input:
-            sketches=sampleMashSketch.sketch,
-            identifier="sample",
-            dockerImage=dockerImage
-    }
-    call mashPaste as maternalMashPaste {
-        input:
-            sketches=maternalMashSketch.sketch,
-            identifier="maternal",
-            dockerImage=dockerImage
-    }
-    call mashPaste as paternalMashPaste {
-        input:
-            sketches=paternalMashSketch.sketch,
-            identifier="paternal",
-            dockerImage=dockerImage
-    }
-    call mashPaste as allMashPaste {
-        input:
-            sketches=[sampleMashPaste.paste, maternalMashPaste.paste, paternalMashPaste.paste],
+            sketches=mashSketch.sketch,
             identifier="all",
             dockerImage=dockerImage
     }
@@ -174,20 +102,24 @@ workflow runMash {
     # final results
     call mashDistPlot as allMashDistPlot {
         input:
-            querySketch=allMashPaste.paste,
-            referenceSketch=allMashPaste.paste,
+            querySketch=mashPaste.paste,
+            referenceSketch=mashPaste.paste,
             dockerImage=dockerImage
     }
-    call mashScreen as allMashScreen {
-        input:
-            sketch=allMashPaste.paste,
-            dockerImage=dockerImage
+
+    scatter (readFile in readsExtracted.extractedRead) {
+        call mashScreen as allMashScreen {
+            input:
+                readFile=readFile,
+                diskSizeGB=maxReadSize.value + 10,
+                dockerImage=dockerImage
+        }
     }
 
 	output {
 		File distTable = allMashDistPlot.table
 		File distPlot = allMashDistPlot.plot
-		File screenResult = allMashScreen.screenOut
+		Array[File] screenResult = allMashScreen.screenOut
 	}
 }
 
@@ -302,14 +234,9 @@ task mashDistPlot {
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
 
-        # this should be moved to the docker image
-        /root/bin/R_3.6.3/bin/R -e "install.packages('argparse', repos ='http://cran.us.r-project.org', dependencies=TRUE)"
-        /root/bin/R_3.6.3/bin/R -e "install.packages('ggplot2', repos ='http://cran.us.r-project.org', dependencies=TRUE)"
-        /root/bin/R_3.6.3/bin/R -e "install.packages('scales', repos ='http://cran.us.r-project.org', dependencies=TRUE)"
-
         # this is a hack!
         mv /root/bin/R_3.6.3/bin/Rscript /root/bin/R_3.6.3/bin/.Rscript && \
-        echo -e '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.3/bin/Rscript && \
+        echo -e '#!/bin/bash\nxvfb-run -s "-ac -screen 0 1960x2000x24" .Rscript $@' >/root/bin/R_3.6.3/bin/Rscript && \
         chmod +x /root/bin/R_3.6.3/bin/Rscript
 
         # output
@@ -342,7 +269,7 @@ task mashDistPlot {
 
 task mashScreen {
     input {
-        File sketch
+        File readFile
         String extraArguments=""
         Int memSizeGB = 24
         Int threadCount = 16
@@ -363,8 +290,8 @@ task mashScreen {
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
 
-        OUTPUT=$(basename ~{sketch} | sed 's/.msh$//').txt
-        mash screen -w $MASH_REFSEQ ~{extraArguments} ~{sketch} > $OUTPUT
+        OUTPUT=$(basename ~{readFile} | sed 's/.msh$//').txt
+        mash screen -p ~{threadCount} -w $MASH_REFSEQ ~{extraArguments} ~{readFile} > $OUTPUT
 
 	>>>
 	output {

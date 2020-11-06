@@ -5,9 +5,14 @@ ENV MERYL_GIT_COMMIT="1fdad3e85652f033d4abea9045ff164634b645a8"
 
 
 RUN apt-get update && \
+    apt-get -y install software-properties-common && \
+    add-apt-repository ppa:ubuntugis/ubuntugis-unstable && \
+    apt-get update && \
     apt-get -y install libc-dev bzip2 libcurl4-openssl-dev openjdk-8-jdk ant fort77 gfortran build-essential xorg-dev \
         liblzma-dev libblas-dev gcc-multilib gobjc++ aptitude libreadline-dev r-base xvfb gsfonts-x11 xfonts-base \
-        xfonts-scalable xfonts-100dpi xfonts-75dpi
+        xfonts-scalable xfonts-100dpi xfonts-75dpi libssl-dev libxml2-dev libudunits2-dev libcairo2-dev \
+        libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+
 
 ### R
 # 3.2.1
@@ -19,9 +24,10 @@ RUN wget https://cran.r-project.org/src/base/R-3/R-3.6.3.tar.gz && \
     ./configure --enable-utf8  --prefix /root/bin/R_3.6.3 && \
     make && \
     make install && \
-  	/root/bin/R_3.6.3/bin/R -e "install.packages('argparse', repos ='http://cran.us.r-project.org', dependencies=TRUE)" \
-  	/root/bin/R_3.6.3/bin/R -e "install.packages('ggplot2', repos ='http://cran.us.r-project.org', dependencies=TRUE)" \
-  	/root/bin/R_3.6.3/bin/R -e "install.packages('scales', repos ='http://cran.us.r-project.org', dependencies=TRUE)"
+  	/root/bin/R_3.6.3/bin/R -e "install.packages('argparse', repos ='http://cran.us.r-project.org', dependencies=TRUE)" && \
+  	/root/bin/R_3.6.3/bin/R -e "install.packages('ggplot2', repos ='http://cran.us.r-project.org', dependencies=TRUE)" && \
+  	/root/bin/R_3.6.3/bin/R -e "install.packages('scales', repos ='http://cran.us.r-project.org', dependencies=TRUE)" && \
+  	/root/bin/R_3.6.3/bin/R -e "install.packages('gplots', repos ='http://cran.us.r-project.org', dependencies=TRUE)"
 ENV PATH="/root/bin/R_3.6.3/bin:${PATH}"
 
 ### bedtools
