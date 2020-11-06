@@ -312,7 +312,14 @@ task merylHapmer {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
+
+        # some of the tools here use sh as if it were bash
         ln -s /bin/bash /usr/bin/sh
+
+        # this is a hack! no x11 interface in docker
+        mv /root/bin/R_3.6.3/bin/Rscript /root/bin/R_3.6.3/bin/.Rscript && \
+        echo -e '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.3/bin/Rscript && \
+        chmod +x /root/bin/R_3.6.3/bin/Rscript
 
         # extract meryl dbs
         tar xvf ~{maternalMerylDB} &

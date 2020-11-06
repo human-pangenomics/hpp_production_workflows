@@ -8,9 +8,9 @@ workflow runMash {
 
     input {
         Array[File] reads
+        String sampleName="sample"
         File? referenceFasta
         Int kmerSize = 21
-        Int shardLinesPerFile = 256000000
         Int fileExtractionDiskSizeGB = 256
         String dockerImage = "tpesout/hpp_mash:latest"
     }
@@ -34,52 +34,6 @@ workflow runMash {
             integers=readsExtracted.fileSizeGB
     }
 
-#    # shard reads
-#    scatter (readFile in sampleReadsExtracted.extractedRead) {
-#        call shardReads_t.shardReads as sampleShardReads {
-#            input:
-#                readFile=readFile,
-#                linesPerFile=shardLinesPerFile,
-#                threadCount=1,
-#                memSizeGB=4,
-#                diskSizeGB=fileExtractionDiskSizeGB*2,
-#                dockerImage=dockerImage
-#        }
-#    }
-#    scatter (readFile in maternalReadsExtracted.extractedRead) {
-#        call shardReads_t.shardReads as maternalShardReads {
-#            input:
-#                readFile=readFile,
-#                linesPerFile=shardLinesPerFile,
-#                threadCount=1,
-#                memSizeGB=4,
-#                diskSizeGB=fileExtractionDiskSizeGB*2,
-#                dockerImage=dockerImage
-#        }
-#    }
-#    scatter (readFile in paternalReadsExtracted.extractedRead) {
-#        call shardReads_t.shardReads as paternalShardReads {
-#            input:
-#                readFile=readFile,
-#                linesPerFile=shardLinesPerFile,
-#                threadCount=1,
-#                memSizeGB=4,
-#                diskSizeGB=fileExtractionDiskSizeGB*2,
-#                dockerImage=dockerImage
-#        }
-#    }
-#    scatter (readFile in flatten(maternalShardReads.shardedReads)) {
-#        call merylCount as maternalMerylCount {
-#            input:
-#                readFile=readFile,
-#                kmerSize=kmerSize,
-#                threadCount=threadCount,
-#                memSizeGB=memSizeGB,
-#                diskSizeGB=maternalShardReads.fileSizeGB[0] * 4,
-#                dockerImage=dockerImage
-#        }
-#    }
-
     # sketch
     scatter (readFile in readsExtracted.extractedRead) {
         call mashSketch {
@@ -100,7 +54,7 @@ workflow runMash {
     }
 
     # final results
-    call mashDistPlot as allMashDistPlot {
+    call mashDistPlot {
         input:
             querySketch=mashPaste.paste,
             referenceSketch=mashPaste.paste,
@@ -108,7 +62,7 @@ workflow runMash {
     }
 
     scatter (readFile in readsExtracted.extractedRead) {
-        call mashScreen as allMashScreen {
+        call mashScreen  {
             input:
                 readFile=readFile,
                 diskSizeGB=maxReadSize.value + 10,
@@ -116,10 +70,16 @@ workflow runMash {
         }
     }
 
+    call consolodateMashData {
+        input:
+            screenResults=flatten(mashScreen.screenOut, [mashDistPlot.table, mashDistPlot.plot]),
+            sampleName=sampleName,
+            dockerImage=dockerImage
+    }
+
 	output {
-		File distTable = allMashDistPlot.table
-		File distPlot = allMashDistPlot.plot
-		Array[File] screenResult = allMashScreen.screenOut
+		File distPlot = mashDistPlot.plot
+		File result = consolodateMashData.mashOut
 	}
 }
 
@@ -236,7 +196,7 @@ task mashDistPlot {
 
         # this is a hack!
         mv /root/bin/R_3.6.3/bin/Rscript /root/bin/R_3.6.3/bin/.Rscript && \
-        echo -e '#!/bin/bash\nxvfb-run -s "-ac -screen 0 1960x2000x24" .Rscript $@' >/root/bin/R_3.6.3/bin/Rscript && \
+        echo -e '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.3/bin/Rscript && \
         chmod +x /root/bin/R_3.6.3/bin/Rscript
 
         # output
@@ -290,12 +250,55 @@ task mashScreen {
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
 
-        OUTPUT=$(basename ~{readFile} | sed 's/.msh$//').txt
+        OUTPUT=$(basename ~{readFile} | sed 's/.msh$//').mash_screen.tsv
         mash screen -p ~{threadCount} -w $MASH_REFSEQ ~{extraArguments} ~{readFile} > $OUTPUT
 
 	>>>
 	output {
 		File screenOut = glob("*.txt")[0]
+	}
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: dockerImage
+    }
+}
+
+
+task consolodateMashData {
+    input {
+        Array[File] screenResults
+        String sampleName
+        Int memSizeGB = 4
+        Int threadCount = 4
+        Int diskSizeGB = 64
+        String dockerImage = "tpesout/hpp_mash:latest"
+    }
+
+	command <<<
+        # Set the exit code of a pipeline to that of the rightmost command
+        # to exit with a non-zero status, or zero if all commands of the pipeline exit
+        set -o pipefail
+        # cause a bash script to exit immediately when a command fails
+        set -e
+        # cause the bash shell to treat unset variables as an error and exit immediately
+        set -u
+        # echo each line of the script to stdout so we can see what is happening
+        # to turn off echo do 'set +o xtrace'
+        set -o xtrace
+        OMP_NUM_THREADS=~{threadCount}
+
+        mkdir ~{sampleName}_mash/
+        for result in ~{sep=" " screenResults} ; do
+            cp $result ~{sampleName}_mash/
+        done
+
+        tar czvf ~{sampleName}_mash.tar.gz ~{sampleName}_mash/
+
+	>>>
+	output {
+		File mashOut = glob("*.tar.gz")[0]
 	}
     runtime {
         memory: memSizeGB + " GB"
