@@ -1,9 +1,6 @@
 FROM tpesout/hpp_base:latest
 MAINTAINER Trevor Pesout, tpesout@ucsc.edu
 
-ENV MERYL_GIT_COMMIT="1fdad3e85652f033d4abea9045ff164634b645a8"
-
-
 RUN apt-get update && \
     apt-get -y install software-properties-common && \
     add-apt-repository ppa:ubuntugis/ubuntugis-unstable && \
@@ -53,7 +50,7 @@ RUN wget http://data.broadinstitute.org/igv/projects/downloads/2.3/igvtools_2.3.
 ENV PATH="/opt/igvtools/IGVTools_2.3.98:${PATH}"
 
 ### Meryl
-# 1.0
+ENV MERYL_GIT_COMMIT="1fdad3e85652f033d4abea9045ff164634b645a8"
 WORKDIR /opt/meryl/
 RUN git clone https://github.com/marbl/meryl.git && \
     cd meryl && \
@@ -63,28 +60,18 @@ RUN git clone https://github.com/marbl/meryl.git && \
     make
 ENV PATH="/opt/meryl/meryl/build/bin:${PATH}"
 
-
-## Install OpenJDK-8
-#RUN apt-get update && \
-#    apt-get install -y  && \
-#    apt-get clean;
-#
-## Fix certificate issues
-#RUN apt-get update && \
-#    apt-get install ca-certificates-java && \
-#    apt-get clean && \
-#    update-ca-certificates -f;
-
 # merqury
+ENV MERQURY_GIT_COMMIT="fc81cc43abaacab8605e7d027944f5d540afaf3f"
 WORKDIR /opt/merqury
-RUN wget https://github.com/marbl/merqury/archive/v1.1.tar.gz && \
-    tar xvf v1.1.tar.gz && \
-    rm v1.1.tar.gz
-ENV PATH="/opt/merqury/merqury-1.1:${PATH}"
+RUN git clone https://github.com/marbl/merqury.git && \
+    cd merqury && \
+    git fetch && \
+    git checkout $MERQURY_GIT_COMMIT
+ENV PATH="/opt/merqury/merqury:${PATH}"
 
 # Final environment setup
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
-ENV MERQURY="/opt/merqury/merqury-1.1"
+ENV MERQURY="/opt/merqury/merqury"
 ENV PATH="/root/bin/python_3.6.0/bin:${PATH}"
 ENV PATH="/root/bin/samtools_1.9:${PATH}"
 
