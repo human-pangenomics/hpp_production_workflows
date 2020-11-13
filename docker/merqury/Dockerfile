@@ -1,83 +1,42 @@
-FROM tpesout/hpp_base:latest
+FROM ubuntu:20.04
 MAINTAINER Trevor Pesout, tpesout@ucsc.edu
 
-RUN apt-get update && \
-    apt-get -y install software-properties-common && \
-    add-apt-repository ppa:ubuntugis/ubuntugis-unstable && \
-    apt-get update && \
-    apt-get -y install libc-dev bzip2 libcurl4-openssl-dev openjdk-8-jdk ant fort77 gfortran build-essential xorg-dev \
-        liblzma-dev libblas-dev gcc-multilib gobjc++ aptitude libreadline-dev r-base xvfb gsfonts-x11 xfonts-base \
-        xfonts-scalable xfonts-100dpi xfonts-75dpi libssl-dev libxml2-dev libudunits2-dev libcairo2-dev \
-        libudunits2-dev libgdal-dev libgeos-dev libproj-dev
 
+# 1. Set base ubuntu env
+RUN apt update --fix-missing && \
+    DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata && \
+    apt upgrade -y && \
+    apt install -y build-essential=12.8ubuntu1 default-jre=2:1.11-72 bedtools=2.27.1+dfsg-4ubuntu1 samtools=1.10-3 r-base=3.6.3-2 && \
+    apt install -y vim htop git wget pigz
 
-### R
-# 3.2.1
-WORKDIR /opt/R
-RUN wget https://cran.r-project.org/src/base/R-3/R-3.6.3.tar.gz && \
-    tar xvf R-3.6.3.tar.gz && \
-    rm -r /opt/R/R-3.6.3.tar.gz && \
-    cd R-3.6.3 && \
-    ./configure --enable-utf8  --prefix /root/bin/R_3.6.3 && \
-    make && \
-    make install && \
-  	/root/bin/R_3.6.3/bin/R -e "install.packages('argparse', repos ='http://cran.us.r-project.org', dependencies=TRUE)" && \
-  	/root/bin/R_3.6.3/bin/R -e "install.packages('ggplot2', repos ='http://cran.us.r-project.org', dependencies=TRUE)" && \
-  	/root/bin/R_3.6.3/bin/R -e "install.packages('scales', repos ='http://cran.us.r-project.org', dependencies=TRUE)" && \
-  	/root/bin/R_3.6.3/bin/R -e "install.packages('gplots', repos ='http://cran.us.r-project.org', dependencies=TRUE)"
-ENV PATH="/root/bin/R_3.6.3/bin:${PATH}"
+# 2. Install R packages
+RUN Rscript -e 'install.packages("argparse", version="2.0.1")' && \
+    Rscript -e 'install.packages("ggplot2", version="3.3.2")' && \
+    Rscript -e 'install.packages("scales", version="1.1.1")'
 
-### bedtools
-# 2.29.2
-WORKDIR /opt/bedtools2
-RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.29.2/bedtools-2.29.2.tar.gz && \
-	tar xvf bedtools-2.29.2.tar.gz && \
-	rm bedtools-2.29.2.tar.gz && \
-	mv bedtools2 bedtools2_2.29.2 && \
-	cd bedtools2_2.29.2 && \
-	make && \
-	mkdir -p /root/bin/bedtools_2.29.2 && \
-	cp /opt/bedtools2/bedtools2_2.29.2/bin/* /root/bin/bedtools_2.29.2
-ENV PATH="/root/bin/bedtools_2.29.2:${PATH}"
+# 3. Install IGV
+WORKDIR /opt
+RUN wget https://data.broadinstitute.org/igv/projects/downloads/2.8/IGV_2.8.2.zip && \
+    unzip IGV_2.8.2.zip && \
+    rm IGV_2.8.2.zip
+ENV PATH=/opt/IGV_2.8.2/:$PATH
 
-### IGVTools
-# 2.3.98
-WORKDIR /opt/igvtools
-RUN wget http://data.broadinstitute.org/igv/projects/downloads/2.3/igvtools_2.3.98.zip && \
-    unzip igvtools_2.3.98.zip && \
-    rm igvtools_2.3.98.zip && \
-    mv IGVTools IGVTools_2.3.98
-ENV PATH="/opt/igvtools/IGVTools_2.3.98:${PATH}"
-
-### Meryl
-ENV MERYL_GIT_COMMIT="1fdad3e85652f033d4abea9045ff164634b645a8"
-WORKDIR /opt/meryl/
+# 4. Get Meryl
+WORKDIR /opt
 RUN git clone https://github.com/marbl/meryl.git && \
     cd meryl && \
-    git fetch && \
-    git checkout $MERYL_GIT_COMMIT && \
+    git reset --hard 6d396a0228f12c7657956c346e761b70ed596f5a && \
     cd src && \
-    make
-ENV PATH="/opt/meryl/meryl/build/bin:${PATH}"
+    make -j 12
+ENV PATH=/opt/meryl/build/bin:$PATH
 
-# merqury
-ENV MERQURY_GIT_COMMIT="fc81cc43abaacab8605e7d027944f5d540afaf3f"
-WORKDIR /opt/merqury
+# 5. Get Merqury
+WORKDIR /opt
 RUN git clone https://github.com/marbl/merqury.git && \
     cd merqury && \
-    git fetch && \
-    git checkout $MERQURY_GIT_COMMIT
-ENV PATH="/opt/merqury/merqury:${PATH}"
-
-# Final environment setup
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
-ENV MERQURY="/opt/merqury/merqury"
-ENV PATH="/root/bin/python_3.6.0/bin:${PATH}"
-ENV PATH="/root/bin/samtools_1.9:${PATH}"
-
-# issue generating pngs with Rscript in docker container without X11
-#RUN mv /root/bin/R_3.6.1/bin/Rscript /root/bin/R_3.6.1/bin/.Rscript && \
-#    echo '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.1/bin/Rscript && \
-#    chmod +x /root/bin/R_3.6.1/bin/Rscript
+    git reset --hard 261b08589c0d63e2f6a3eab87aadfc27acb6df58
+ENV MERQURY=/opt/merqury
+ENV PATH=/opt/merqury:$PATH
 
 WORKDIR /data
+

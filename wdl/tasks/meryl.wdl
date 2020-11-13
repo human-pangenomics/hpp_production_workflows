@@ -12,9 +12,12 @@ workflow runMeryl {
         Array[File] paternalReadsILM
         File? referenceFasta
         Int kmerSize = 21
-        Int shardLinesPerFile = 256000000
-        Int memSizeGB = 32
-        Int threadCount = 32
+        Int merylCountMemSizeGB = 42
+        Int merylCountThreadCount = 64
+        Int merylUnionSumMemSizeGB = 32
+        Int merylUnionSumThreadCount = 32
+        Int merylHapmerMemSizeGB = 24
+        Int merylHapmerThreadCount = 32
         Int fileExtractionDiskSizeGB = 256
         String dockerImage = "tpesout/hpp_merqury:latest"
     }
@@ -72,72 +75,52 @@ workflow runMeryl {
             integers=[sampleReadSize.value, maternalReadSize.value, paternalReadSize.value]
     }
 
-    # shard reads
-    scatter (readFile in sampleReadsExtracted.extractedRead) {
-        call shardReads_t.shardReads as sampleShardReads {
-            input:
-                readFile=readFile,
-                linesPerFile=shardLinesPerFile,
-                threadCount=1,
-                memSizeGB=4,
-                diskSizeGB=fileExtractionDiskSizeGB*2,
-                dockerImage=dockerImage
-        }
+
+    # get max file size (for meryl count sum)
+    call arithmetic_t.max as sampleReadSizeMax {
+        input:
+            integers=sampleReadsExtracted.fileSizeGB
     }
-    scatter (readFile in maternalReadsExtracted.extractedRead) {
-        call shardReads_t.shardReads as maternalShardReads {
-            input:
-                readFile=readFile,
-                linesPerFile=shardLinesPerFile,
-                threadCount=1,
-                memSizeGB=4,
-                diskSizeGB=fileExtractionDiskSizeGB*2,
-                dockerImage=dockerImage
-        }
+    call arithmetic_t.max as maternalReadSizeMax {
+        input:
+            integers=maternalReadsExtracted.fileSizeGB
     }
-    scatter (readFile in paternalReadsExtracted.extractedRead) {
-        call shardReads_t.shardReads as paternalShardReads {
-            input:
-                readFile=readFile,
-                linesPerFile=shardLinesPerFile,
-                threadCount=1,
-                memSizeGB=4,
-                diskSizeGB=fileExtractionDiskSizeGB*2,
-                dockerImage=dockerImage
-        }
+    call arithmetic_t.max as paternalReadSizeMax {
+        input:
+            integers=paternalReadsExtracted.fileSizeGB
     }
 
     # do the meryl counting
-    scatter (readFile in flatten(sampleShardReads.shardedReads)) {
+    scatter (readFile in flatten(sampleReadsExtracted.extractedReads)) {
         call merylCount as sampleMerylCount {
             input:
                 readFile=readFile,
                 kmerSize=kmerSize,
-                threadCount=threadCount,
-                memSizeGB=memSizeGB,
-                diskSizeGB=sampleShardReads.fileSizeGB[0] * 4,
+                threadCount=merylCountThreadCount,
+                memSizeGB=merylCountMemSizeGB,
+                diskSizeGB=sampleReadSizeMax.value * 4,
                 dockerImage=dockerImage
         }
     }
-    scatter (readFile in flatten(maternalShardReads.shardedReads)) {
+    scatter (readFile in flatten(maternalReadsExtracted.extractedReads)) {
         call merylCount as maternalMerylCount {
             input:
                 readFile=readFile,
                 kmerSize=kmerSize,
-                threadCount=threadCount,
-                memSizeGB=memSizeGB,
-                diskSizeGB=maternalShardReads.fileSizeGB[0] * 4,
+                threadCount=merylCountThreadCount,
+                memSizeGB=merylCountMemSizeGB,
+                diskSizeGB=maternalReadSizeMax.value * 4,
                 dockerImage=dockerImage
         }
     }
-    scatter (readFile in flatten(paternalShardReads.shardedReads)) {
+    scatter (readFile in flatten(paternalReadsExtracted.extractedReads)) {
         call merylCount as paternalMerylCount {
             input:
                 readFile=readFile,
                 kmerSize=kmerSize,
-                threadCount=threadCount,
-                memSizeGB=memSizeGB,
-                diskSizeGB=paternalShardReads.fileSizeGB[0] * 4,
+                threadCount=merylCountThreadCount,
+                memSizeGB=merylCountMemSizeGB,
+                diskSizeGB=paternalReadSizeMax.value * 4,
                 dockerImage=dockerImage
         }
     }
@@ -147,8 +130,8 @@ workflow runMeryl {
         input:
             merylCountFiles=sampleMerylCount.merylDb,
             identifier="sample",
-            threadCount=threadCount,
-            memSizeGB=memSizeGB,
+            threadCount=merylUnionSumThreadCount,
+            memSizeGB=merylUnionSumMemSizeGB,
             diskSizeGB=sampleReadSize.value * 4,
             dockerImage=dockerImage
     }
@@ -156,8 +139,8 @@ workflow runMeryl {
         input:
             merylCountFiles=maternalMerylCount.merylDb,
             identifier="maternal",
-            threadCount=threadCount,
-            memSizeGB=memSizeGB,
+            threadCount=merylUnionSumThreadCount,
+            memSizeGB=merylUnionSumMemSizeGB,
             diskSizeGB=maternalReadSize.value * 4,
             dockerImage=dockerImage
     }
@@ -165,8 +148,8 @@ workflow runMeryl {
         input:
             merylCountFiles=paternalMerylCount.merylDb,
             identifier="paternal",
-            threadCount=threadCount,
-            memSizeGB=memSizeGB,
+            threadCount=merylUnionSumThreadCount,
+            memSizeGB=merylUnionSumMemSizeGB,
             diskSizeGB=paternalReadSize.value * 4,
             dockerImage=dockerImage
     }
@@ -176,8 +159,8 @@ workflow runMeryl {
             sampleMerylDB=sampleMerylUnionSum.merylDb,
             maternalMerylDB=maternalMerylUnionSum.merylDb,
             paternalMerylDB=paternalMerylUnionSum.merylDb,
-            threadCount=threadCount,
-            memSizeGB=memSizeGB,
+            threadCount=merylHapmerThreadCount,
+            memSizeGB=merylHapmerMemSizeGB,
             diskSizeGB=allReadSize.value * 2,
             dockerImage=dockerImage
     }
@@ -195,8 +178,8 @@ task merylCount {
     input {
         File readFile
         Int kmerSize=21
-        Int memSizeGB = 32
-        Int threadCount = 16
+        Int memSizeGB = 42
+        Int threadCount = 64
         Int diskSizeGB = 64
         String dockerImage = "tpesout/hpp_merqury:latest"
     }
@@ -240,7 +223,7 @@ task merylUnionSum {
     input {
         Array[File] merylCountFiles
         String identifier
-        Int memSizeGB = 64
+        Int memSizeGB = 32
         Int threadCount = 32
         Int diskSizeGB = 64
         String dockerImage = "tpesout/hpp_merqury:latest"
@@ -294,7 +277,7 @@ task merylHapmer {
         File maternalMerylDB
         File paternalMerylDB
         File sampleMerylDB
-        Int memSizeGB = 32
+        Int memSizeGB = 24
         Int threadCount = 32
         Int diskSizeGB = 64
         String dockerImage = "tpesout/hpp_merqury:latest"
@@ -312,14 +295,6 @@ task merylHapmer {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
-
-        # some of the tools here use sh as if it were bash
-        ln -s /bin/bash /usr/bin/sh
-
-        # this is a hack! no x11 interface in docker
-        mv /root/bin/R_3.6.3/bin/Rscript /root/bin/R_3.6.3/bin/.Rscript && \
-        echo -e '#!/bin/bash\nxvfb-run .Rscript $@' >/root/bin/R_3.6.3/bin/Rscript && \
-        chmod +x /root/bin/R_3.6.3/bin/Rscript
 
         # extract meryl dbs
         tar xvf ~{maternalMerylDB} &
