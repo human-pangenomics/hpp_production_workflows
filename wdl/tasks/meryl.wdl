@@ -91,7 +91,7 @@ workflow runMeryl {
     }
 
     # do the meryl counting
-    scatter (readFile in flatten(sampleReadsExtracted.extractedReads)) {
+    scatter (readFile in sampleReadsExtracted.extractedRead) {
         call merylCount as sampleMerylCount {
             input:
                 readFile=readFile,
@@ -102,7 +102,7 @@ workflow runMeryl {
                 dockerImage=dockerImage
         }
     }
-    scatter (readFile in flatten(maternalReadsExtracted.extractedReads)) {
+    scatter (readFile in maternalReadsExtracted.extractedRead) {
         call merylCount as maternalMerylCount {
             input:
                 readFile=readFile,
@@ -113,7 +113,7 @@ workflow runMeryl {
                 dockerImage=dockerImage
         }
     }
-    scatter (readFile in flatten(paternalReadsExtracted.extractedReads)) {
+    scatter (readFile in paternalReadsExtracted.extractedRead) {
         call merylCount as paternalMerylCount {
             input:
                 readFile=readFile,
