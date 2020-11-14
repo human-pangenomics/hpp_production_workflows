@@ -11,8 +11,8 @@ task merqury {
         File kmerTarball
         File? matKmerTarball
         File? patKmerTarball
-        Int memSizeGB = 32
-        Int threadCount = 32
+        Int memSizeGB = 12
+        Int threadCount = 16
         Int diskSizeGB = 256
         String dockerImage = "tpesout/hpp_merqury:latest"
     }

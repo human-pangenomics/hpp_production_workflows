@@ -56,22 +56,22 @@ workflow standardQualityControl {
             extraArguments="--large --est-ref-size 3100000000 --no-icarus"
     }
 
-#    ### Merqury ###
-#    call meryl_t.runMeryl as meryl {
-#        input:
-#            sampleReadsILM=sampleReadsILM,
-#            maternalReadsILM=maternalReadsILM,
-#            paternalReadsILM=paternalReadsILM,
-#            referenceFasta=referenceFasta
-#    }
-#    call merqury_t.merqury as merqury {
-#        input:
-#            assemblyFasta=paternalAssembly,
-#            altHapFasta=maternalAssembly,
-#            kmerTarball=meryl.sampleMerylDB,
-#            matKmerTarball=meryl.maternalHapmer,
-#            patKmerTarball=meryl.paternalHapmer
-#    }
+    ### Merqury ###
+    call meryl_t.runMeryl as meryl {
+        input:
+            sampleReadsILM=sampleReadsILM,
+            maternalReadsILM=maternalReadsILM,
+            paternalReadsILM=paternalReadsILM,
+            referenceFasta=referenceFasta
+    }
+    call merqury_t.merqury as merqury {
+        input:
+            assemblyFasta=paternalAssembly,
+            altHapFasta=maternalAssembly,
+            kmerTarball=meryl.sampleMerylDB,
+            matKmerTarball=meryl.maternalHapmer,
+            patKmerTarball=meryl.paternalHapmer
+    }
 
     ### Yak ###
     call yak_t.runYakAssemblyStats as yak {
@@ -93,8 +93,8 @@ workflow standardQualityControl {
             maternalGeneStats = asmgeneMaternal.geneStats,
             paternalQuastResults = quastPaternal.outputTarball,
             maternalQuastResults = quastMaternal.outputTarball,
-#            merylHapmerImages = meryl.hapmerImages,
-#            merquryResults = merqury.outputTarball,
+            merylHapmerImages = meryl.hapmerImages,
+            merquryResults = merqury.outputTarball,
             yakResults = yak.outputTarball
     }
 
@@ -105,7 +105,7 @@ workflow standardQualityControl {
         File asmgeneMaternalSummary = asmgeneMaternal.geneStats
         File quastPaternalSummary = quastPaternal.outputSummary
         File quastMaternalSummary = quastMaternal.outputSummary
-#        File merquryQV = merqury.QV
+        File merquryQV = merqury.QV
         File yakSummary = yak.outputSummary
         File allResults = consolidate.allResults
 	}
@@ -122,8 +122,8 @@ task consolidate {
         File maternalGeneStats
         File paternalQuastResults
         File maternalQuastResults
-#        File merylHapmerImages
-#        File merquryResults
+        File merylHapmerImages
+        File merquryResults
         File yakResults
         # runtime configurations
         Int memSizeGB=8
@@ -160,12 +160,12 @@ task consolidate {
         mv *dipcall/* . ; rmdir *dipcall
         cd ../..
 
-#        # meryl/merqury
-#        mkdir $OUT/merqury
-#        cd $OUT/merqury
-#        tar xvf $merylHapmerImages
-#        tar xvf $merquryResults
-#        cd ../..
+        # meryl/merqury
+        mkdir $OUT/merqury
+        cd $OUT/merqury
+        tar xvf $merylHapmerImages
+        tar xvf $merquryResults
+        cd ../..
 
         # quast
         mkdir -p $OUT/quast/mat
