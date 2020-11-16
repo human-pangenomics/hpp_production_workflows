@@ -163,8 +163,8 @@ task consolidate {
         # meryl/merqury
         mkdir $OUT/merqury
         cd $OUT/merqury
-        tar xvf $merylHapmerImages
-        tar xvf $merquryResults
+        tar xvf ~{merylHapmerImages}
+        tar xvf ~{merquryResults}
         cd ../..
 
         # quast
