@@ -54,6 +54,7 @@ task asmgene {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
+        preemptible: 1
     }
 
     output {

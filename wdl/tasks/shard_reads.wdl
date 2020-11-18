@@ -62,5 +62,6 @@ task shardReads {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }

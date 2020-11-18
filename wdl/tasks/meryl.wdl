@@ -215,6 +215,7 @@ task merylCount {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }
 
@@ -268,6 +269,7 @@ task merylUnionSum {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }
 
@@ -329,6 +331,7 @@ task merylHapmer {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }
 

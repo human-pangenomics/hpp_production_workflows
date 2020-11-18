@@ -39,5 +39,6 @@ task sum {
 
     runtime {
         docker: "tpesout/hpp_base:latest"
+        preemptible: 1
     }
 }

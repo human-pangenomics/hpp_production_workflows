@@ -144,6 +144,7 @@ task yakCount {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
+        preemptible: 1
     }
 
     output {
@@ -210,6 +211,7 @@ task yakAssemblyStats {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
+        preemptible: 1
     }
 
     output {

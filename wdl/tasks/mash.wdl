@@ -124,6 +124,7 @@ task mashSketch {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }
 
@@ -166,6 +167,7 @@ task mashPaste {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }
 
@@ -223,6 +225,7 @@ task mashDistPlot {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }
 
@@ -262,6 +265,7 @@ task mashScreen {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }
 
@@ -305,6 +309,7 @@ task consolodateMashData {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }
 
