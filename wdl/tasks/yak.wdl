@@ -118,7 +118,7 @@ task yakCount {
         String sampleName
         Int bloomSize=37
         # runtime configurations
-        Int memSizeGB=256
+        Int memSizeGB=128
         Int threadCount=16
         Int diskSizeGB=256
         String dockerImage="tpesout/hpp_yak:latest"
@@ -163,7 +163,7 @@ task yakAssemblyStats {
         String genomeSize = "3.2g"
         String minSequenceLength = "100k"
         # runtime configurations
-        Int memSizeGB = 256
+        Int memSizeGB = 128
         Int threadCount = 32
         Int diskSizeGB = 256
         String dockerImage = "tpesout/hpp_yak:latest"

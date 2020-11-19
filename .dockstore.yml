@@ -21,6 +21,9 @@ workflows:
    -  name: YakAsmStats
       subclass: WDL
       primaryDescriptorPath: /wdl/tasks/yak.wdl
+   -  name: YakAsmStatsnoQV
+      subclass: WDL
+      primaryDescriptorPath: /wdl/tasks/yak_no_qv.wdl
    -  name: Mash
       subclass: WDL
       primaryDescriptorPath: /wdl/tasks/mash.wdl
@@ -30,3 +33,6 @@ workflows:
    -  name: StandardQC
       subclass: WDL
       primaryDescriptorPath: /wdl/workflows/standard_qc.wdl
+   -  name: StandardQCnoQV
+      subclass: WDL
+      primaryDescriptorPath: /wdl/workflows/standard_qc_no_qv.wdl
