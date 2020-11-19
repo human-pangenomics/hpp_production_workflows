@@ -3,7 +3,7 @@ version 1.0
 import "../tasks/dipcall.wdl" as dipcall_t
 import "../tasks/asmgene.wdl" as asmgene_t
 import "../tasks/quast.wdl" as quast_t
-import "../tasks/yak.wdl" as yak_t
+import "../tasks/yak_no_qv.wdl" as yak_t
 
 workflow standardQualityControl {
 
