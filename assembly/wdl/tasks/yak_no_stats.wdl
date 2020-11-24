@@ -1,8 +1,8 @@
 version 1.0
 
-import "extract_reads.wdl" as extractReads_t
-import "arithmetic.wdl" as arithmetic_t
-import "yak.wdl" as yak_t
+import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
+import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
+import "../../../QC/wdl/tasks/yak.wdl" as yak_t
 
 workflow runYak {
 

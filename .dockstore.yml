@@ -2,37 +2,44 @@ version: 1.2
 workflows:
    -  name: Dipcall
       subclass: WDL
-      primaryDescriptorPath: /wdl/tasks/dipcall.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/dipcall.wdl
    -  name: BUSCO
       subclass: WDL
-      primaryDescriptorPath: /wdl/tasks/busco.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/busco.wdl
    -  name: Quast
       subclass: WDL
-      primaryDescriptorPath: /wdl/tasks/quast.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/quast.wdl
    -  name: Meryl
       subclass: WDL
-      primaryDescriptorPath: /wdl/tasks/meryl.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/meryl.wdl
    -  name: Merqury
       subclass: WDL
-      primaryDescriptorPath: /wdl/tasks/merqury.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/merqury.wdl
    -  name: Asmgene
       subclass: WDL
-      primaryDescriptorPath: /wdl/tasks/asmgene.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/asmgene.wdl
    -  name: YakAsmStats
       subclass: WDL
-      primaryDescriptorPath: /wdl/tasks/yak.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/yak.wdl
    -  name: YakAsmStatsnoQV
       subclass: WDL
-      primaryDescriptorPath: /wdl/tasks/yak_no_qv.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/yak_no_qv.wdl
    -  name: Mash
       subclass: WDL
-      primaryDescriptorPath: /wdl/tasks/mash.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/mash.wdl
    -  name: FullQC
       subclass: WDL
-      primaryDescriptorPath: /wdl/workflows/full_qc.wdl
+      primaryDescriptorPath: /QC/wdl/workflows/full_qc.wdl
    -  name: StandardQC
       subclass: WDL
-      primaryDescriptorPath: /wdl/workflows/standard_qc.wdl
+      primaryDescriptorPath: /QC/wdl/workflows/standard_qc.wdl
    -  name: StandardQCnoQV
       subclass: WDL
-      primaryDescriptorPath: /wdl/workflows/standard_qc_no_qv.wdl
+      primaryDescriptorPath: /QC/wdl/workflows/standard_qc_no_qv.wdl
+   -  name: TrioHifiasmAssembly
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly.wdl
+   -  name: YakNoStats
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats.wdl
+

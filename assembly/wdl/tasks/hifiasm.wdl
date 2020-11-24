@@ -1,7 +1,7 @@
 version 1.0
 
-import "extract_reads.wdl" as extractReads_t
-import "arithmetic.wdl" as arithmetic_t
+import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
+import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
 
 workflow runTrioHifiasm{
     input {
@@ -16,7 +16,6 @@ workflow runTrioHifiasm{
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
         String dockerImage = "quay.io/masri2019/hpp_hifiasm:latest"
-        String zones
     }
 
     scatter (readFile in childReadsHiFi) {
@@ -47,16 +46,15 @@ workflow runTrioHifiasm{
             threadCount=threadCount,
             diskSizeGB=childReadSize.value * 2,
             preemptible=preemptible,
-            dockerImage=dockerImage,
-            zones=zones
+            dockerImage=dockerImage
     }
     output {
         File outputPaternalGfa = trioHifiasm.outputPaternalGfa
         File outputMaternalGfa = trioHifiasm.outputMaternalGfa
-        File outputPaternalContigGfaTarGz = trioHifiasm.outputPaternalContigGfaTarGz
-        File outputMaternalContigGfaTarGz = trioHifiasm.outputMaternalContigGfaTarGz
-        File outputRawUnitigGfaTarGz = trioHifiasm.outputRawUnitigGfaTarGz
-        File outputBinFilesTarGz = trioHifiasm.outputBinFilesTarGz
+        File outputPaternalContigGfa = trioHifiasm.outputPaternalContigGfa
+        File outputMaternalContigGfa = trioHifiasm.outputMaternalContigGfa
+        File outputRawUnitigGfa = trioHifiasm.outputRawUnitigGfa
+        File outputBinFiles = trioHifiasm.outputBinFiles
     }
 }
 
@@ -74,7 +72,6 @@ task trioHifiasm {
         Int diskSizeGB
         Int preemptible
         String dockerImage
-        String zones
     }
     command <<<
         # Set the exit code of a pipeline to that of the rightmost command
@@ -133,16 +130,14 @@ task trioHifiasm {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         preemptible : preemptible
-        zones : zones
     }
 
     output {
         File outputPaternalGfa = "~{childID}.hap1.p_ctg.gfa"
         File outputMaternalGfa = "~{childID}.hap2.p_ctg.gfa"
-        File outputPaternalContigGfaTarGz = "~{childID}.pat.contig_gfa.tar.gz"
-        File outputMaternalContigGfaTarGz = "~{childID}.mat.contig_gfa.tar.gz"
-        File outputRawUnitigGfaTarGz = "~{childID}.raw_unitig_gfa.tar.gz"
-        File outputBinFilesTarGz = "~{childID}.binFiles.tar.gz"
+        File outputPaternalContigGfa = "~{childID}.pat.contig_gfa.tar.gz"
+        File outputMaternalContigGfa = "~{childID}.mat.contig_gfa.tar.gz"
+        File outputRawUnitigGfa = "~{childID}.raw_unitig_gfa.tar.gz"
+        File outputBinFiles = "~{childID}.binFiles.tar.gz"
     }
 }
-

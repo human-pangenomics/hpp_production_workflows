@@ -18,7 +18,6 @@ workflow trioHifiasmAssembly {
         Int threadCount=48
         Int memSizeGB=256
         Int preemptible=1
-        String zones="us-west2-a"
     }
 
 
@@ -46,8 +45,7 @@ workflow trioHifiasmAssembly {
             inputBinFilesTarGz = inputBinFilesTarGz,
             memSizeGB = memSizeGB,
             threadCount = threadCount,
-            preemptible = preemptible,
-            zones = zones
+            preemptible = preemptible
     }
 
     ### Convert GFA to FASTA ###
@@ -63,10 +61,10 @@ workflow trioHifiasmAssembly {
         File maternalFastaGz = gfa2fasta.outputMaternalFastaGz
         File paternalYak = paternalYakCount.outputYak
         File maternalYak = maternalYakCount.outputYak
-        File paternalContigGfaTarGz = trioHifiasm.outputPaternalContigGfaTarGz 
-        File maternalContigGfaTarGz = trioHifiasm.outputMaternalContigGfaTarGz
-        File rawUnitigGfaTarGz = trioHifiasm.outputRawUnitigGfaTarGz
-        File binFilesTarGz = select_first([inputBinFilesTarGz, trioHifiasm.outputBinFilesTarGz])
+        File paternalContigGfaTarGz = trioHifiasm.outputPaternalContigGfa 
+        File maternalContigGfaTarGz = trioHifiasm.outputMaternalContigGfa 
+        File rawUnitigGfaTarGz = trioHifiasm.outputRawUnitigGfa
+        File binFilesTarGz = trioHifiasm.outputBinFiles
     }
     parameter_meta {
         childID: " NIST ID (or Coriell ID) of the child sample whose reads are going to be assembled"
@@ -80,10 +78,10 @@ workflow trioHifiasmAssembly {
         threadCount: "(default=48) The number of cores for running hifiasm"
         memSize: "(default=256) The memory size (GB) for running hifiasm"
         preemptible: "(default=1) The number of tries for using a preemptible node for running hifiasm. Note that if your child data has a coverage of more than 40X, hifiasm (without any given bin files) may take longer than 24 hours. So using a preemptible node is useless beacuse it gets interrupted after 24 hours"
-        zones: "(default=us-west2-a) The ordered list of zone preference. https://cromwell.readthedocs.io/en/stable/RuntimeAttributes/#zones"
     }
     meta {
         author: "Mobin Asri"
         email: "masri@ucsc.edu"
     }
 }
+
