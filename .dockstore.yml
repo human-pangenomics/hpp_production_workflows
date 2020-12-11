@@ -27,6 +27,9 @@ workflows:
    -  name: Mash
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/mash.wdl
+   -  name: GreatLengths
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/great_lengths.wdl
    -  name: FullQC
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/full_qc.wdl
