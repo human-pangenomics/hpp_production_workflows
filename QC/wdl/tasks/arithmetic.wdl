@@ -8,7 +8,7 @@ task max {
     command <<<
         max=~{integers[0]}
         for i in ~{sep=" " integers}; do
-            if [ "$i" -gt "$max" ]; then
+            if [[ "$i" -gt "$max" ]]; then
                 max=$i
             fi
         done
