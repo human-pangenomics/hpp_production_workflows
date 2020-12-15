@@ -12,7 +12,7 @@ task max {
                 max=$i
             fi
         done
-        echo $i
+        echo $max
     >>>
 
     output {
