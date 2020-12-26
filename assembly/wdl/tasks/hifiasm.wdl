@@ -44,7 +44,7 @@ workflow runTrioHifiasm{
             inputBinFilesTarGz=inputBinFilesTarGz,
             memSizeGB=memSizeGB,
             threadCount=threadCount,
-            diskSizeGB=childReadSize.value * 2,
+            diskSizeGB= floor(childReadSize.value * 2.5),
             preemptible=preemptible,
             dockerImage=dockerImage
     }
