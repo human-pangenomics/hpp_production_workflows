@@ -39,7 +39,7 @@ workflow runTrioHifiasm{
         input:
             paternalYak=paternalYak,
             maternalYak=maternalYak,
-            childReadsHiFi=childReadsHiFi,
+            childReadsHiFi=childReadsExtracted.extractedRead,
             childID=childID,
             inputBinFilesTarGz=inputBinFilesTarGz,
             memSizeGB=memSizeGB,
