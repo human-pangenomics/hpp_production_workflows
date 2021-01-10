@@ -71,9 +71,9 @@ workflows:
       primaryDescriptorPath: /asset/wdl/tasks/asset_merge.wdl
    -  name: Bed2Fasta
       subclass: WDL
-      primaryDescriptorPath: asset/wdl/tasks/bed2fasta.wdl
+      primaryDescriptorPath: /asset/wdl/tasks/bed2fasta.wdl
    -  name: Asm2AsmAligner
       subclass: WDL
-      primaryDescriptorPath: asset/wdl/tasks/asm2asm_aligner.wdl
+      primaryDescriptorPath: /asset/wdl/tasks/asm2asm_aligner.wdl
 
 
