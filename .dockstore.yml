@@ -45,4 +45,35 @@ workflows:
    -  name: YakNoStats
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats.wdl
+   -  name: Bwa
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/bwa.wdl
+   -  name: LongReadAligner
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/long_read_aligner.wdl
+   -  name: Asset
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/asset.wdl
+   -  name: Bam2Paf
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/bam2paf.wdl
+   -  name: AssetBamInput
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/workflows/asset_bam_input.wdl
+   -  name: BionanoAlignment
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/bionano.wdl
+   -  name: FullAlignmentForAsset
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/workflows/full_alignment_for_asset.wdl
+   -  name: AssetMerge
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/asset_merge.wdl
+   -  name: Bed2Fasta
+      subclass: WDL
+      primaryDescriptorPath: asset/wdl/tasks/bed2fasta.wdl
+   -  name: Asm2AsmAligner
+      subclass: WDL
+      primaryDescriptorPath: asset/wdl/tasks/asm2asm_aligner.wdl
+
 
