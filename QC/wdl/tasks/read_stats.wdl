@@ -42,12 +42,12 @@ workflow runReadStats {
         call indexReads {
             input:
                 readFile=readFile,
-                diskSizeGB=maxReadSize.value + 10,
+                diskSizeGB=maxReadSize.value + 50,
                 dockerImage=dockerImage
         }
     }
 
-    # run ReadStats
+    # run ReadStats on individual files
     scatter (indexFile in indexReads.indexFile) {
         call readStats {
             input:
@@ -58,36 +58,29 @@ workflow runReadStats {
         }
     }
 
-    # consolidate individual readStats results
-    call consolidateReadStats {
-        input:
-            ReadStatsTarballs=readStats.outputTarball,
-            ReadStatsReports=readStats.reportForConsolidation,
-            identifier=identifier,
-
-    }
-
-    # consolidate fai files
-    call consolidateFais {
+    # concatenate fai files (to give per-sample distribution)
+    call concatFais {
         input:
             indexFiles=indexReads.indexFile,
             identifier=identifier,
 
     }
 
-    # run readStats on consolidated fais
-    call readStats as consolidatedReadStats {
+    # run readStats on concatenated fais
+    call readStats as concatReadStats {
         input:
-            indexFile=consolidateFais.indexFile,
+            indexFile=concatFais.indexFile,
             histogramMinLength=histogramMinLength,
             histogramMaxLength=histogramMaxLength,
             dockerImage=dockerImage,
         }
 
-    call consolidateReadStats as consolidateReadStatsAll {
+    call consolidateReadStats {
         input:
-            ReadStatsTarballs=[consolidatedReadStats.outputTarball],
-            ReadStatsReports=[consolidatedReadStats.reportForConsolidation],
+            readStatsTarballs=flatten([readStats.outputTarball, 
+                                      [concatReadStats.outputTarball]]),
+            readStatsReports=flatten([readStats.reportForConsolidation, 
+                                     [concatReadStats.reportForConsolidation]]),
             identifier=identifierAll,
 
     }
@@ -97,8 +90,8 @@ workflow runReadStats {
 		File ReadStatsReport = consolidateReadStats.outputReport
         
 
-        File ReadStatsTarballAll = consolidateReadStatsAll.outputTarball
-        File ReadStatsReportAll = consolidateReadStatsAll.outputReport
+        ## File ReadStatsTarballAll = consolidateReadStatsAll.outputTarball
+        ## File ReadStatsReportAll = consolidateReadStatsAll.outputReport
 	}
 }
 
@@ -213,8 +206,8 @@ task readStats {
 
 task consolidateReadStats {
     input {
-        Array[File] ReadStatsTarballs
-        Array[File] ReadStatsReports
+        Array[File] readStatsTarballs
+        Array[File] readStatsReports
         String identifier="sample"
         Int memSizeGB = 4
         Int threadCount = 4
@@ -238,7 +231,7 @@ task consolidateReadStats {
         # extract all tarballs
         mkdir ~{identifier}_fai_lengths/
         cd ~{identifier}_fai_lengths/
-        for tb in ~{sep=" " ReadStatsTarballs} ; do
+        for tb in ~{sep=" " readStatsTarballs} ; do
             tar xvf $tb &
         done
         wait
@@ -246,7 +239,7 @@ task consolidateReadStats {
         tar czvf ~{identifier}_fai_lengths.tar.gz ~{identifier}_fai_lengths/
 
         # concat all reports
-        for rp in ~{sep=" " ReadStatsReports} ; do
+        for rp in ~{sep=" " readStatsReports} ; do
             cat $rp >>~{identifier}.report.tsv
         done
 	>>>
@@ -266,7 +259,7 @@ task consolidateReadStats {
 }
 
 
-task consolidateFais {
+task concatFais {
     input {
         Array[File] indexFiles
         String identifier="sample"
