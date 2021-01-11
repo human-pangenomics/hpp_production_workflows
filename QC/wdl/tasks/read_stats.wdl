@@ -38,7 +38,7 @@ workflow runReadStats {
     }
 
     # index reads
-    scatter (readFile in reads) {
+    scatter (readFile in readsExtracted.extractedRead) {
         call indexReads {
             input:
                 readFile=readFile,
