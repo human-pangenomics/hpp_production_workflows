@@ -30,6 +30,9 @@ workflows:
    -  name: GreatLengths
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/great_lengths.wdl
+   -  name: ReadStats
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/read_stats.wdl
    -  name: FullQC
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/full_qc.wdl
