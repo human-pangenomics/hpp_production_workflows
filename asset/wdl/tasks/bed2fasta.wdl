@@ -46,7 +46,7 @@ task extendBedAndExtractSequence {
 
         BED_FILENAME=$(basename ~{bed})
         ln -s ~{bed} ${BED_FILENAME}
-        $BLOCKS_EXTENSION_V1 ${BED_FILENAME} ~{sampleName}
+        $BLOCKS_EXTENSION_V1_BASH ${BED_FILENAME} ~{sampleName}
 
         bedtools getfasta -fi ~{sampleName}.fa -bed *.extended.bed > ~{sampleName}.extended.fa
         gzip ~{sampleName}.extended.fa
