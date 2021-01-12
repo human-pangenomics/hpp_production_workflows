@@ -169,7 +169,7 @@ task readStats {
         FILE=$(basename ~{indexFile})
 
         # get output name
-        OUTPUT=$(basename ~{indexFile} | sed 's/.f[aq]\(st[aq]\).fai*$//')
+        OUTPUT=$(basename ~{indexFile} | sed -E 's/.(fastq|fq|fasta|fa).fai*$//')
 
         # hist parameters
         if [[ ~{histogramMinLength} -eq 0 && ~{histogramMaxLength} -eq 0 ]] ; then
