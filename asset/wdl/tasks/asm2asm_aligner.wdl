@@ -13,7 +13,7 @@ workflow asm2asmAlignment {
     call aligner_t.alignment{
         input:
             aligner =  aligner,
-            preset = "asm20",
+            preset = preset,
             refAssembly = refAssemblyFastaGz,
             readFastq_or_queryAssembly = queryAssemblyFastaGz,
             kmerSize = 19,
