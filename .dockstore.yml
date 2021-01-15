@@ -48,4 +48,7 @@ workflows:
    -  name: YakNoStats
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats.wdl
+   -  name: StandardQCHaploid
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/workflows/standard_qc_haploid.wdl
 
