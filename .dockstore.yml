@@ -47,7 +47,7 @@ workflows:
       primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly.wdl
    -  name: TrioHifiasmAssemblyYakInput
       subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/tasks/hifiasm.wdl
+      primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly_yak_input.wdl
    -  name: YakNoStats
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats.wdl
