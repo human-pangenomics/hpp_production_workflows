@@ -6,7 +6,7 @@ import "../tasks/asmgene.wdl" as asmgene_t
 import "../tasks/quast.wdl" as quast_t
 import "../tasks/yak.wdl" as yak_t
 
-workflow standardQualityControl {
+workflow standardQualityControlHaploid {
 
     input {
         String sampleName
@@ -152,7 +152,7 @@ task consolidate {
     }
 
     output {
-        File allResults = glob("*_StandardQC.tar.gz")[0]
+        File allResults = glob("*_StandardQC_Haploid.tar.gz")[0]
     }
 }
 
