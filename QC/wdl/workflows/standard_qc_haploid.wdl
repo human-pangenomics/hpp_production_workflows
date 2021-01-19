@@ -6,7 +6,7 @@ import "../tasks/asmgene.wdl" as asmgene_t
 import "../tasks/quast.wdl" as quast_t
 import "../tasks/yak.wdl" as yak_t
 
-workflow standardQualityControlHaploid {
+workflow standardQualityControl {
 
     input {
         String sampleName
