@@ -140,7 +140,7 @@ task consolidate {
         cd ../..
 
         # finalize
-        tar czvf ~{sampleName}_StandardQC_Haploid.tar.gz $OUT
+        tar czvf ~{sampleName}_StandardQC_Haploid.tar.gz $OUT/
 
     >>>
 
