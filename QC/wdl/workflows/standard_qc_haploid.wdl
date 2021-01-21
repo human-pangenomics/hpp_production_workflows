@@ -6,7 +6,7 @@ import "../tasks/asmgene.wdl" as asmgene_t
 import "../tasks/quast.wdl" as quast_t
 import "../tasks/yak.wdl" as yak_t
 
-workflow standardQualityControl {
+workflow standardQualityControlHaploid {
 
     input {
         String sampleName
@@ -115,8 +115,6 @@ task consolidate {
         mkdir $OUT
 
         # asmgene
-        mkdir -p $OUT/asmgene/mat
-        mkdir -p $OUT/asmgene/pat
         cp ~{geneStats} $OUT/asmgene/
 
         # meryl/merqury
@@ -141,6 +139,7 @@ task consolidate {
 
         # finalize
         tar czvf ~{sampleName}_StandardQC_Haploid.tar.gz $OUT/
+        ls -lah
 
     >>>
 
