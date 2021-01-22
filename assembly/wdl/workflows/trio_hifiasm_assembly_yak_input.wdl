@@ -12,6 +12,7 @@ workflow trioHifiasmAssembly {
         Array[File] childReadsHiFi
         File paternalYak
         File maternalYak
+        String? hifiasmExtraOptions
         File? inputBinFilesTarGz
         File? referenceFasta
         # runtime configurations for running hifiasm
@@ -28,6 +29,7 @@ workflow trioHifiasmAssembly {
             maternalYak = maternalYak,
             childReadsHiFi = childReadsHiFi,
             childID = childID,
+            hifiasmExtraOptions = hifiasmExtraOptions,
             inputBinFilesTarGz = inputBinFilesTarGz,
             memSizeGB = memSizeGB,
             threadCount = threadCount,
