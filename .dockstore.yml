@@ -30,9 +30,6 @@ workflows:
    -  name: GreatLengths
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/great_lengths.wdl
-   -  name: ReadStats
-      subclass: WDL
-      primaryDescriptorPath: /QC/wdl/tasks/read_stats.wdl
    -  name: FullQC
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/full_qc.wdl
@@ -45,13 +42,10 @@ workflows:
    -  name: TrioHifiasmAssembly
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly.wdl
-   -  name: TrioHifiasmAssemblyYakInput
-      subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly_yak_input.wdl
    -  name: YakNoStats
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats.wdl
-   -  name: StandardQCHaploid
+   -  name: Pstools
       subclass: WDL
-      primaryDescriptorPath: /QC/wdl/workflows/standard_qc_haploid.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/pstools.wdl
 
