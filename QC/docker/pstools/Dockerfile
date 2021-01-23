@@ -1,4 +1,4 @@
-FROM quay.io/masri2019/hpp_base:latest
+FROM quay.io/masri2019/hpp_long_read_aligner:latest
 MAINTAINER Mobin Asri, masri@ucsc.edu
 
 RUN mkdir -p /home/apps/pstools
