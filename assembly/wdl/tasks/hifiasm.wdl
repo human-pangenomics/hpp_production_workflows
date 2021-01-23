@@ -17,6 +17,7 @@ workflow runTrioHifiasm{
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
         String dockerImage = "quay.io/masri2019/hpp_hifiasm:latest"
+        String zones = "us-west2-a"
     }
 
     scatter (readFile in childReadsHiFi) {
@@ -48,7 +49,8 @@ workflow runTrioHifiasm{
             threadCount=threadCount,
             diskSizeGB= floor(childReadSize.value * 2.5),
             preemptible=preemptible,
-            dockerImage=dockerImage
+            dockerImage=dockerImage,
+            zones = zones
     }
     output {
         File outputPaternalGfa = trioHifiasm.outputPaternalGfa
@@ -75,6 +77,7 @@ task trioHifiasm {
         Int diskSizeGB
         Int preemptible
         String dockerImage
+        String zones
     }
     command <<<
         # Set the exit code of a pipeline to that of the rightmost command
@@ -133,6 +136,7 @@ task trioHifiasm {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         preemptible : preemptible
+        zones : zones
     }
 
     output {
