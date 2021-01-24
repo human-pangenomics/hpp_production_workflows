@@ -9,6 +9,7 @@ workflow runTrioHifiasm{
         File maternalYak
         Array[File] childReadsHiFi
         String childID
+        String? hifiasmExtraOptions
         File? inputBinFilesTarGz
         File? referenceFasta
         Int memSizeGB
@@ -16,6 +17,7 @@ workflow runTrioHifiasm{
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
         String dockerImage = "quay.io/masri2019/hpp_hifiasm:latest"
+        String zones = "us-west2-a"
     }
 
     scatter (readFile in childReadsHiFi) {
@@ -41,12 +43,14 @@ workflow runTrioHifiasm{
             maternalYak=maternalYak,
             childReadsHiFi=childReadsExtracted.extractedRead,
             childID=childID,
+            extraOptions=hifiasmExtraOptions,
             inputBinFilesTarGz=inputBinFilesTarGz,
             memSizeGB=memSizeGB,
             threadCount=threadCount,
-            diskSizeGB= floor(childReadSize.value * 2.5),
+            diskSizeGB= 2000,
             preemptible=preemptible,
-            dockerImage=dockerImage
+            dockerImage=dockerImage,
+            zones = zones
     }
     output {
         File outputPaternalGfa = trioHifiasm.outputPaternalGfa
@@ -64,6 +68,7 @@ task trioHifiasm {
         File maternalYak
         Array[File] childReadsHiFi
         String childID
+	String? extraOptions
         File? inputBinFilesTarGz
         File? referenceFasta
         # runtime configurations
@@ -72,6 +77,7 @@ task trioHifiasm {
         Int diskSizeGB
         Int preemptible
         String dockerImage
+        String zones
     }
     command <<<
         # Set the exit code of a pipeline to that of the rightmost command
@@ -97,7 +103,7 @@ task trioHifiasm {
         rm -rf ~{sep=" " childReadsHiFi}
 
         ## run trio hifiasm https://github.com/chhylp123/hifiasm
-        hifiasm -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq
+        hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq
         
         #Move bin and gfa files to saparate folders and compress them 
         mkdir ~{childID}.raw_unitig_gfa
@@ -130,6 +136,7 @@ task trioHifiasm {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         preemptible : preemptible
+        zones : zones
     }
 
     output {
