@@ -115,6 +115,7 @@ task consolidate {
         mkdir $OUT
 
         # asmgene
+        mkdir $OUT/asmgene/
         cp ~{geneStats} $OUT/asmgene/
 
         # meryl/merqury
@@ -125,7 +126,6 @@ task consolidate {
         cd ../..
 
         # quast
-        mkdir -p $OUT/quast/
         mkdir -p $OUT/quast/
         tar xvf ~{quastResults}
         mv *quast/* . ; rmdir *quast
