@@ -127,6 +127,7 @@ task consolidate {
 
         # quast
         mkdir -p $OUT/quast/
+        cd $OUT/quast/
         tar xvf ~{quastResults}
         mv *quast/* . ; rmdir *quast
         cd ../..
