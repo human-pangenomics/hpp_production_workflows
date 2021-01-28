@@ -153,7 +153,7 @@ task ast_hicTask{
         # calculate the min coverage threshold for asset
         # using the formula, min( max(10, mean - 2 x sd), 20)
         MIN_COVERAGE_ASSET=`awk -v mean=~{coverageMean} -v sd=~{coverageSD} 'BEGIN {min_cov = mean - 2 * sd; if (min_cov < 10) {min_cov=10}; if (min_cov > 20) {min_cov=20}; printf "%d",min_cov}'`
-        cat ~{sampleName}.hic.cov | awk -v min_cov="${MIN_COVERAGE_ASSET}" '{if(substr($1,1,1) == ">"){chr=substr($1,2,5)} else if ($3 < min_cov) {print chr"\t"$1"\t"$2}}' > ~{sampleName}.hic.bed
+        cat ~{sampleName}.hic.cov | awk -v min_cov="${MIN_COVERAGE_ASSET}" '{if(substr($1,1,1) == ">"){chr=substr($1,2,5)} else if ($3 >= min_cov) {print chr"\t"$1"\t"$2}}' > ~{sampleName}.hic.bed
     >>>
     runtime {
         docker: dockerImage
