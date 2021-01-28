@@ -181,7 +181,7 @@ task ast_pbTask{
         
         # calculate the min coverage threshold for asset
         # using the formula, max(5, mean - 3 x sd)
-        MIN_COVERAGE_ASSET=`awk -v mean=~{coverageMean} -v sd=~{coverageSD} 'BEGIN {min_cov = mean - 3 *sd; if (min_cov < 5) {min_cov=5}; printf "%d",min_cov}'`
+        MIN_COVERAGE_ASSET=`awk -v mean=~{coverageMean} -v sd=~{coverageSD} 'BEGIN {min_cov = mean - 3 * sd; if (min_cov < 5) {min_cov=5}; if (min_cov > 10) {min_cov=10}; printf "%d",min_cov}'`
         # calculate the min coverage threshold for asset
         # using the formula, max(2.5 * mean, mean + 3 x sd)
         MAX_COVERAGE_ASSET=`awk -v mean=~{coverageMean} -v sd=~{coverageSD} 'BEGIN {max_cov = mean + 3 * sd; if (max_cov < (2.5 * mean)) {max_cov=2.5 * mean}; printf "%d",max_cov}'`
