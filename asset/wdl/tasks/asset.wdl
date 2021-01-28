@@ -69,7 +69,7 @@ task ast_bionTask{
     input{
         String sampleName
         File alignmentTarGz
-        Int minCov=1
+        Int minCov=10
         # runtime configurations
         Int memSize
         Int threadCount
@@ -94,7 +94,7 @@ task ast_bionTask{
         qmap=*_q.cmap
         xmap=*.xmap
         keyfn=*_key.txt
-        ast_bion_bnx -m ~{minCov} -r 0 $rmap $qmap $xmap $keyfn > ~{sampleName}.bionano.bed
+        ast_bion_bnx -m~{minCov} $rmap $qmap $xmap $keyfn > ~{sampleName}.bionano.bed
     >>>
     runtime {
         docker: dockerImage
