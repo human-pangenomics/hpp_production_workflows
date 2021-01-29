@@ -66,8 +66,8 @@ workflow standardQualityControl {
     }
     call merqury_t.merqury as merqury {
         input:
-            assemblyFasta=paternalAssembly,
-            altHapFasta=maternalAssembly,
+            assemblyFasta=maternalAssembly,
+            altHapFasta=paternalAssembly,
             kmerTarball=meryl.sampleMerylDB,
             matKmerTarball=meryl.maternalHapmer,
             patKmerTarball=meryl.paternalHapmer
