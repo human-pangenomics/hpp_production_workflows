@@ -147,12 +147,12 @@ task ast_hicTask{
         
         GENOME_SIZE=`samtools view -H  ~{bamFiles[0]} | awk '{if($1 == "@SQ") {sum += substr($3,4,length($3))}} END {print sum}'`
         # Calculate mean coverage of aligned reads
-        cat ~{sampleName}.hic.cov | awk -v GENOME_SIZE="$GENOME_SIZE" '{if( substr($1,1,1) != ">" ) {sum_cov += $3 * ($2 - $1 + 1)}} END {print sum_cov/GENOME_SIZE}' > cov_mean.txt
+        cat ~{sampleName}.hic.cov | awk -v GENOME_SIZE="$GENOME_SIZE" '{if( substr($1,1,1) != ">" ) {sum_cov += $3 * ($2 - $1 + 1)}} END {printf "%.2f\n", sqrt(sum_cov/GENOME_SIZE)}' > cov_mean.txt
         # Calculate standard deviation of base-level coverages (Considering coverages below 2.5 * COVERAGE_MEAN)
         cat ~{sampleName}.hic.cov | awk -v COVERAGE_MEAN=`cat cov_mean.txt` -v GENOME_SIZE="$GENOME_SIZE" '{if (( substr($1,1,1) != ">" ) && ($3 < 2.5 * COVERAGE_MEAN)) {sum += ($2 - $1 + 1) * (($3 - COVERAGE_MEAN)^2)}} END {printf "%.2f\n", sqrt(sum/GENOME_SIZE)}' > cov_sd.txt
         # calculate the min coverage threshold for asset
         # using the formula, min( max(10, mean - 2 x sd), 20)
-        MIN_COVERAGE_ASSET=`awk -v mean=`cat cov_mean.txt` -v sd=`cat cov_sd.txt` 'BEGIN {min_cov = mean - 2 * sd; if (min_cov < 10) {min_cov=10}; if (min_cov > 20) {min_cov=20}; printf "%d",min_cov}'`
+        MIN_COVERAGE_ASSET=`awk -v mean=$(cat cov_mean.txt) -v sd=$(cat cov_sd.txt) 'BEGIN {min_cov = mean - 2 * sd; if (min_cov < 10) {min_cov=10}; if (min_cov > 20) {min_cov=20}; printf "%d",min_cov}'`
         cat ~{sampleName}.hic.cov | awk -v min_cov="${MIN_COVERAGE_ASSET}" '{if(substr($1,1,1) == ">"){chr=substr($1,2,5)} else if ($3 >= min_cov) {print chr"\t"$1"\t"$2}}' > ~{sampleName}.hic.bed
     >>>
     runtime {
