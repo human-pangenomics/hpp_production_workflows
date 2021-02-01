@@ -137,12 +137,7 @@ task ast_hicTask{
         set -o xtrace
 
         detgaps <(zcat ~{assembly}) > ~{sampleName}.gaps.bed
-        mkdir bams
-        for bamFile in ~{sep=" " bamFiles}
-        do
-            samtools view -h -b -q ~{minMAPQ} ${bamFile} > bams/$(basename ${bamFile})
-        done
-        ast_hic ~{sampleName}.gaps.bed bams/*.bam > ast_hic.bed 2> ast_hic.log
+        ast_hic -q ~{minMAPQ} ~{sampleName}.gaps.bed ~{sep=" " bamFiles} > ast_hic.bed 2> ast_hic.log
         mv HC.base.cov ~{sampleName}.hic.cov
         
         GENOME_SIZE=`samtools view -H  ~{bamFiles[0]} | awk '{if($1 == "@SQ") {sum += substr($3,4,length($3))}} END {print sum}'`
