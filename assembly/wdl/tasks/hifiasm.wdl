@@ -2,6 +2,7 @@ version 1.0
 
 import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
 import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
+import "filter_hifi_adapter.wdl" as adapter_t
 
 workflow runTrioHifiasm{
     input {
@@ -30,18 +31,23 @@ workflow runTrioHifiasm{
                 diskSizeGB=fileExtractionDiskSizeGB,
                 dockerImage=dockerImage
         }
+        call adapter_t.filterHiFiAdapter as filterAdapter {
+            input:
+                readFastq = childReadsExtracted.extractedRead,
+                diskSizeGB = fileExtractionDiskSizeGB
+        } 
     }
 
     call arithmetic_t.sum as childReadSize {
         input:
-            integers=childReadsExtracted.fileSizeGB
+            integers=filterAdapter.fileSizeGB
     }
 
     call trioHifiasm {
         input:
             paternalYak=paternalYak,
             maternalYak=maternalYak,
-            childReadsHiFi=childReadsExtracted.extractedRead,
+            childReadsHiFi=filterAdapter.filteredReadFastq,
             childID=childID,
             extraOptions=hifiasmExtraOptions,
             inputBinFilesTarGz=inputBinFilesTarGz,
