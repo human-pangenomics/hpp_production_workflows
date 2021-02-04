@@ -51,6 +51,8 @@ workflow trioHifiasmAssembly {
         File maternalContigGfaTarGz = trioHifiasm.outputMaternalContigGfa 
         File rawUnitigGfaTarGz = trioHifiasm.outputRawUnitigGfa
         File binFilesTarGz = trioHifiasm.outputBinFiles
+        Array[File] adapterBlastOutputs = trioHifiasm.adapterBlastOutputs 
+        Array[File] filteredReadNames = trioHifiasm.filteredReadNames
     }
     parameter_meta {
         childID: " NIST ID (or Coriell ID) of the child sample whose reads are going to be assembled"
