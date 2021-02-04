@@ -10,7 +10,7 @@ task filterHiFiAdapter {
         File readFastq
         # runtime configurations
         Int memSizeGB=32
-        Int threadCount=8
+        Int threadCount=16
         Int diskSizeGB=128
         Int preemptible=1
         String dockerImage="quay.io/masri2019/hpp_hifi_adapter_filt:latest"
@@ -29,7 +29,9 @@ task filterHiFiAdapter {
 
         mkdir data
         cd data
-        ln ~{readFastq} $(basename ~{readFastq})
+        FILENAME=$(basename -- "~{readFastq}")
+        PREFIX="${FILENAME%.*}"
+        ln ~{readFastq} ${PREFIX}.fastq
         bash ${HIFI_ADAPTER_FILTER_BASH} -t ~{threadCount}
         OUTPUTSIZE=`du -s -BG *.filt.fastq | sed 's/G.*//'`
         echo $OUTPUTSIZE > outputsize
@@ -45,6 +47,8 @@ task filterHiFiAdapter {
 
     output {
         File filteredReadFastq = glob("data/*.filt.fastq")[0]
+        File blastout = glob("data/*.contaminant.blastout")[0]
+        File blocklist = glob("data/*.blocklist")[0] 
         Int fileSizeGB = read_int("data/outputsize") 
     }
 }

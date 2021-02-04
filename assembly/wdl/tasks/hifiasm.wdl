@@ -65,6 +65,8 @@ workflow runTrioHifiasm{
         File outputMaternalContigGfa = trioHifiasm.outputMaternalContigGfa
         File outputRawUnitigGfa = trioHifiasm.outputRawUnitigGfa
         File outputBinFiles = trioHifiasm.outputBinFiles
+        Array[File] adapterBlastOutputs = filterAdapter.blastout 
+        Array[File] filteredReadNames = filterAdapter.blocklist
     }
 }
 
