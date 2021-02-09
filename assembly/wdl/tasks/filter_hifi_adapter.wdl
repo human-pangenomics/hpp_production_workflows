@@ -32,6 +32,7 @@ task filterHiFiAdapter {
         FILENAME=$(basename -- "~{readFastq}")
         PREFIX="${FILENAME%.*}"
         ln ~{readFastq} ${PREFIX}.fastq
+        wc -l ${PREFIX}.fastq | awk '{print $1/4}' > ${PREFIX}.countReads
         bash ${HIFI_ADAPTER_FILTER_BASH} -t ~{threadCount}
         OUTPUTSIZE=`du -s -BG *.filt.fastq | sed 's/G.*//'`
         echo $OUTPUTSIZE > outputsize
@@ -48,8 +49,9 @@ task filterHiFiAdapter {
     output {
         File filteredReadFastq = glob("data/*.filt.fastq")[0]
         File blastout = glob("data/*.contaminant.blastout")[0]
-        File blocklist = glob("data/*.blocklist")[0] 
-        Int fileSizeGB = read_int("data/outputsize") 
+        File blocklist = glob("data/*.blocklist")[0]
+        File countReads = glob("data/*.countReads")[0] 
+        Int fileSizeGB = read_int("data/outputsize")
     }
 }
 

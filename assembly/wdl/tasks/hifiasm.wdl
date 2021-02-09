@@ -3,6 +3,7 @@ version 1.0
 import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
 import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
 import "filter_hifi_adapter.wdl" as adapter_t
+import "tar.wdl" as tar_t
 
 workflow runTrioHifiasm{
     input {
@@ -58,6 +59,21 @@ workflow runTrioHifiasm{
             dockerImage=dockerImage,
             zones = zones
     }
+    call tar_t.tarGz as blastoutTar{
+        input:
+            tarGzName = "${childID}.HiFiAapterFilt.blastout",
+            files = filterAdapter.blastout
+    }
+    call tar_t.tarGz as blocklistTar{
+        input:
+            tarGzName = "${childID}.HiFiAdapterFilt.blocklist",
+            files = filterAdapter.blocklist
+    }
+    call tar_t.tarGz as countReadsTar{
+        input:
+            tarGzName = "${childID}.countReads",
+            files = filterAdapter.countReads
+    }
     output {
         File outputPaternalGfa = trioHifiasm.outputPaternalGfa
         File outputMaternalGfa = trioHifiasm.outputMaternalGfa
@@ -65,8 +81,9 @@ workflow runTrioHifiasm{
         File outputMaternalContigGfa = trioHifiasm.outputMaternalContigGfa
         File outputRawUnitigGfa = trioHifiasm.outputRawUnitigGfa
         File outputBinFiles = trioHifiasm.outputBinFiles
-        Array[File] adapterBlastOutputs = filterAdapter.blastout 
-        Array[File] filteredReadNames = filterAdapter.blocklist
+        File adapterBlastOutTarGz = blastoutTar.fileTarGz 
+        File adapterBlockListTarGz = blocklistTar.fileTarGz
+        File countReadsTarGz = countReadsTar.fileTarGz
     }
 }
 
