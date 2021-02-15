@@ -9,9 +9,6 @@ workflow filterReads{
         String sampleName
         Array[File] readsHiFi
         File? referenceFasta
-        Int memSizeGB
-        Int threadCount
-        Int preemptible
         Int fileExtractionDiskSizeGB = 256
         String zones = "us-west2-a"
     }

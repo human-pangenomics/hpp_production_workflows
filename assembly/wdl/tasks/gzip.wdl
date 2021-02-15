@@ -7,10 +7,10 @@ task gzip {
     input {
         File fileInput
         # runtime configurations
-        Int memSize=16
-        Int threadCount=4
+        Int memSize=32
+        Int threadCount=8
         Int diskSize=256
-        String dockerImage="tpesout/hpp_base:latest"
+        String dockerImage="quay.io/masri2019/hpp_hifiasm:latest"
         Int preemptible=2
     }
     command <<<
@@ -27,7 +27,7 @@ task gzip {
         
         FILENAME=$(basename "~{fileInput}")
         ln ~{fileInput} ${FILENAME}
-        gzip -c ${FILENAME} > ${FILENAME}.gz
+        pigz -p~{threadCount} -c ${FILENAME} > ${FILENAME}.gz
     >>> 
     runtime {
         docker: dockerImage
