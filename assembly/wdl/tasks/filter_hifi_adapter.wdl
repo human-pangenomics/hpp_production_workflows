@@ -1,7 +1,63 @@
 version 1.0
 
-workflow runFilterHiFiAdapter{
-    call filterHiFiAdapter
+import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
+import "tar.wdl" as tar_t
+import "gzip.wdl" as gzip_t
+
+workflow filterReads{
+    input {
+        String sampleName
+        Array[File] readsHiFi
+        File? referenceFasta
+        Int memSizeGB
+        Int threadCount
+        Int preemptible
+        Int fileExtractionDiskSizeGB = 256
+        String zones = "us-west2-a"
+    }
+
+    scatter (readFile in readsHiFi) {
+        call extractReads_t.extractReads as readsExtracted {
+            input:
+                readFile=readFile,
+                referenceFasta=referenceFasta,
+                memSizeGB=4,
+                threadCount=4,
+                diskSizeGB=fileExtractionDiskSizeGB,
+                dockerImage="tpesout/hpp_base:latest"
+        }
+        call filterHiFiAdapter as filterAdapter {
+            input:
+                readFastq = readsExtracted.extractedRead,
+                diskSizeGB = fileExtractionDiskSizeGB
+        }
+        call gzip_t.gzip as gzip {
+            input:
+                fileInput = filterAdapter.filteredReadFastq,
+                diskSize = fileExtractionDiskSizeGB
+        }
+    }
+    call tar_t.tarGz as blastoutTar{
+        input:
+            tarGzName = "${sampleName}.HiFiAapterFilt.blastout",
+            files = filterAdapter.blastout
+    }
+    call tar_t.tarGz as blocklistTar{
+        input:
+            tarGzName = "${sampleName}.HiFiAdapterFilt.blocklist",
+            files = filterAdapter.blocklist
+    }
+    call tar_t.tarGz as countReadsTar{
+        input:
+            tarGzName = "${sampleName}.countReads",
+            files = filterAdapter.countReads
+    }
+    output {
+        Array[File] filteredReadFastqGz = gzip.fileGz
+        File adapterBlastOutTarGz = blastoutTar.fileTarGz
+        File adapterBlockListTarGz = blocklistTar.fileTarGz
+        File countReadsTarGz = countReadsTar.fileTarGz
+    }
 }
 
 
