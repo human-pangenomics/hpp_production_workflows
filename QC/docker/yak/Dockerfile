@@ -1,12 +1,12 @@
 FROM tpesout/hpp_base:latest
-MAINTAINER Trevor Pesout, tpesout@ucsc.edu
+MAINTAINER Julian Lucas, juklucas@ucsc.edu
 
-WORKDIR /opt/yak
-RUN wget https://github.com/lh3/yak/archive/v0.1.tar.gz && \
-	tar xvf v0.1.tar.gz && \
-	rm v0.1.tar.gz && \
-	cd yak-0.1 && \
+WORKDIR /opt
+
+RUN git clone https://github.com/lh3/yak && \
+	cd yak && \
+	git reset --hard b17412df1bcd0121414b6d62e332a00b1a5e11cc && \
 	make
-ENV PATH="/opt/yak/yak-0.1/:$PATH"
+ENV PATH="/opt/yak:$PATH"
 
 WORKDIR /data
