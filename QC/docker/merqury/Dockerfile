@@ -1,5 +1,5 @@
 FROM ubuntu:20.04
-MAINTAINER Trevor Pesout, tpesout@ucsc.edu
+MAINTAINER Julian Lucas, juklucas@ucsc.edu
 
 
 # 1. Set base ubuntu env
@@ -25,7 +25,7 @@ ENV PATH=/opt/IGV_2.8.2/:$PATH
 WORKDIR /opt
 RUN git clone https://github.com/marbl/meryl.git && \
     cd meryl && \
-    git reset --hard 6d396a0228f12c7657956c346e761b70ed596f5a && \
+    git reset --hard 1926400fcb098ab3e4745ea0872d23f91d730340 && \
     cd src && \
     make -j 12
 ENV PATH=/opt/meryl/build/bin:$PATH
@@ -34,7 +34,7 @@ ENV PATH=/opt/meryl/build/bin:$PATH
 WORKDIR /opt
 RUN git clone https://github.com/marbl/merqury.git && \
     cd merqury && \
-    git reset --hard 261b08589c0d63e2f6a3eab87aadfc27acb6df58
+    git reset --hard 136a9a349af4000831dd15c192e82ad3e0c14c83
 ENV MERQURY=/opt/merqury
 ENV PATH=/opt/merqury:$PATH
 
