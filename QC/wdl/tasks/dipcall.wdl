@@ -31,7 +31,7 @@ task dipcall {
         PATH="/root/bin/samtools_1.9:$PATH"
 
         # get output base
-        PREFIX=$(basename ~{assemblyFastaPat} | sed 's/.gz$//' | sed 's/.fa\(sta\)*$//' | sed 's/.[pm]at$//')
+        PREFIX=$(basename ~{assemblyFastaPat} | sed 's/.gz$//' | sed 's/.fa\(sta\)*$//' | sed 's/[._][pm]at\(ernal\)*$//')
         mkdir $PREFIX.dipcall
 
         # prep paternal
