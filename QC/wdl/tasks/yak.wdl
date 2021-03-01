@@ -198,9 +198,9 @@ task yakAssemblyStats {
         echo "# pat qv" >>$SUMMARY
         tail -n4 $PREFIX.pat.yak.qv.txt >>$SUMMARY
         echo "# mat switch" >>$SUMMARY
-        tail -n2 $PREFIX.mat.yak.switch-error.txt >>$SUMMARY
+        tail -n3 $PREFIX.mat.yak.switch-error.txt >>$SUMMARY
         echo "# pat switch" >>$SUMMARY
-        tail -n2 $PREFIX.pat.yak.switch-error.txt >>$SUMMARY
+        tail -n3 $PREFIX.pat.yak.switch-error.txt >>$SUMMARY
 
         # tar
         tar czvf $PREFIX.yak-qc.tar.gz *txt
