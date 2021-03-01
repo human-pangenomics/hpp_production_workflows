@@ -16,7 +16,8 @@ workflow asset{
     }
     call ast_pbTask as ontAssetTask{
         input:
-            sampleName = "${sampleName}.ont",
+            sampleName = "${sampleName}",
+            platform = "ont",
             pafFiles = ontPafFiles,
             coverageMean = ontCoverageMean,
             coverageSD = ontCoverageSD,
@@ -27,7 +28,8 @@ workflow asset{
     }
     call ast_pbTask as hifiAssetTask{
         input:
-            sampleName = "${sampleName}.hifi",
+            sampleName = "${sampleName}",
+            platform = "hifi",
             pafFiles = hifiPafFiles,
             coverageMean = hifiCoverageMean,
             coverageSD = hifiCoverageSD,
@@ -61,7 +63,10 @@ workflow asset{
         File ontBed = ontAssetTask.supportBed
         File bionanoBed = bionanoAssetTask.supportBed
         File gapsBed = hicAssetTask.gapsBed
-        File hicCoverage = hicAssetTask.coverage
+        File hicCoverageWig = hicAssetTask.coverageWig
+        File hifiCoverageWig = hifiAssetTask.coverageWig
+        File ontCoverageWig = ontAssetTask.coverageWig
+        File bionanoCoverageWig = bionanoAssetTask.coverageWig
     }
 }
 
@@ -95,6 +100,8 @@ task ast_bionTask{
         xmap=*.xmap
         keyfn=*_key.txt
         ast_bion_bnx -m~{minCov} $rmap $qmap $xmap $keyfn > ~{sampleName}.bionano.bed
+        mv BN.cov.wig ~{sampleName}.bionano.cov.wig
+        sed -i "1s/.*/track type=\"wiggle_0\" name=\"Bionano Asset Coverage\"/" ~{sampleName}.bionano.cov.wig
     >>>
     runtime {
         docker: dockerImage
@@ -105,6 +112,7 @@ task ast_bionTask{
     }
     output{
         File supportBed = "~{sampleName}.bionano.bed"
+        File coverageWig = "~{sampleName}.bionano.cov.wig"
     }
 
 }
@@ -138,8 +146,9 @@ task ast_hicTask{
 
         detgaps <(zcat ~{assembly}) > ~{sampleName}.gaps.bed
         ast_hic -q ~{minMAPQ} ~{sampleName}.gaps.bed ~{sep=" " bamFiles} > ast_hic.bed 2> ast_hic.log
-        mv HC.base.cov ~{sampleName}.hic.cov
-        
+        mv HC.cov.wig ~{sampleName}.hic.cov.wig
+        sed -i "1s/.*/track type=\"wiggle_0\" name=\"HiC Asset Coverage\"/" ~{sampleName}.hic.cov.wig
+
         GENOME_SIZE=`samtools view -H  ~{bamFiles[0]} | awk '{if($1 == "@SQ") {sum += substr($3,4,length($3))}} END {print sum}'`
         # Calculate mean coverage of aligned reads
         cat ~{sampleName}.hic.cov | awk -v GENOME_SIZE="$GENOME_SIZE" '{if( substr($1,1,1) != ">" ) {sum_cov += $3 * ($2 - $1 + 1)}} END {printf "%.2f\n", sqrt(sum_cov/GENOME_SIZE)}' > cov_mean.txt
@@ -160,7 +169,7 @@ task ast_hicTask{
     output{
         File supportBed = "~{sampleName}.hic.bed"
         File gapsBed = "~{sampleName}.gaps.bed"
-        File coverage = "~{sampleName}.hic.cov"
+        File coverageWig = "~{sampleName}.hic.cov.wig"
     }
 
 }
@@ -168,6 +177,7 @@ task ast_hicTask{
 task ast_pbTask{
     input{
         String sampleName
+        String platform
         Array[File] pafFiles
         Float coverageMean
         Float coverageSD
@@ -198,6 +208,8 @@ task ast_pbTask{
         MAX_COVERAGE_ASSET=`awk -v mean=~{coverageMean} -v sd=~{coverageSD} 'BEGIN {max_cov = mean + 3 * sd; if (max_cov < (2.5 * mean)) {max_cov=2.5 * mean}; printf "%d",max_cov}'`
         # run asset to find supportive blocks
         ast_pb -m${MIN_COVERAGE_ASSET} -M${MAX_COVERAGE_ASSET} ~{sep=" " pafFiles} > ~{sampleName}.bed
+        mv pb.cov.wig ~{sampleName}.~{platform}.cov.wig
+        sed -i "1s/.*/track type=\"wiggle_0\" name=\"~{sampleName} ~{platform} coverage\"/" ~{sampleName}.~{platform}.cov.wig
 
     >>>
     runtime {
@@ -209,5 +221,6 @@ task ast_pbTask{
     }
     output{
         File supportBed = "~{sampleName}.bed"
+        File coverageWig = "~{sampleName}.~{platform}.cov.wig"
     }
 }

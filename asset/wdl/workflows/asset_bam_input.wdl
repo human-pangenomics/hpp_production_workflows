@@ -60,10 +60,11 @@ workflow assetFourPlatforms {
     call tar_t.tarGz as assetTar{
         input:
             tarGzName = "${sampleName}.${sampleSuffix}.asset",
-            files = [asset.gapsBed, asset.hicCoverage, asset.hicBed, asset.hifiBed, asset.ontBed, asset.bionanoBed]
+            files = [asset.gapsBed, asset.hicBed, asset.hifiBed, asset.ontBed, asset.bionanoBed, asset.hicCoverageWig, asset.hifiCoverageWig, asset.ontCoverageWig, asset.bionanoCoverageWig]
     }
     output {
         File assetOutputsTarGz = assetTar.fileTarGz
+        
     }
 }
 
