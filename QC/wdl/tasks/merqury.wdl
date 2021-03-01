@@ -14,7 +14,7 @@ task merqury {
         Int memSizeGB = 12
         Int threadCount = 16
         Int diskSizeGB = 256
-        String dockerImage = "tpesout/hpp_merqury:latest"
+        String dockerImage = "juklucas/hpp_merqury:latest"
     }
 
 	command <<<

@@ -16,7 +16,7 @@ workflow runYakAssemblyStats {
         Int kmerSize = 21
         Int shardLinesPerFile = 256000000
         Int fileExtractionDiskSizeGB = 256
-        String dockerImage = "tpesout/hpp_yak:latest"
+        String dockerImage = "juklucas/hpp_yak:latest"
     }
 
     # extract reads
@@ -121,7 +121,7 @@ task yakCount {
         Int memSizeGB=128
         Int threadCount=16
         Int diskSizeGB=256
-        String dockerImage="tpesout/hpp_yak:latest"
+        String dockerImage="juklucas/hpp_yak:latest"
     }
     command <<<
         # Set the exit code of a pipeline to that of the rightmost command
@@ -166,7 +166,7 @@ task yakAssemblyStats {
         Int memSizeGB = 128
         Int threadCount = 32
         Int diskSizeGB = 256
-        String dockerImage = "tpesout/hpp_yak:latest"
+        String dockerImage = "juklucas/hpp_yak:latest"
     }
     command <<<
         # Set the exit code of a pipeline to that of the rightmost command

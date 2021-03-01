@@ -19,7 +19,7 @@ workflow runMeryl {
         Int merylHapmerMemSizeGB = 24
         Int merylHapmerThreadCount = 32
         Int fileExtractionDiskSizeGB = 256
-        String dockerImage = "tpesout/hpp_merqury:latest"
+        String dockerImage = "juklucas/hpp_merqury:latest"
     }
 
     # extract reads
@@ -181,7 +181,7 @@ task merylCount {
         Int memSizeGB = 42
         Int threadCount = 64
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_merqury:latest"
+        String dockerImage = "juklucas/hpp_merqury:latest"
     }
 
 	command <<<
@@ -227,7 +227,7 @@ task merylUnionSum {
         Int memSizeGB = 32
         Int threadCount = 32
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_merqury:latest"
+        String dockerImage = "juklucas/hpp_merqury:latest"
     }
 
 	command <<<
@@ -282,7 +282,7 @@ task merylHapmer {
         Int memSizeGB = 24
         Int threadCount = 32
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_merqury:latest"
+        String dockerImage = "juklucas/hpp_merqury:latest"
     }
 
 	command <<<
