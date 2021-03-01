@@ -57,6 +57,9 @@ workflows:
    -  name: YakNoStats
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats.wdl
+   -  name: PhasedGFAs2Fasta
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/gfatools.wdl
    -  name: StandardQCHaploid
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/standard_qc_haploid.wdl
