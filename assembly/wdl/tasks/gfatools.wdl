@@ -2,6 +2,10 @@ version 1.0
 
 workflow runPhasedGFAs2Fasta{
     call phasedGFAs2Fasta
+    output {
+        File paternalFastaGz = phasedGFAs2Fasta.outputPaternalFastaGz
+        File maternalFastaGz = phasedGFAs2Fasta.outputMaternalFastaGz
+    }
 }
 
 
