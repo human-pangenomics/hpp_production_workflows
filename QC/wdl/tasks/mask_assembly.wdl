@@ -25,7 +25,8 @@ task maskAssembly {
         String dockerImage = "biocontainers/bedtools:v2.27.1dfsg-4-deb_cv1"
     }
 
-    String outputFasta = "${sampleName}.${outputFileTag}.fa.gz"
+    String outputFasta   = "${sampleName}.${outputFileTag}.fa"
+    String outputFastaGz = "${sampleName}.${outputFileTag}.fa.gz"
 
     command <<<
 
@@ -51,18 +52,20 @@ task maskAssembly {
 
 
             ## mask fasta in adapterBed regions
-            bedtools maskfasta -fi ${inputFastaFN} -bed ~{adapterBed} | gzip > ~{outputFasta}
+            bedtools maskfasta -fi ${inputFastaFN} -bed ~{adapterBed} -fo ~{outputFasta}
+
+            gzip ~{outputFasta}
 
 
         ## adapterBed is empty or doesn't exist: copy existing inputFasta to outputFasta (ensure is gzipped)
         else
             ## If already gzipped, just copy over
             if [[ $inputFastaFN =~ \.gz$ ]]; then
-                cp ~{inputFasta} ~{outputFasta}
+                cp ~{inputFasta} ~{outputFastaGz}
 
             ## Otherwise copy over and gzip
             else
-                cat ~{inputFasta} | gzip > ~{outputFasta}
+                cat ~{inputFasta} | gzip > ~{outputFastaGz}
             fi
         fi 
 
@@ -71,7 +74,7 @@ task maskAssembly {
 
     output {
 
-        File FinalAssembly  = outputFasta
+        File FinalAssembly  = outputFastaGz
     }
 
     runtime {
