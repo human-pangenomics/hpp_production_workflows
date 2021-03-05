@@ -30,9 +30,9 @@ workflows:
    -  name: MaskAssembly
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/mask_assembly.wdl
-   -  name: GreatLengths
+   -  name: findMitoContigs
       subclass: WDL
-      primaryDescriptorPath: /QC/wdl/tasks/great_lengths.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/findMitoContigs.wdl
    -  name: ReadStats
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/read_stats.wdl
