@@ -40,6 +40,7 @@ task extractContigs {
         patInputFastaFN=$(basename -- "~{patInputFasta}")        
 
         ## first check if inputFastas needs to be unzipped
+
         ## MATERNAL
         if [[ $matInputFastaFN =~ \.gz$ ]]; then
             cp ~{matInputFasta} .
@@ -61,12 +62,12 @@ task extractContigs {
 
 
         ## Extract mito fasta sequences and write to file
-        ! samtools faidx $matInputFastaFN `cat $matContigsToExtract` > mat_contigs.fa
-        ! samtools faidx $patInputFastaFN `cat $patContigsToExtract` > pat_contigs.fa
+        samtools faidx $matInputFastaFN `cat ~{matContigsToExtract}` > mat_contigs.fa
+        samtools faidx $patInputFastaFN `cat ~{patContigsToExtract}` > pat_contigs.fa
         
         
         ## Combine contigs from maternal and paternal assemblies
-        ! cat mat_contigs.fa pat_contigs.fa > ~{outputFasta}
+        cat mat_contigs.fa pat_contigs.fa > ~{outputFasta}
 
     >>>
 
