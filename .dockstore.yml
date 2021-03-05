@@ -50,7 +50,7 @@ workflows:
       primaryDescriptorPath: /assembly/wdl/tasks/filter_hifi_adapter.wdl
    -  name: dropFastaContigs
       subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/tasks/dropFastaContigs.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/dropFastaContigs.wdl
    -  name: TrioHifiasmAssembly
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly.wdl

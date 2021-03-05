@@ -1,60 +1,81 @@
 version 1.0
 
 workflow runMaskAssembly {
-    call maskAssembly
+
+    call maskAssembly 
+
+    output {
+        File FinalAssembly = maskAssembly.FinalAssembly
+    }
 }
 
-task maskAssembly {
-    input {
-        File assemblyFasta
-        File adapterBed
-        String maskedAssemblyName
 
-        Int memSizeGB = 2
-        Int threadCount = 2
+
+task maskAssembly {
+
+    input {
+        String sampleName
+        String outputFileTag
+        File inputFasta
+        
+        File? adapterBed 
+
+        Int memSizeGB = 4
         Int diskSizeGB = 64
         String dockerImage = "biocontainers/bedtools:v2.27.1dfsg-4-deb_cv1"
     }
 
+    String outputFasta = "${sampleName}.${outputFileTag}.fa.gz"
+
     command <<<
 
-        ## Help w/ debugging...
-        set -eux -o pipefail
+        set -o pipefail
+        set -e
+        set -u
+        set -o xtrace
 
-
-        ## if bed file is empty (no adapters to mask): just copy to new file name
-        if [[ ! -s adapterBed ]]; then
-            cp ~{assemblyFasta} ~{maskedAssemblyName}.gz
         
+        inputFastaFN=$(basename -- "~{inputFasta}")
+        
+        ## if adapterBed exists and is not empty: mask regions in inputFasta
+        if [ ! -z ~{adapterBed} ]; then
 
-        ## else, bed not empty (there are adapters to mask)
+            ## first check if inputFasta needs to be unzipped
+            if [[ $inputFastaFN =~ \.gz$ ]]; then
+                cp ~{inputFasta} .
+                gunzip -f $inputFastaFN
+                inputFastaFN="${inputFastaFN%.gz}"
+            else
+                ln -s ~{inputFasta}
+            fi 
+
+
+            ## mask fasta in adapterBed regions
+            bedtools maskfasta -fi ${inputFastaFN} -bed ~{adapterBed} | gzip > ~{outputFasta}
+
+
+        ## adapterBed is empty or doesn't exist: copy existing inputFasta to outputFasta (ensure is gzipped)
         else
-            ## gunzip assembly if neccesary
-            FILENAME=$(basename -- "~{assemblyFasta}")
-            if [[ $FILENAME =~ \.gz$ ]]; then
-                cp ~{assemblyFasta} .
-                gunzip $FILENAME
+            ## If already gzipped, just copy over
+            if [[ $inputFastaFN =~ \.gz$ ]]; then
+                cp ~{inputFasta} ~{outputFasta}
+
+            ## Otherwise copy over and gzip
+            else
+                cat ~{inputFasta} | gzip > ~{outputFasta}
             fi
+        fi 
 
-            ## Get assembly filename (w/out .gz)
-            ASM_ID=$(basename ~{assemblyFasta} | sed 's/.gz$//')
-
-            bedtools maskfasta -fi ${ASM_ID} -bed ~{adapterBed} -fo ~{maskedAssemblyName}
-
-            ## gzip assembly back up
-            gzip ~{maskedAssemblyName}
-        fi
 
     >>>
 
     output {
-        File maskedAssembly = "~{maskedAssemblyName}.gz"
 
+        File FinalAssembly  = outputFasta
     }
 
     runtime {
         memory: memSizeGB + " GB"
-        cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
         preemptible: 1
