@@ -30,6 +30,9 @@ workflows:
    -  name: MaskAssembly
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/mask_assembly.wdl
+   -  name: FinalizeAssembly
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/finalizeAssembly.wdl
    -  name: findMitoContigs
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/findMitoContigs.wdl
