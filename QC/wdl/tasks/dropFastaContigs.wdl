@@ -38,7 +38,7 @@ task dropContigs {
         inputFastaFN=$(basename -- "~{inputFasta}")
         
         ## if contigsToDrop exists and is not empty: drop from inputFasta
-        if [ ! -z ~{contigsToDrop} ]; then
+        if [ -s ~{contigsToDrop} ]; then
 
             ## first check if inputFasta needs to be unzipped
             if [[ $inputFastaFN =~ \.gz$ ]]; then

@@ -39,7 +39,7 @@ task maskAssembly {
         inputFastaFN=$(basename -- "~{inputFasta}")
         
         ## if adapterBed exists and is not empty: mask regions in inputFasta
-        if [ ! -z ~{adapterBed} ]; then
+        if [ -s ~{adapterBed} ]; then
 
             ## first check if inputFasta needs to be unzipped
             if [[ $inputFastaFN =~ \.gz$ ]]; then
