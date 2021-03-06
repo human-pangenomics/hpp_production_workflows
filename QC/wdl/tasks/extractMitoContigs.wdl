@@ -1,6 +1,6 @@
 version 1.0
 
-workflow extractFastaContigs {
+workflow extractMitoContigs {
 
     call extractContigs 
 

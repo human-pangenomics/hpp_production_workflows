@@ -51,9 +51,9 @@ workflows:
    -  name: FilterHiFiAdapter
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/filter_hifi_adapter.wdl
-   -  name: ExtractFastaContigs
+   -  name: ExtractMitoContigs
       subclass: WDL
-      primaryDescriptorPath: /QC/wdl/tasks/extractFastaContigs.wdl
+      primaryDescriptorPath: /QC/wdl/tasks/extractMitoContigs.wdl
    -  name: dropFastaContigs
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/dropFastaContigs.wdl      
