@@ -1,7 +1,6 @@
 #!/bin/bash
 
 prefix=$1
-#centromere_bed=$2
 
 printf "\t%45s%30s%30s\n" "HiC" "HiFi" "ONT"
 printf "## Unreliable blocks:\n"

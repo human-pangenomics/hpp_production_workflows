@@ -6,12 +6,14 @@ workflow runMergeAssetOutputs{
         String sampleSuffix
         File assemblyFastaGz
         File assetOutputsTarGz
+        File cenSatRegionsBed
     }
     call mergeAssetOutputs as merge{
         input:
             sampleName = "~{sampleName}.~{sampleSuffix}",
             assemblyFastaGz = assemblyFastaGz,
-            assetOutputsTarGz = assetOutputsTarGz
+            assetOutputsTarGz = assetOutputsTarGz,
+            cenSatRegionsBed = cenSatRegionsBed
     }
     output {
         File assetMergeTarGz = merge.assetMergeTarGz
@@ -24,6 +26,7 @@ task mergeAssetOutputs {
         String sampleName
         File assemblyFastaGz
         File assetOutputsTarGz
+        File cenSatRegionsBed
         # runtime configurations
         Int memSize=8
         Int threadCount=4
@@ -49,14 +52,14 @@ task mergeAssetOutputs {
 
         gunzip -c ~{assemblyFastaGz} > ~{sampleName}.fa
 
-        $MERGE_BLOCKS_BASH ~{sampleName} 
-        $BLOCKS_STAT_BASH ~{sampleName} > ~{sampleName}.blocks.stats.txt
+        $MERGE_BLOCKS_BASH ~{sampleName} ~{cenSatRegionsBed}
+        $BLOCKS_STAT_V1_BASH ~{sampleName} ~{cenSatRegionsBed} > ~{sampleName}.blocks.stats.txt
         cp ~{sampleName}.blocks.stats.txt ../
-        cp ~{sampleName}.low_support.trim1k.bed ../
+        cp ~{sampleName}.low_support.trim1k.gt10.bed ../
         cd ../
         tar -cf ~{sampleName}.asset.merge.tar ~{sampleName}.asset.merge
-        gzip ~{sampleName}.asset.merge.tar 
-    >>> 
+        gzip ~{sampleName}.asset.merge.tar
+    >>>
     runtime {
         docker: dockerImage
         memory: memSize + " GB"
@@ -67,7 +70,7 @@ task mergeAssetOutputs {
     output {
         File assetMergeTarGz = "~{sampleName}.asset.merge.tar.gz"
         File blocksStatsTEXT = "~{sampleName}.blocks.stats.txt"
-        File assetLowSupportBED = "~{sampleName}.low_support.trim1k.bed"
+        File assetLowSupportBED = "~{sampleName}.low_support.trim1k.gt10.bed"
     }
 }
 
