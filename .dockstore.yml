@@ -69,6 +69,9 @@ workflows:
    -  name: FullAlignmentForAsset
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/workflows/full_alignment_for_asset.wdl
+   -  name: DnaBrnn
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/dna_brnn.wdl
    -  name: AssetMerge
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/asset_merge.wdl
