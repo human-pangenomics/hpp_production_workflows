@@ -16,7 +16,8 @@ task renameContigsAddMT {
         String outputFileTag
         Int mat_pat_int
         File inputFastaGZ
-        File mitoAssembly
+        
+        File? mitoAssembly
 
         Int memSizeGB = 4
         Int diskSizeGB = 64
@@ -40,14 +41,19 @@ task renameContigsAddMT {
         ## Rename contig names to sampleName#1/2#contigName format (1 = paternal, 2 = maternal)
         sed "s/^>/>~{sampleName}\#~{mat_pat_int}\#/" ~{unzippedOrigFa} > ~{renamedFasta}
 
-        ## Now add in the MT assembly from Heng (for maternal assemblies), and zip up the file
-        if [[ ~{mat_pat_int} == 2 ]]
-        then
-            cat ~{renamedFasta} ~{mitoAssembly} | gzip > ~{outputFasta}
-        else
-            cat ~{renamedFasta} | gzip > ~{outputFasta}
-        fi
+        ## Check if we have a mito assembly (not all samples do). If so, add it to maternal haplotype
+        if [ -s ~{mitoAssembly} ]; then
 
+            ## Only add to maternal haplotype
+            if [[ ~{mat_pat_int} == 2 ]]; then
+                cat ~{renamedFasta} ~{mitoAssembly} | gzip > ~{outputFasta}
+            else
+                cat ~{renamedFasta} | gzip > ~{outputFasta}
+            fi
+        else
+            ## There is no mito assembly, just copy over the file
+            cat ~{renamedFasta} | gzip > ~{outputFasta}
+        fi 
     >>>
 
     output {
