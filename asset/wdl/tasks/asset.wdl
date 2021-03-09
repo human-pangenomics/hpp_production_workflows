@@ -64,6 +64,7 @@ workflow asset{
         File bionanoBed = bionanoAssetTask.supportBed
         File gapsBed = hicAssetTask.gapsBed
         File hicCoverageWig = hicAssetTask.coverageWig
+        File hicCoverage = hicAssetTask.coverage
         File hifiCoverageWig = hifiAssetTask.coverageWig
         File ontCoverageWig = ontAssetTask.coverageWig
         File bionanoCoverageWig = bionanoAssetTask.coverageWig
@@ -114,7 +115,6 @@ task ast_bionTask{
         File supportBed = "~{sampleName}.bionano.bed"
         File coverageWig = "~{sampleName}.bionano.cov.wig"
     }
-
 }
 
 
@@ -148,12 +148,8 @@ task ast_hicTask{
         ast_hic -q ~{minMAPQ} ~{sampleName}.gaps.bed ~{sep=" " bamFiles} > ast_hic.bed 2> ast_hic.log
         mv HC.cov.wig ~{sampleName}.hic.cov.wig
         sed -i "1s/.*/track type=\"wiggle_0\" name=\"HiC Asset Coverage\"/" ~{sampleName}.hic.cov.wig
-
-        GENOME_SIZE=`samtools view -H  ~{bamFiles[0]} | awk '{if($1 == "@SQ") {sum += substr($3,4,length($3))}} END {print sum}'`
-        # Calculate mean coverage of aligned reads
-        cat ~{sampleName}.hic.cov | awk -v GENOME_SIZE="$GENOME_SIZE" '{if( substr($1,1,1) != ">" ) {sum_cov += $3 * ($2 - $1 + 1)}} END {printf "%.2f\n", sqrt(sum_cov/GENOME_SIZE)}' > cov_mean.txt
-        # Calculate standard deviation of base-level coverages (Considering coverages below 2.5 * COVERAGE_MEAN)
-        cat ~{sampleName}.hic.cov | awk -v COVERAGE_MEAN=`cat cov_mean.txt` -v GENOME_SIZE="$GENOME_SIZE" '{if (( substr($1,1,1) != ">" ) && ($3 < 2.5 * COVERAGE_MEAN)) {sum += ($2 - $1 + 1) * (($3 - COVERAGE_MEAN)^2)}} END {printf "%.2f\n", sqrt(sum/GENOME_SIZE)}' > cov_sd.txt
+ 
+        python3 ${CALC_MEAN_SD_PY} --coverageInput ~{sampleName}.hic.cov --meanOutput cov_mean.txt --sdOutput cov_sd.txt
         # calculate the min coverage threshold for asset
         # using the formula, min( max(10, mean - 2 x sd), 20)
         MIN_COVERAGE_ASSET=`awk -v mean=$(cat cov_mean.txt) -v sd=$(cat cov_sd.txt) 'BEGIN {min_cov = mean - 2 * sd; if (min_cov < 10) {min_cov=10}; if (min_cov > 20) {min_cov=20}; printf "%d",min_cov}'`
@@ -170,6 +166,7 @@ task ast_hicTask{
         File supportBed = "~{sampleName}.hic.bed"
         File gapsBed = "~{sampleName}.gaps.bed"
         File coverageWig = "~{sampleName}.hic.cov.wig"
+        File coverage = "~{sampleName}.hic.cov"
     }
 
 }
@@ -201,16 +198,15 @@ task ast_pbTask{
         set -o xtrace
         
         # calculate the min coverage threshold for asset
-        # using the formula, max(5, mean - 3 x sd)
+        # using the formula, min( max(5, mean - 3 x sd), 10)
         MIN_COVERAGE_ASSET=`awk -v mean=~{coverageMean} -v sd=~{coverageSD} 'BEGIN {min_cov = mean - 3 * sd; if (min_cov < 5) {min_cov=5}; if (min_cov > 10) {min_cov=10}; printf "%d",min_cov}'`
         # calculate the min coverage threshold for asset
         # using the formula, max(2.5 * mean, mean + 3 x sd)
         MAX_COVERAGE_ASSET=`awk -v mean=~{coverageMean} -v sd=~{coverageSD} 'BEGIN {max_cov = mean + 3 * sd; if (max_cov < (2.5 * mean)) {max_cov=2.5 * mean}; printf "%d",max_cov}'`
         # run asset to find supportive blocks
-        ast_pb -m${MIN_COVERAGE_ASSET} -M${MAX_COVERAGE_ASSET} ~{sep=" " pafFiles} > ~{sampleName}.bed
+        ast_pb -m${MIN_COVERAGE_ASSET} -M${MAX_COVERAGE_ASSET} ~{sep=" " pafFiles} > ~{sampleName}.~{platform}.bed
         mv pb.cov.wig ~{sampleName}.~{platform}.cov.wig
         sed -i "1s/.*/track type=\"wiggle_0\" name=\"~{sampleName} ~{platform} coverage\"/" ~{sampleName}.~{platform}.cov.wig
-
     >>>
     runtime {
         docker: dockerImage
@@ -220,7 +216,7 @@ task ast_pbTask{
         preemptible : preemptible
     }
     output{
-        File supportBed = "~{sampleName}.bed"
+        File supportBed = "~{sampleName}.~{platform}.bed"
         File coverageWig = "~{sampleName}.~{platform}.cov.wig"
     }
 }
