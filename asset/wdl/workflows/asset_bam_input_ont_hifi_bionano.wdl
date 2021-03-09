@@ -7,6 +7,7 @@ import "../tasks/tar.wdl" as tar_t
 
 workflow assetThreePlatforms {
     input {
+        File assemblyFastaGz
         String sampleName
         String sampleSuffix
         Array[File] ontBamFiles
@@ -34,6 +35,7 @@ workflow assetThreePlatforms {
     call bam_coverage_t.bamCoverage as ontBamCoverage {
         input:
             sampleName = "${sampleName}.${sampleSuffix}.ont",
+            assemblyFastaGz = assemblyFastaGz,
             bamFiles = ontBamFiles,
             minMAPQ = minMAPQ
     }
@@ -41,6 +43,7 @@ workflow assetThreePlatforms {
     call bam_coverage_t.bamCoverage as hifiBamCoverage {
         input:
             sampleName = "${sampleName}.${sampleSuffix}.hifi",
+            assemblyFastaGz = assemblyFastaGz,
             bamFiles = hifiBamFiles,
             minMAPQ = minMAPQ
     }
