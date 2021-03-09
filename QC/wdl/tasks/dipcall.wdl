@@ -14,7 +14,7 @@ task dipcall {
         Int memSizeGB = 64
         Int threadCount = 16
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_dipcall:latest"
+        String dockerImage = "humanpangenomics/hpp_dipcall_v0.1:latest"
     }
 
 	command <<<

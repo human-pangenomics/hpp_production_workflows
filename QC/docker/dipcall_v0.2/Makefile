@@ -1,6 +1,6 @@
 # Definitions
 repository = humanpangenomics
-identifier = hpp_dipcall_v0.1
+identifier = hpp_dipcall_v0.2
 version = 0.0.0
 git_commit ?= $(shell git log --pretty=oneline -n 1 | cut -f1 -d " ")
 name = ${repository}/${identifier}
