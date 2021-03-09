@@ -46,7 +46,8 @@ workflow assetThreePlatforms {
     }
     call asset_t.ast_pbTask as ontAssetTask{
         input:
-            sampleName = "${sampleName}.${sampleSuffix}.ont",
+            sampleName = "${sampleName}.${sampleSuffix}",
+            platform = "ont",
             pafFiles = ontBam2Paf.pafFile,
             coverageMean = ontBamCoverage.coverageMean,
             coverageSD = ontBamCoverage.coverageSD,
@@ -57,7 +58,8 @@ workflow assetThreePlatforms {
     }
     call asset_t.ast_pbTask as hifiAssetTask{
         input:
-            sampleName = "${sampleName}.${sampleSuffix}.hifi",
+            sampleName = "${sampleName}.${sampleSuffix}",
+            platform = "hifi",
             pafFiles = hifiBam2Paf.pafFile,
             coverageMean = hifiBamCoverage.coverageMean,
             coverageSD = hifiBamCoverage.coverageSD,
