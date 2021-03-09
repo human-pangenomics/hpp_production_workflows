@@ -35,12 +35,14 @@ workflow assetFourPlatforms {
     
     call bam_coverage_t.bamCoverage as ontBamCoverage {
         input:
+            sampleName = "${sampleName}.${sampleSuffix}.ont",
             bamFiles = ontBamFiles,
             minMAPQ = minMAPQ
     }
  
     call bam_coverage_t.bamCoverage as hifiBamCoverage {
         input:
+            sampleName = "${sampleName}.${sampleSuffix}.hifi",
             bamFiles = hifiBamFiles,
             minMAPQ = minMAPQ
     }
@@ -60,11 +62,16 @@ workflow assetFourPlatforms {
     call tar_t.tarGz as assetTar{
         input:
             tarGzName = "${sampleName}.${sampleSuffix}.asset",
-            files = [asset.gapsBed, asset.hicBed, asset.hifiBed, asset.ontBed, asset.bionanoBed, asset.hicCoverageWig, asset.hifiCoverageWig, asset.ontCoverageWig, asset.bionanoCoverageWig]
+            files = [asset.gapsBed, asset.hicBed, asset.hifiBed, asset.ontBed, asset.bionanoBed]
+    }
+    call tar_t.tarGz as coverageFilesTar{
+        input:
+            tarGzName = "${sampleName}.${sampleSuffix}.coverage",
+            files = [asset.hicCoverageWig, asset.hifiCoverageWig, asset.ontCoverageWig, asset.bionanoCoverageWig, asset.hicCoverage, hifiBamCoverage.coverage, ontBamCoverage.coverage]
     }
     output {
         File assetOutputsTarGz = assetTar.fileTarGz
-        
+        File coverageFilesTarGz = coverageFilesTar.fileTarGz
     }
 }
 
