@@ -9,6 +9,7 @@ workflow longReadAlignment {
         String aligner="winnowmap"
         String preset
         String sampleName
+        String sampleSuffix
         Array[File] readFiles
         File assembly
         File? referenceFasta
@@ -48,7 +49,7 @@ workflow longReadAlignment {
     ## merge the bam files
     call mergeBams_t.merge as mergeBams{
         input:
-            sampleName = sampleName,
+            sampleName = "${sampleName}.${sampleSuffix}",
             sortedBamFiles = alignment.sortedBamFile,
             # runtime configurations
             diskSize = floor(bamSize.value * 2.5),
