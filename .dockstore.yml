@@ -63,6 +63,9 @@ workflows:
    -  name: AssetBamInputOntHiFi
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/workflows/asset_bam_input_ont_hifi.wdl
+   -  name: AssetBamInputOntHiFiBionano
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/workflows/asset_bam_input_ont_hifi_bionano.wdl
    -  name: BionanoAlignment
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/bionano.wdl
