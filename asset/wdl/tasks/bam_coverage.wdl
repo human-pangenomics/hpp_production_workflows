@@ -42,7 +42,7 @@ task bamCoverage{
             samtools depth -aa -Q ~{minMAPQ - 1} ~{sep=" " bamFiles} | awk '{sum=0; for (i=3; i<=NF; i++) { sum+= $i } {print $1,$2,sum}}' > ~{sampleName}.depth
         fi
         # Convert the output of samtools depth into a compressed format
-        python3 ${DEPTH2COV_PY} --input ~{sampleName}.depth --fai ${PREFIX}.fa.fai --output ~{sampleName}.cov
+        python3 ${DEPTH2COV_PY} --depth ~{sampleName}.depth --fai ${PREFIX}.fa.fai --output ~{sampleName}.cov
         # Calculate mean and standard deviation
         python3 ${CALC_MEAN_SD_PY} --coverageInput ~{sampleName}.cov --meanOutput cov_mean.txt --sdOutput cov_sd.txt
     >>>
