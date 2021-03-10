@@ -8,7 +8,7 @@ printf "\n###########\nLOW SUPPORT\n###########\n"
 cat $prefix.low_support.trim1k.gt10.bed | python3 ${BLOCK_STATS_PY}
 
 printf "\n#####################################\nLOW SUPPORT AND CENTROMERIC SATELLITE\n#####################################\n"
-bedtools intersect -a $prefix.low_support.trim1k.gt10.bed -b $cenSatRegions | bedtools merge -i - | python3 ${BLOCK_STATS_PY}
+bedtools intersect -a $prefix.low_support.trim1k.gt10.bed -b $cenSatRegions | bedtools sort -i - | bedtools merge -i - | python3 ${BLOCK_STATS_PY}
 
 printf "\n#####################################\nCENTROMERIC SATELLITE\n#####################################\n"
 cat $cenSatRegions | python3 ${BLOCK_STATS_PY}
