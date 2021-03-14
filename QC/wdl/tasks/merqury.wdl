@@ -31,7 +31,7 @@ task merqury {
         OMP_NUM_THREADS=~{threadCount}
 
         # get filename
-        ASM_ID=$(basename ~{assemblyFasta} | sed 's/.gz$//' | sed 's/.fa\(sta\)*$//' | sed 's/[._][pm]at\(ernal\)*$//')
+        ASM_ID=$(basename ~{assemblyFasta} | sed 's/.gz$//' | sed 's/.fa\(sta\)*$//' | sed 's/[._][pm]at\(ernal\)*//')
 
         # extract kmers
         tar xvf ~{kmerTarball} &
