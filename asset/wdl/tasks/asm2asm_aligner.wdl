@@ -7,6 +7,7 @@ workflow asm2asmAlignment {
         String preset
         File queryAssemblyFastaGz
         File refAssemblyFastaGz
+        String suffix=""
         String zones = "us-west2-a"
     }
     ## align query assembly to the ref assembly
@@ -14,6 +15,7 @@ workflow asm2asmAlignment {
         input:
             aligner =  aligner,
             preset = preset,
+            suffix = suffix,
             refAssembly = refAssemblyFastaGz,
             readFastq_or_queryAssembly = queryAssemblyFastaGz,
             kmerSize = 19,

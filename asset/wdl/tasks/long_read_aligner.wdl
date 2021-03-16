@@ -67,6 +67,7 @@ task alignment{
     input{
         String aligner
         String preset
+        String suffix=""
         File readFastq_or_queryAssembly
         File refAssembly
         Int kmerSize=15
@@ -104,7 +105,13 @@ task alignment{
         
         fileBasename=$(basename ~{readFastq_or_queryAssembly})
         ${ALIGNER_CMD} -a -x ~{preset} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} | samtools view -h -b > ${fileBasename%.*.*}.bam
-        samtools sort -@~{threadCount} -o ${fileBasename%.*.*}.sorted.bam ${fileBasename%.*.*}.bam
+        
+        if [ -z ~{suffix} ]; then
+            OUTPUT_FILE=${fileBasename%.*.*}.sorted.bam
+        else
+            OUTPUT_FILE=${fileBasename%.*.*}.~{suffix}.sorted.bam  
+        fi
+        samtools sort -@~{threadCount} -o ${OUTPUT_FILE} ${fileBasename%.*.*}.bam
         du -s -BG ${fileBasename%.*.*}.sorted.bam | sed 's/G.*//' > outputsize.txt
     >>>
     runtime {
