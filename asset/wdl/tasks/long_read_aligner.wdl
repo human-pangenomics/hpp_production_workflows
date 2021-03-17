@@ -112,7 +112,7 @@ task alignment{
             OUTPUT_FILE=${fileBasename%.*.*}.~{suffix}.sorted.bam  
         fi
         samtools sort -@~{threadCount} -o ${OUTPUT_FILE} ${fileBasename%.*.*}.bam
-        du -s -BG ${fileBasename%.*.*}.sorted.bam | sed 's/G.*//' > outputsize.txt
+        du -s -BG ${OUTPUT_FILE} | sed 's/G.*//' > outputsize.txt
     >>>
     runtime {
         docker: dockerImage
