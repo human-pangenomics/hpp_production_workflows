@@ -31,7 +31,7 @@ task mapBlocks {
         PREFIX=${FILENAME%.bed}
         samtools view -F256 -F4 -q20 ~{alignmentBam} | cut -f1-6 > no_seq.sam
         mkdir output
-        python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ~{blocksBed} --output output/$PREFIX.~{suffix}.bed
+        python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ~{blocksBed} --output output/${PREFIX}.~{suffix}.bed
     >>> 
     runtime {
         docker: dockerImage
