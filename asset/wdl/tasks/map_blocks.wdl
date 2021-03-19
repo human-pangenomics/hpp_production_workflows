@@ -35,6 +35,7 @@ task mapBlocks {
         samtools view -F256 -F4 -q20 ~{alignmentBam} | cut -f1-6 > no_seq.sam
         mkdir output
         python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ~{blocksBed} --output output/${PREFIX}.~{suffix}.bed
+        bedtools sort -i output/${PREFIX}.~{suffix}.bed | bedtools merge -i - > output/${PREFIX}.~{suffix}.merged.bed
     >>> 
     runtime {
         docker: dockerImage
@@ -44,7 +45,7 @@ task mapBlocks {
         preemptible : preemptible
     }
     output {
-        File mappedBlocksBed = glob("output/*.bed")[0]
+        File mappedBlocksBed = glob("output/*.merged.bed")[0]
     }
 }
 
