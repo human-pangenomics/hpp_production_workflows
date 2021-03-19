@@ -78,6 +78,9 @@ workflows:
    -  name: AssetMerge
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/asset_merge.wdl
+   -  name: MapBlocks
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/map_blocks.wdl
    -  name: Bed2Fasta
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/bed2fasta.wdl
