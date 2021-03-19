@@ -123,7 +123,7 @@ def main():
     
     with open(outputPath, "w") as f:
         for refBlock in refBlocksAll:
-            f.write("{}\t{}\t{}\n".format(refBlock[0], refBlock[1], refBlock[2]))
+            f.write("{}\t{}\t{}\n".format(refBlock[0], refBlock[1]-1, refBlock[2]))
     #with open("test.bed", "w") as f:
     #    for qBlock in qBlocksAll:
     #        f.write("{}\t{}\t{}\n".format(qBlock[0], qBlock[1], qBlock[2]))

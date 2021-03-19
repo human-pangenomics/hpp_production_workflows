@@ -7,6 +7,7 @@ task mapBlocks {
     input {
         File blocksBed
         File alignmentBam
+        String suffix
         # runtime configurations
         Int memSize=8
         Int threadCount=2
@@ -26,10 +27,11 @@ task mapBlocks {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
         
-        FILENAME=$(basename ~{alignmentBam})
-        PREFIX=${FILENAME%.bam}
+        FILENAME=$(basename ~{blocksBed})
+        PREFIX=${FILENAME%.bed}
         samtools view -F256 -F4 -q20 ~{alignmentBam} | cut -f1-6 > no_seq.sam
-        python3 $MAP_BLOCKS_PY --sam $PREFIX.sam --bed ~{blocksBed} --output 
+        mkdir output
+        python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ~{blocksBed} --output output/$PREFIX.~{suffix}.bed
     >>> 
     runtime {
         docker: dockerImage
@@ -39,7 +41,7 @@ task mapBlocks {
         preemptible : preemptible
     }
     output {
-        File fileTarGz = "~{tarGzName}.tar.gz"
+        File mappedBlocksBed = glob("output/*.bed")[0]
     }
 }
 
