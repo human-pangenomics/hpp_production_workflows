@@ -2,6 +2,9 @@ version 1.0
 
 workflow runMapBlocks{
     call mapBlocks
+    output {
+        File mappedBlocksBed = mapBlocks.mappedBlocksBed
+    }
 }
 task mapBlocks {
     input {
