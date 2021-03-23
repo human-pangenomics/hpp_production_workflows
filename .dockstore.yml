@@ -51,6 +51,9 @@ workflows:
    -  name: LongReadAligner
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/long_read_aligner.wdl
+   -  name: MergeSortedBams
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/merge_bams.wdl
    -  name: Asset
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/asset.wdl
