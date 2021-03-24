@@ -4,6 +4,10 @@ workflow runMapBlocks{
     call mapBlocks
     output {
         File mappedBlocksBed = mapBlocks.mappedBlocksBed
+        File mappedLowMQBlocksBed = mapBlocks.mappedLowMQBlocksBed
+        File unmappedBlocksBed = mapBlocks.unmappedBlocksBed
+        File skippedBlocksBed = mapBlocks.skippedBlocksBed
+        File refBlocksBed = mapBlocks.refBlocksBed
     }
 }
 task mapBlocks {
