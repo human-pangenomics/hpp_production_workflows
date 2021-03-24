@@ -17,18 +17,21 @@ def findMappedBlocks(cigarList, blocks, chromStart):
     qBlocks = []
     mappedStartPos = None
     contigCurrentPos = 0
+    skippedBlocks = []
     if cigarList[0][0] == 'H' or cigarList[0][0] == 'S':
         #print("#",cigarList[0][0],cigarList[0][1])
         contigCurrentPos = cigarList[0][1]
         cigarStartIdx = 1
         #print("#",blockIdx, blocks)
-        while (blockIdx < len(blocks)) and (contigCurrentPos > blocks[blockIdx][1]):
+        while (blockIdx < len(blocks)) and (contigCurrentPos >= blocks[blockIdx][1]):
+            skippedBlocks.append((blocks[blockIdx][0], blocks[blockIdx][1]))
             blockIdx += 1
         if blockIdx >= len(blocks):
-            return mappedBlocks, qBlocks
+            return mappedBlocks, qBlocks, skippedBlocks
         if contigCurrentPos >= blocks[blockIdx][0]:
-            mappedStartPos = refCurrentPos
-            qStartPos = contigCurrentPos
+            mappedStartPos = refCurrentPos # points to one base before the mapping starts
+            qStartPos = contigCurrentPos # same as above
+            skippedBlocks.append((blocks[blockIdx][0], contigCurrentPos))
     #print(contigCurrentPos,refCurrentPos)
     # iterate over cigar elements and find the blocks
     for cigarEvent, cigarSize in cigarList[cigarStartIdx:]:
@@ -38,18 +41,18 @@ def findMappedBlocks(cigarList, blocks, chromStart):
             contigNextPos = contigCurrentPos + cigarSize
             while (blockIdx < len(blocks)) and (contigNextPos >= blocks[blockIdx][1]):
                 if contigCurrentPos < blocks[blockIdx][0]:
-                    mappedStartPos = refCurrentPos + blocks[blockIdx][0] - contigCurrentPos
-                    qStartPos = blocks[blockIdx][0]
+                    mappedStartPos = refCurrentPos + blocks[blockIdx][0] - contigCurrentPos - 1 # points to one base before the mapping starts
+                    qStartPos = blocks[blockIdx][0] - 1 # same as above
                 mappedEndPos = refCurrentPos + blocks[blockIdx][1] - contigCurrentPos
                 qEndPos = blocks[blockIdx][1]
-                mappedBlocks.append((mappedStartPos, mappedEndPos))
-                qBlocks.append((qStartPos, qEndPos))
+                mappedBlocks.append((mappedStartPos + 1, mappedEndPos))
+                qBlocks.append((qStartPos + 1, qEndPos))
                 blockIdx += 1
             if blockIdx >= len(blocks):
                 break
             if (contigCurrentPos < blocks[blockIdx][0]) and (contigNextPos >= blocks[blockIdx][0]):
-                mappedStartPos = refCurrentPos + blocks[blockIdx][0] - contigCurrentPos
-                qStartPos = blocks[blockIdx][0]
+                mappedStartPos = refCurrentPos + blocks[blockIdx][0] - contigCurrentPos - 1
+                qStartPos = blocks[blockIdx][0] - 1
             refCurrentPos += cigarSize
             contigCurrentPos += cigarSize 
         # If insertion
@@ -58,18 +61,20 @@ def findMappedBlocks(cigarList, blocks, chromStart):
             while (blockIdx < len(blocks)) and (contigNextPos >= blocks[blockIdx][1]):
                 # If a block is completely within an insertion from start to end ignore it
                 if contigCurrentPos < blocks[blockIdx][0]:
+                    skippedBlocks.append((blocks[blockIdx]))
                     blockIdx += 1
                     continue
                 mappedEndPos = refCurrentPos
-                qEndPos = blocks[blockIdx][1]
-                mappedBlocks.append((mappedStartPos, refCurrentPos))
-                qBlocks.append((qStartPos, qEndPos))
+                qEndPos = contigCurrentPos
+                mappedBlocks.append((mappedStartPos + 1, refCurrentPos))
+                qBlocks.append((qStartPos + 1, qEndPos))
+                skippedBlocks.append((qEndPos + 1, blocks[blockIdx][1]))
                 blockIdx += 1
             if blockIdx >= len(blocks):
                 break
             if (contigCurrentPos < blocks[blockIdx][0]) and (contigNextPos >= blocks[blockIdx][0]):
                 mappedStartPos = refCurrentPos
-                qStartPos = blocks[blockIdx][0]
+                qStartPos = contigNextPos
             contigCurrentPos += cigarSize
         # If deletion
         elif cigarEvent == 'D':
@@ -77,9 +82,18 @@ def findMappedBlocks(cigarList, blocks, chromStart):
         elif (cigarEvent == 'H') or (cigarEvent == 'S'):
             if (contigCurrentPos >= blocks[blockIdx][0]) and (mappedStartPos < refCurrentPos):
                 mappedEndPos = refCurrentPos
-                mappedBlocks.append((mappedStartPos, refCurrentPos))
+                mappedBlocks.append((mappedStartPos + 1, refCurrentPos))
+                qBlocks.append((qStartPos + 1, contigCurrentPos))
+                skippedBlocks.append((contigCurrentPos + 1, blocks[blockIdx][1]))
+                blockIdx += 1
+            # find the remaining blocks that are not mapped at all
+            contigCurrentPos += cigarSize
+            while (blockIdx < len(blocks)) and (contigCurrentPos >= blocks[blockIdx][1]):
+                skippedBlocks.append((blocks[blockIdx][0], blocks[blockIdx][1]))
+                blockIdx += 1
+
         #print(contigCurrentPos,refCurrentPos)
-    return mappedBlocks, qBlocks
+    return mappedBlocks, qBlocks, skippedBlocks
                 
 
 
@@ -89,12 +103,18 @@ def main():
                     help='sam file')
     parser.add_argument('--bed', type=str,
                     help='bed file')
-    parser.add_argument('--output', type=str,
-                    help='Output file in bed format')
+    parser.add_argument('--outputContig', type=str,
+                    help='Output contig blocks in bed format')
+    parser.add_argument('--outputMapped', type=str,
+                    help='Output mapped blocks in bed format')
+    parser.add_argument('--outputSkipped', type=str,
+                    help='Output skipped blocks in bed format')
     args = parser.parse_args()
     samPath = args.sam
     bedPath = args.bed
-    outputPath = args.output
+    outputContigPath = args.outputContig
+    outputMappedPath = args.outputMapped
+    outputSkippedPath = args.outputSkipped
 
     blocks = defaultdict(list)
     with open(bedPath,"r") as f:
@@ -108,6 +128,7 @@ def main():
 
     refBlocksAll = []
     qBlocksAll = []
+    skippedBlocksAll= []
     with open(samPath,"r") as f:
         for line in f:
             attrbs = line.strip().split()
@@ -117,17 +138,20 @@ def main():
             cigarList = handleCigar(attrbs[5])
             if len(blocks[contigName]) == 0:
                 continue
-            refBlocks, qBlocks = findMappedBlocks(cigarList, blocks[contigName], chromStart - 1)
+            refBlocks, qBlocks, skippedBlocks = findMappedBlocks(cigarList, blocks[contigName], chromStart - 1)
             refBlocksAll.extend([(chrom, refBlock[0], refBlock[1]) for refBlock in refBlocks])
             qBlocksAll.extend([(contigName, qBlock[0], qBlock[1]) for qBlock in qBlocks])
+            skippedBlocksAll.extend([(contigName, sBlock[0], sBlock[1]) for sBlock in skippedBlocks])
     
-    with open(outputPath, "w") as f:
+    with open(outputMappedPath, "w") as f:
         for refBlock in refBlocksAll:
-            f.write("{}\t{}\t{}\n".format(refBlock[0], refBlock[1]-1, refBlock[2]))
-    #with open("test.bed", "w") as f:
-    #    for qBlock in qBlocksAll:
-    #        f.write("{}\t{}\t{}\n".format(qBlock[0], qBlock[1], qBlock[2]))
-
+            f.write("{}\t{}\t{}\n".format(refBlock[0], refBlock[1] - 1, refBlock[2]))
+    with open(outputContigPath, "w") as f:
+        for qBlock in qBlocksAll:
+            f.write("{}\t{}\t{}\n".format(qBlock[0], qBlock[1] - 1, qBlock[2]))
+    with open(outputSkippedPath, "w") as f:
+        for skippedBlock in skippedBlocksAll:
+            f.write("{}\t{}\t{}\n".format(skippedBlock[0], skippedBlock[1] - 1, skippedBlock[2]))
 
 
 

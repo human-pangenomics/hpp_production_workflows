@@ -33,9 +33,18 @@ task mapBlocks {
         FILENAME=$(basename ~{blocksBed})
         PREFIX=${FILENAME%.bed}
         samtools view -F256 -F4 -q20 ~{alignmentBam} | cut -f1-6 > no_seq.sam
+        samtools view -F256 -F4 ~{alignmentBam} | awk '$5 < 20' |  cut -f1-6 > mq_less_20_no_seq.sam
+        samtools view -f4 ~{alignmentBam} | cut -f1 > unmapped_contigs.txt
         mkdir output
-        python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ~{blocksBed} --output output/${PREFIX}.~{suffix}.bed
-        bedtools sort -i output/${PREFIX}.~{suffix}.bed | bedtools merge -i - > output/${PREFIX}.~{suffix}.merged.bed
+        python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ~{blocksBed} --outputContig output/contig.bed --outputMapped output/ref.bed --outputSkipped output/skipped.bed
+        python3 $MAP_BLOCKS_PY --sam mq_less_20_no_seq.sam --bed ~{blocksBed} --outputContig output/contig_20.bed --outputMapped output/ref_20.bed --outputSkipped output/skipped_20.bed
+        cat output/contig.bed output/contig_20.bed | bedtools sort -i - | bedtools merge -i - > output/contig_all.bed
+        cat output/skipped.bed output/skipped_20.bed | bedtools sort -i - | bedtools merge -i - > output/skipped_all.bed
+        bedtools subtract -a output/skipped_all.bed -b output/contig_all.bed | bedtools sort -i - | bedtools merge -i - > output/${PREFIX}.~{suffix}.skipped.bed
+        bedtools subtract -a output/contig_20.bed -b output/contig.bed | bedtools sort -i - | bedtools merge -i - > output/${PREFIX}.~{suffix}.mq_lq20.bed
+        cat ~{blocksBed} | grep -f unmapped_contigs.txt | bedtools sort -i - | bedtools merge -i - > output/${PREFIX}.~{suffix}.unmapped.bed
+        bedtools sort -i output/contig.bed | bedtools merge -i - > output/${PREFIX}.~{suffix}.mapped.bed
+        mv output/ref.bed output/${PREFIX}.~{suffix}.ref.bed
     >>> 
     runtime {
         docker: dockerImage
@@ -45,7 +54,11 @@ task mapBlocks {
         preemptible : preemptible
     }
     output {
-        File mappedBlocksBed = glob("output/*.merged.bed")[0]
+        File mappedBlocksBed = glob("output/*.${suffix}.mapped.bed")[0]
+        File mappedLowMQBlocksBed = glob("output/*.${suffix}.mq_lq20.bed")[0]
+        File unmappedBlocksBed = glob("output/*.${suffix}.unmapped.bed")[0]
+        File skippedBlocksBed = glob("output/*.${suffix}.skipped.bed")[0]
+        File refBlocksBed = glob("output/*.${suffix}.ref.bed")[0]
     }
 }
 
