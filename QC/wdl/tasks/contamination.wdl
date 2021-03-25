@@ -569,23 +569,22 @@ task mergeContaminationResults {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
 
-        echo "========== Eukaryote ==========" >>out
-        cat ~{eukOut} >>out
+        OUT="~{assemblyIdentifier}.contamination.txt"
+        
+        echo "========== Eukaryote ==========" >>$OUT
+        cat ~{eukOut} >>$OUT
 
         echo "" >>out
-        echo "========== Mitocondria ==========" >>out
-        cat ~{mitoOut} >>out
+        echo "========== Mitocondria ==========" >>$OUT
+        cat ~{mitoOut} >>$OUT
 
         echo "" >>out
-        echo "========== Plastids ==========" >>out
-        cat ~{plastidsOut} >>out
+        echo "========== Plastids ==========" >>$OUT
+        cat ~{plastidsOut} >>$OUT
 
         echo "" >>out
-        echo "========== RefSeq ==========" >>out
-        cat ~{refseqOut} >>out
-
-        mv out ~{assemblyIdentifier}.contamination.txt
-
+        echo "========== RefSeq ==========" >>$OUT
+        cat ~{refseqOut} >>$OUT
 
 	>>>
 	output {
