@@ -2,6 +2,10 @@ version 1.0
 
 workflow MergeBamFiles{
     call merge
+    output{
+        File mergedBam = merge.mergedBam
+        File mergedBai = merge.mergedBai
+    }
 }
 
 task merge{
