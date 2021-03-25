@@ -545,7 +545,7 @@ task contaminationVecscreen {
 
 task mergeContaminationResults {
     input {
-        File assemblyIdentifier
+        String assemblyIdentifier
         File eukOut
         File mitoOut
         File plastidsOut
@@ -570,7 +570,7 @@ task mergeContaminationResults {
         set -o xtrace
 
         OUT="~{assemblyIdentifier}.contamination.txt"
-        
+
         echo "========== Eukaryote ==========" >>$OUT
         cat ~{eukOut} >>$OUT
 
