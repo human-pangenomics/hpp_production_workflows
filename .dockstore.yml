@@ -72,4 +72,7 @@ workflows:
    -  name: StandardQCHaploid
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/standard_qc_haploid.wdl
+   -  name: StandardQCHaploid
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/contamination.wdl
 
