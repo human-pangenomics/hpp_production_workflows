@@ -14,6 +14,7 @@ workflow longReadAlignment {
         File assembly
         File? referenceFasta
         Int preemptible=2
+        Int extractReadsDiskSize=256
         String zones
     }
 
@@ -24,7 +25,7 @@ workflow longReadAlignment {
                 referenceFasta=referenceFasta,
                 memSizeGB=4,
                 threadCount=4,
-                diskSizeGB=256,
+                diskSizeGB=extractReadsDiskSize,
                 dockerImage="tpesout/hpp_base:latest"
         }
 
