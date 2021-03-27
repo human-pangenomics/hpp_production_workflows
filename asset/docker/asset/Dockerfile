@@ -17,6 +17,7 @@ ENV BLOCKS_EXTENSION_V1_BASH=/home/scripts/blocks_extension_v1.sh
 ENV DEPTH2COV_PY=/home/scripts/depth2cov.py
 ENV CALC_MEAN_SD_PY=/home/scripts/calc_mean_sd.py
 ENV COV2COUNTS_PY=/home/scripts/cov2counts.py
+ENV COV2COUNTS_C=/home/scripts/cov2counts
 ENV COV_FREQ_DIST_PY=/home/scripts/coverage_frequency_distribution.py
 ENV FIT_MODEL_PY=/home/scripts/fit_model.py 
 ENV MAP_BLOCKS_PY=/home/scripts/map_blocks.py
