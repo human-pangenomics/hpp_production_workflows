@@ -60,6 +60,9 @@ workflows:
    -  name: Bam2Paf
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/bam2paf.wdl
+   -  name: FitModelByCoverage
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/workflows/fit_model_by_coverage.wdl
    -  name: AssetBamInput
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/workflows/asset_bam_input.wdl
