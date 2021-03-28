@@ -33,7 +33,7 @@ void cov2counts(char* inPath, char* outPath){
 	token = strtok(NULL, "\t");
         cov = atoi(token);
 	if (cov > maxCov) {
-		counts = (int*) realloc(counts, (cov + 1) * sizeof(int));
+		counts = (int*) realloc(counts, (cov + 1) * sizeof(int));// since we expect a small number of coverages highar than 1000 it's seems efficient to increment the size one by one
 		// initialize just added elements
 		for(int i = (maxCov + 1); i <= cov; i++){
 			counts[i] = 0;
