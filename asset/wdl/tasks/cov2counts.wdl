@@ -11,7 +11,7 @@ task cov2counts {
         # runtime configurations
         Int memSize=4
         Int threadCount=2
-        Int diskSize=32
+        Int diskSize=64
         String dockerImage="quay.io/masri2019/hpp_asset:latest"
         Int preemptible=2
     }
