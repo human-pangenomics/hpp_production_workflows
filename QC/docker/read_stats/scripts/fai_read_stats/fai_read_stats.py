@@ -131,7 +131,7 @@ def main(index_path, output_dir, histogram_min, histogram_max, histogram_n_bins,
         print("file\t{}".format(os.path.basename(index_path)), file=output_file)
         print("total_reads\t{}".format(n_items), file=output_file)
         print("total_bp\t{}".format(total_length), file=output_file)
-        print("total_Gbp\t{}".format(total_length // 1000000000), file=output_file)
+        print("total_Gbp\t{0:0.2f}".format(total_length / 1000000000), file=output_file)
         print("min\t{}".format(quartiles[0]), file=output_file)
         print("max\t{}".format(quartiles[4]), file=output_file)
         print("mean\t{}".format(total_length // n_items), file=output_file)
