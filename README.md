@@ -49,7 +49,7 @@ The following tools are included:
 * [QUAST](https://sourceforge.net/projects/quast/files/)
 * [YAK](https://github.com/lh3/yak)
 
-### Miscelaneous QC
+### Miscellaneous QC
 
 In addition to the automated QC of assemblies, the following tasks are included:
 * read_stats.wdl: outputs read length statistics for bam/fastq files
