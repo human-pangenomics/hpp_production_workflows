@@ -2,6 +2,12 @@ version 1.0
 
 workflow runBamCoverage{
     call bamCoverage
+    output{
+        File counts = bamCoverage.counts
+        File coverageGz = bamCoverage.coverageGz
+        Float coverageMeanFloat = bamCoverage.coverageMean
+        Float coverageSdFloat = bamCoverage.coverageSD
+    }
 }
 
 task bamCoverage{
