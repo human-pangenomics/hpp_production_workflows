@@ -42,9 +42,12 @@ task bamCoverage{
             samtools depth -aa -Q ~{minMAPQ - 1} ~{sep=" " bamFiles} | awk '{sum=0; for (i=3; i<=NF; i++) { sum+= $i } {print $1,$2,sum}}' > ~{sampleName}.depth
         fi
         # Convert the output of samtools depth into a compressed format
-        python3 ${DEPTH2COV_PY} --depth ~{sampleName}.depth --fai ${PREFIX}.fa.fai --output ~{sampleName}.cov
+        ${DEPTH2COV_C} -d ~{sampleName}.depth -f ${PREFIX}.fa.fai -o ~{sampleName}.cov
+        # Convert cov to counts
+        ${COV2COUNTS_C} -i ~{sampleName}.cov -o ~{sampleName}.counts
         # Calculate mean and standard deviation
-        python3 ${CALC_MEAN_SD_PY} --coverageInput ~{sampleName}.cov --meanOutput cov_mean.txt --sdOutput cov_sd.txt
+        python3 ${CALC_MEAN_SD_PY} --countsInput ~{sampleName}.counts --meanOutput cov_mean.txt --sdOutput cov_sd.txt
+        gzip ~{sampleName}.cov
     >>>
     runtime {
         docker: dockerImage
@@ -54,7 +57,8 @@ task bamCoverage{
         preemptible : preemptible
     }
     output{
-        File coverage = glob("*.cov")[0]
+        File coverageGz = glob("*.cov.gz")[0]
+        File counts = glob("*.counts")[0]
         Float coverageMean = read_float("cov_mean.txt") 
         Float coverageSD = read_float("cov_sd.txt")
     }
