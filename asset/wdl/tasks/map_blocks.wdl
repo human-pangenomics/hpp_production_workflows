@@ -3,10 +3,12 @@ version 1.0
 workflow runMapBlocks{
     call mapBlocks
     output {
+        File mergedMappedBlocksBed = mapBlocks.mergedMappedBlocksBed
         File mappedBlocksBed = mapBlocks.mappedBlocksBed
         File mappedLowMQBlocksBed = mapBlocks.mappedLowMQBlocksBed
         File unmappedBlocksBed = mapBlocks.unmappedBlocksBed
         File skippedBlocksBed = mapBlocks.skippedBlocksBed
+        File mergedRefBlocksBed = mapBlocks.mergedRefBlocksBed
         File refBlocksBed = mapBlocks.refBlocksBed
     }
 }
@@ -47,7 +49,9 @@ task mapBlocks {
         bedtools subtract -a output/skipped_all.bed -b output/contig_all.bed | bedtools sort -i - | bedtools merge -i - > output/${PREFIX}.~{suffix}.skipped.bed
         bedtools subtract -a output/contig_20.bed -b output/contig.bed | bedtools sort -i - | bedtools merge -i - > output/${PREFIX}.~{suffix}.mq_lq20.bed
         cat ~{blocksBed} | grep -f unmapped_contigs.txt | bedtools sort -i - | bedtools merge -i - > output/${PREFIX}.~{suffix}.unmapped.bed
-        bedtools sort -i output/contig.bed | bedtools merge -i - > output/${PREFIX}.~{suffix}.mapped.bed
+        bedtools sort -i output/contig.bed | bedtools merge -i - > output/${PREFIX}.~{suffix}.mapped.merged.bed
+        mv output/contig.bed output/${PREFIX}.~{suffix}.mapped.bed
+        bedtools sort -i output/ref.bed | bedtools merge -i - > output/${PREFIX}.~{suffix}.ref.merged.bed
         mv output/ref.bed output/${PREFIX}.~{suffix}.ref.bed
     >>> 
     runtime {
@@ -59,10 +63,12 @@ task mapBlocks {
     }
     output {
         File mappedBlocksBed = glob("output/*.${suffix}.mapped.bed")[0]
+        File mergedMappedBlocksBed = glob("output/*.${suffix}.mapped.merged.bed")[0]
         File mappedLowMQBlocksBed = glob("output/*.${suffix}.mq_lq20.bed")[0]
         File unmappedBlocksBed = glob("output/*.${suffix}.unmapped.bed")[0]
         File skippedBlocksBed = glob("output/*.${suffix}.skipped.bed")[0]
         File refBlocksBed = glob("output/*.${suffix}.ref.bed")[0]
+        File mergedRefBlocksBed = glob("output/*.${suffix}.ref.merged.bed")[0]
     }
 }
 
