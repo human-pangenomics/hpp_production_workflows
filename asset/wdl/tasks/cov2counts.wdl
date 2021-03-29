@@ -9,8 +9,8 @@ task cov2counts {
         String sampleName
         String sampleSuffix
         # runtime configurations
-        Int memSize=4
-        Int threadCount=2
+        Int memSize=8
+        Int threadCount=4
         Int diskSize=64
         String dockerImage="quay.io/masri2019/hpp_asset:latest"
         Int preemptible=2
@@ -28,7 +28,7 @@ task cov2counts {
         set -o xtrace
 
         ${COV2COUNTS_C} -i ~{coverageFile} -o ~{sampleName}.~{sampleSuffix}.counts 
-        gzip ~{coverageFile} > ~{sampleName}.~{sampleSuffix}.cov.gz
+        pigz -p4 -c ~{coverageFile} > ~{sampleName}.~{sampleSuffix}.cov.gz
     >>> 
     runtime {
         docker: dockerImage
