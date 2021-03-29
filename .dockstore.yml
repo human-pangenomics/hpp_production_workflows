@@ -96,5 +96,7 @@ workflows:
    -  name: Asm2AsmAligner
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/asm2asm_aligner.wdl
-
+   -  name: ProduceFai
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/produce_fai.wdl
 
