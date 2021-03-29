@@ -31,7 +31,7 @@ task produceFai {
         FILENAME=$(basename ~{assemblyGz})
         PREFIX=${FILENAME%.gz}
         gunzip -c ~{assemblyGz} > ${PREFIX}
-        samtools index ${PREFIX}
+        samtools faidx ${PREFIX}
     >>> 
     runtime {
         docker: dockerImage
