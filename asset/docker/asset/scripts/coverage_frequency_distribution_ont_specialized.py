@@ -75,13 +75,16 @@ class CoverageDistribution:
     # Return the probability that an element in the assembly with coverage c is
     # actually absent in the underlying genome
     def probability_erroneous(self, c):
-        return self.component_probabilities(c)[0]
+        return self.component_probabilities(c)[1]
     
     # Return the probability that an element in the assembly with coverage c is
     # present in the underlying genome and haploid (indicating that is it
     # correctly assembled)
     def probability_haploid(self, c):
-        return self.component_probabilities(c)[1]
+        comps = self.component_probabilities(c)
+        # comps[0] is the probability of the ultra-long component
+        # comps[2] is the probability of the main haploid component
+        return comps[2] + comps[0]
     
     # Return the probability that an element in the assembly with coverage c is
     # actually consists of multiple elements in the underlying genome collapsed
@@ -89,7 +92,7 @@ class CoverageDistribution:
     # collapsing actually ocurred)
     def probability_collapsed(self, c):
         comps = self.component_probabilities(c)
-        return 1 - comps[0] - comps[1]
+        return 1 - comps[0] - comps[1] - comps[2]
     
     # Fit and return a CoverageDistribution using a coverage frequency histogram,
     # which should be provided as either a collections.Counter or dict whose keys
@@ -106,20 +109,25 @@ class CoverageDistribution:
         
         for iteration in range(max_iters):
             
-#            print(f"iteration {iteration}")
-#            print("\terr scale {}".format(cov_dist.err_scale))
-#            print("\tcov per ploidy {}".format(cov_dist.cov_per_ploidy))
-#            print("\tvar per ploidy {}".format(cov_dist.var_per_ploidy))
-#            print("\tlow ploidy weights {}".format(", ".join("{:.3e}".format(v) for v in cov_dist.mixture_weights[:5])))
-#            print("\thigh ploidy weights {}".format(", ".join("{:.3e}".format(v) for v in cov_dist.mixture_weights[-8:])))
-#            c = sorted(spectrum)[:200]
-#            plt.plot(c, [cov_dist.pdf(x) for x in c])
-#            plt.show()
-            
+            print(f"iteration {iteration}")
+            print("\terr scale {}".format(cov_dist.err_scale))
+            print("\tcov per ploidy {}".format(cov_dist.cov_per_ploidy))
+            print("\tvar per ploidy {}".format(cov_dist.var_per_ploidy))
+            print("\tcov Ultra Long {}".format(cov_dist.cov_ul))
+            print("\tvar Ultra Long {}".format(cov_dist.var_ul))
+            print("\tweight Ultra Long {}".format(cov_dist.mixture_weight_ul))
+            print("\tlow ploidy weights {}".format(", ".join("{:.3e}".format(v) for v in cov_dist.mixture_weights[:5])))
+            print("\thigh ploidy weights {}".format(", ".join("{:.3e}".format(v) for v in cov_dist.mixture_weights[-8:])))
+            #c = sorted(spectrum)[:200]
+            #plt.plot(c, [cov_dist.pdf(x) for x in c])
+            #plt.plot(c, [spectrum[x] * cov_dist.pdf(round(cov_dist.cov_per_ploidy)) / spectrum[round(cov_dist.cov_per_ploidy)]  for x in c])
+            #plt.show()
             assignment = {}
-            for cov in spectrum:
-                assignment[cov] = cov_dist.component_probabilities(cov_dist.cov_adj(cov))
-        
+            assignment_ul = {}
+            for cov in spectrum: 
+                probs = cov_dist.component_probabilities(cov_dist.cov_adj(cov))
+                assignment[cov] = probs[1:]
+                assignment_ul[cov] = probs[0]
             new_mixture_weights = []
             
             weight_denom = sum(spectrum.values())
@@ -140,10 +148,32 @@ class CoverageDistribution:
             llike = lambda lam: eff_N * log(lam) - eff_N * log(1.0 - exp(-lam * b)) - eff_sum * lam
             rate = golden_section_search(llike, 0, b, tol / 100.0)
             new_error_scale = 1.0 / rate
-            
+
             # component weight is weighted proportion assigned to the error component
             new_mixture_weights.append(weight_numer / weight_denom)
-                    
+
+            # calculating the mean coverage of the Ultra-Long component
+            numer = 0.0
+            denom = 0.0
+            weight_numer = 0.0
+            for cov in spectrum:
+                freq = spectrum[cov]
+                prob = assignment_ul[cov]
+                numer += freq * prob * cov_dist.cov_adj(cov)
+                denom += prob * freq
+                weight_numer += prob * freq
+            new_mixture_weight_ul = weight_numer / weight_denom
+            new_cov_ul = numer / denom
+
+            # calculating the variation of the Ultra-Long component
+            for cov in spectrum:
+                freq = spectrum[cov]
+                prob = assignment_ul[cov]
+                dev = cov_dist.cov_adj(cov) - new_cov_ul
+                numer += freq * prob * dev * dev
+                denom += freq * prob
+            new_var_ul = numer /denom
+
             # the haploid coverage is the weighted mean
             numer = 0.0
             denom = 0.0
@@ -177,7 +207,7 @@ class CoverageDistribution:
             # the next iteration's distrubition
             new_cov_dist = CoverageDistribution(new_cov_per_ploidy, new_var_per_ploidy,
                                                 new_error_scale, new_mixture_weights,
-                                                cov_dist.err_trunc_point())
+                                                cov_dist.err_trunc_point(), new_cov_ul, new_var_ul, new_mixture_weight_ul)
             
             converged = cov_dist.converged(new_cov_dist, tol)
             cov_dist = new_cov_dist
@@ -211,6 +241,9 @@ class CoverageDistribution:
         cov_per_ploidy = cov_at_max_frequency
         var_per_ploidy = cov_per_ploidy
         
+        cov_ul = cov_at_max_frequency / 2
+        var_ul = cov_ul
+
         max_ploidy = int(max_cov / cov_per_ploidy)
         while max_ploidy * cov_per_ploidy - 3.0 * sqrt(max_ploidy * cov_per_ploidy) < max_cov:
             max_ploidy += 1
@@ -224,16 +257,35 @@ class CoverageDistribution:
         # approximate the mixture weights simplistically by hard-assigning all data
         # points to their nearest component
         mixture_weights = []
-        for i in range(max_ploidy + 1):
+        # weight of the exponential component
+        count = 1
+        for cov in range(0, int(cov_ul / 2)):
+            if cov in spectrum:
+                count += spectrum[cov]
+        mixture_weights.append(count/ total_count)
+        # weight of the Ultra-Long component
+        count = 1
+        for cov in range(int(cov_ul / 2), int((cov_ul + cov_per_ploidy)/2)):
+            if cov in spectrum:
+                count += spectrum[cov]
+        mixture_weight_ul = count / total_count
+        # weight of the main haploid component
+        count = 1
+        for cov in range(int((cov_ul + cov_per_ploidy)/2), int(3 * cov_per_ploidy / 2)):
+            if cov in spectrum:
+                count += spectrum[cov]
+        mixture_weights.append(count / total_count)
+        # other components
+        for i in range(2, max_ploidy + 1):
             count = 1
             for cov in range(int((i - 0.5) * cov_per_ploidy), int((i + 0.5) * cov_per_ploidy)):
                 if cov in spectrum:
                     count += spectrum[cov]
             mixture_weights.append(count / total_count)
         
-        return CoverageDistribution(cov_per_ploidy, var_per_ploidy, err_scale, mixture_weights, cov_per_ploidy)
+        return CoverageDistribution(cov_per_ploidy, var_per_ploidy, err_scale, mixture_weights, cov_per_ploidy, cov_ul, var_ul, mixture_weight_ul)
     
-    def __init__(self, cov_per_ploidy, var_per_ploidy, err_scale, mixture_weights, err_trunc_point, 
+    def __init__(self, cov_per_ploidy, var_per_ploidy, err_scale, mixture_weights, err_trunc_point, cov_ul, var_ul, mixture_weight_ul,
                  pseudo_cov = .25):
         self.cov_per_ploidy = cov_per_ploidy
         self.var_per_ploidy = var_per_ploidy
@@ -241,9 +293,13 @@ class CoverageDistribution:
         self.mixture_weights = mixture_weights
         self.err_trunc = err_trunc_point
         self.pseudo_cov = pseudo_cov
+        # "_ul" shows the characterestics of the ultra-long component
+        self.cov_ul = cov_ul
+        self.var_ul = var_ul
+        self.mixture_weight_ul = mixture_weight_ul 
     
     def pdf(self, x):
-        return sum(self.likelihood(ploidy, x) for ploidy in range(self.max_ploidy() + 1))
+        return sum(self.likelihood(ploidy, x) for ploidy in range(-1, self.max_ploidy() + 1))
     
     def max_ploidy(self):
         return len(self.mixture_weights) - 1
@@ -253,6 +309,9 @@ class CoverageDistribution:
     
     def likelihood(self, ploidy, cov):
         l = 0.0
+        if ploidy == -1: # for Ultra Long component
+            l = norm_pdf(cov, self.cov_ul, sqrt(self.var_ul))
+            return self.mixture_weight_ul * l
         if ploidy == 0:
             # error distribution, switch to rate parameterization
             l = trunc_exp_pdf(cov, 1.0 / self.err_scale, self.err_trunc_point())
@@ -264,7 +323,7 @@ class CoverageDistribution:
         return self.err_trunc
     
     def component_probabilities(self, cov):
-        likelihoods = [self.likelihood(ploidy, cov) for ploidy in range(self.max_ploidy() + 1)]
+        likelihoods = [self.likelihood(ploidy, cov) for ploidy in range(-1, self.max_ploidy() + 1)]
         Z = sum(likelihoods)
         for i in range(len(likelihoods)):
             likelihoods[i] /= Z
@@ -283,6 +342,12 @@ class CoverageDistribution:
                 break
             if other_wt and abs(wt / other_wt - 1.0) > tol:
                 return False
+        if other.cov_ul != 0.0 and abs(self.cov_ul / other.cov_ul - 1.0) > tol:
+            return False
+        if other.var_ul != 0.0 and abs(self.var_ul / other.var_ul - 1.0) > tol:
+            return False
+        if other.mixture_weight_ul != 0.0 and abs(self.mixture_weight_ul / other.mixture_weight_ul - 1.0) > tol:
+            return False
         return True
     
     
