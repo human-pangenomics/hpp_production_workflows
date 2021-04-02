@@ -78,3 +78,6 @@ workflows:
    -  name: MinigraphMap
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/minigraph.wdl
+   -  name: MisjoinCheck
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/misjoinCheck.wdl

@@ -45,7 +45,7 @@ task minigraphMap {
         fi 
 
 
-        ## mask fasta in adapterBed regions
+        ## Run minigraph
         minigraph -t ~{threadCount} ~{args} ~{inputGraph} ${inputFastaFN} | gzip > ~{outputPafGz}
 
     >>>
