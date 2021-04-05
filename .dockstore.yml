@@ -87,6 +87,9 @@ workflows:
    -  name: AssetMerge
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/asset_merge.wdl
+   -  name: AssetMergeLongRead
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/asset_merge_long_read.wdl
    -  name: MapBlocks
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/map_blocks.wdl
