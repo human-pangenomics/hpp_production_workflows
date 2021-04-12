@@ -2,6 +2,9 @@ version 1.0
 
 workflow runPstools {
     call pstools
+    output {
+        pstoolsOutput = pstools.pstoolsOutput
+    }
 }
 
 task pstools {
