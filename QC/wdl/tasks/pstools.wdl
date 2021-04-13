@@ -19,7 +19,7 @@ task pstools {
         Int diskSize=512
         String dockerImage="quay.io/masri2019/hpp_pstools:latest"
         Int preemptible=2
-        String zones
+        String zones="us-west2-a"
     }
     command <<<
         # Set the exit code of a pipeline to that of the rightmost command
@@ -35,7 +35,7 @@ task pstools {
 
         mkdir hic_data
         ln ~{sep=" " pairedFastqGzFiles} hic_data/
-        pstools phasing_error ~{matAssemblyFastaGz} ~{patAssemblyFastaGz} <(zcat hic_data/*_R1_001.fastq.gz) <(zcat hic_data/*_R2_001.fastq.gz) > ~{sampleName}.pstools.out
+        pstools phasing_error -t~{threadCount} ~{matAssemblyFastaGz} ~{patAssemblyFastaGz} <(zcat hic_data/*_R1_001.fastq.gz) <(zcat hic_data/*_R2_001.fastq.gz) > ~{sampleName}.pstools.out
     >>>
 
     runtime {
