@@ -75,4 +75,9 @@ workflows:
    -  name: Contamination
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/contamination.wdl
-
+   -  name: MinigraphMap
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/minigraph.wdl
+   -  name: MisjoinCheck
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/misjoinCheck.wdl

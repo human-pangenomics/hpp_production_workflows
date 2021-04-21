@@ -13,7 +13,7 @@ workflow runReadStats {
         Int histogramMinLength=0
         Int histogramMaxLength=0
         Int fileExtractionDiskSizeGB = 256
-        String dockerImage = "juklucas/fai_read_stats:latest"
+        String dockerImage = "humanpangenomics/fai_read_stats:latest"
 
         String identifierAll = "${identifier}_all"
     }
@@ -102,7 +102,7 @@ task indexReads {
         Int memSizeGB = 4
         Int threadCount = 4
         Int diskSizeGB = 64
-        String dockerImage = "juklucas/fai_read_stats:latest"
+        String dockerImage = "humanpangenomics/fai_read_stats:latest"
     }
 
     command <<<
@@ -149,7 +149,7 @@ task readStats {
         Int memSizeGB = 2
         Int threadCount = 2
         Int diskSizeGB = 64
-        String dockerImage = "juklucas/fai_read_stats:latest"
+        String dockerImage = "humanpangenomics/fai_read_stats:latest"
     }
 
 	command <<<
@@ -212,7 +212,7 @@ task consolidateReadStats {
         Int memSizeGB = 4
         Int threadCount = 4
         Int diskSizeGB = 64
-        String dockerImage = "juklucas/fai_read_stats:latest"
+        String dockerImage = "humanpangenomics/fai_read_stats:latest"
     }
 
 	command <<<
@@ -266,7 +266,7 @@ task concatFais {
         Int memSizeGB = 4
         Int threadCount = 1
         Int diskSizeGB = 64
-        String dockerImage = "juklucas/fai_read_stats:latest"
+        String dockerImage = "humanpangenomics/fai_read_stats:latest"
     }
 
     command <<<
