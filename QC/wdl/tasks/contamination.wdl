@@ -8,10 +8,9 @@ workflow runContamination {
         File eukContaminationDatabase
         File mitoContaminationDatabase
         File plastidsContaminationDatabase
-#        File vecscreenContaminationDatabase
+        File vecscreenContaminationDatabase
         File refseqContaminationDatabase
-        File assemblyFasta
-        String dockerImage
+        String dockerImage="tpesout/hpp_blast:latest"
     }
 
     ### Dipcall (v0.1): main version ###
@@ -33,12 +32,12 @@ workflow runContamination {
             plastidsContaminationDatabase=plastidsContaminationDatabase,
             dockerImage=dockerImage
     }
-#    call contaminationVecscreen {
-#        input:
-#            assemblyFasta=assemblyFasta,
-#            vecscreenContaminationDatabase=vecscreenContaminationDatabase,
-#            dockerImage=dockerImage
-#    }
+    call contaminationVecscreen {
+        input:
+            assemblyFasta=assemblyFasta,
+            vecscreenContaminationDatabase=vecscreenContaminationDatabase,
+            dockerImage=dockerImage
+    }
     call contaminationWindowmasker {
         input:
             assemblyFasta=assemblyFasta,
@@ -57,7 +56,7 @@ workflow runContamination {
             mitoOut=contaminationMito.outputMito,
             plastidsOut=contaminationPlastids.outputPlastids,
             refseqOut=contaminationRefseq.outputRefseq,
-#            vecscreenOut
+            vecscreenOut=contaminationVecscreen.outputVecscreen,
             dockerImage=dockerImage
     }
 
@@ -70,6 +69,7 @@ workflow runContamination {
 	    File mergedResult = mergeContaminationResults.outputSummary
 	}
 }
+
 
 task contaminationEuk {
     input {
@@ -518,20 +518,25 @@ task contaminationVecscreen {
         fi
         PREFIX="${ASM_FILENAME%.*}"
 
+        # index it
+        ln -s ~{vecscreenContaminationDatabase}
+        /opt/blast/ncbi-blast-2.5.0+/bin/makeblastdb -in `basename ~{vecscreenContaminationDatabase}` -input_type fasta -dbtype nucl
+        ls -lah
+
         # screen it
-        vecscreen -d ~{vecscreenContaminationDatabase} \
+        vecscreen -d `basename ~{vecscreenContaminationDatabase}` \
             -f3 \
             -i $ASM_FILENAME \
             -o $PREFIX.vecscreen.euk.out ~{vecscreenExtraArguments}
-#        vslist \
-#            suspect=0 \
-#            weak=0 \
-#            $PREFIX.vecscreen.euk.out \
-#            > $PREFIX.vecscreen.euk.filtered.out
+        VSlistTo1HitPerLine.awk \
+            suspect=0 \
+            weak=0 \
+            $PREFIX.vecscreen.euk.out \
+            > $PREFIX.vecscreen.euk.filtered.out
 
 	>>>
 	output {
-		File outputVecscreen = glob("*.vecscreen.euk.out")[0]
+		File outputVecscreen = glob("*.vecscreen.euk.filtered.out")[0]
 	}
     runtime {
         memory: memSizeGB + " GB"
@@ -550,7 +555,7 @@ task mergeContaminationResults {
         File mitoOut
         File plastidsOut
         File refseqOut
-#        File vecscreenOut
+        File vecscreenOut
         Int memSizeGB = 2
         Int threadCount = 1
         Int diskSizeGB = 64
@@ -585,6 +590,10 @@ task mergeContaminationResults {
         echo "" >>out
         echo "========== RefSeq ==========" >>$OUT
         cat ~{refseqOut} >>$OUT
+
+        echo "" >>out
+        echo "========== Vecscreen ==========" >>$OUT
+        cat ~{vecscreenOut} >>$OUT
 
 	>>>
 	output {
