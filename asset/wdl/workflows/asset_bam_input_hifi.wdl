@@ -2,9 +2,8 @@ version 1.0
 
 import "../tasks/asset.wdl" as asset_t
 import "../tasks/bam2paf.wdl" as bam2paf_t
-import "../tasks/bam_coverage.wdl" as bam_coverage_t
 
-workflow assetTwoPlatforms {
+workflow assetHiFiPlatform {
     input {
         String sampleName
         String sampleSuffix
