@@ -13,6 +13,8 @@ workflow runBamCoverage{
 task bamCoverage{
     input{
         String sampleName
+        String sampleSuffix
+        String platform
         Array[File] bamFiles
         Int minMAPQ
         File assemblyFastaGz
@@ -43,17 +45,17 @@ task bamCoverage{
 
         if (( ~{length(bamFiles)} == 1 ))
         then 
-            samtools depth -J -aa -Q ~{minMAPQ - 1} ~{sep=" " bamFiles}  > ~{sampleName}.depth
+            samtools depth -aa -Q ~{minMAPQ - 1} ~{sep=" " bamFiles}  > ~{sampleName}.depth
         else
-            samtools depth -J -aa -Q ~{minMAPQ - 1} ~{sep=" " bamFiles} | awk '{sum=0; for (i=3; i<=NF; i++) { sum+= $i } {print $1,$2,sum}}' > ~{sampleName}.depth
+            samtools depth -aa -Q ~{minMAPQ - 1} ~{sep=" " bamFiles} | awk '{sum=0; for (i=3; i<=NF; i++) { sum+= $i } {print $1,$2,sum}}' > ~{sampleName}.depth
         fi
         # Convert the output of samtools depth into a compressed format
-        ${DEPTH2COV_C} -d ~{sampleName}.depth -f ${PREFIX}.fa.fai -o ~{sampleName}.cov
+        ${DEPTH2COV_C} -d ~{sampleName}.depth -f ${PREFIX}.fa.fai -o ~{sampleName}.~{sampleSuffix}.~{platform}.cov
         # Convert cov to counts
-        ${COV2COUNTS_C} -i ~{sampleName}.cov -o ~{sampleName}.counts
+        ${COV2COUNTS_C} -i ~{sampleName}.cov -o ~{sampleName}.~{sampleSuffix}.~{platform}.counts
         # Calculate mean and standard deviation
-        python3 ${CALC_MEAN_SD_PY} --countsInput ~{sampleName}.counts --meanOutput cov_mean.txt --sdOutput cov_sd.txt
-        gzip ~{sampleName}.cov
+        python3 ${CALC_MEAN_SD_PY} --countsInput ~{sampleName}.~{sampleSuffix}.~{platform}.counts --meanOutput cov_mean.txt --sdOutput cov_sd.txt
+        gzip ~{sampleName}.~{sampleSuffix}.~{platform}.cov
     >>>
     runtime {
         docker: dockerImage
