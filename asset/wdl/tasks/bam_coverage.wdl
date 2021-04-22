@@ -52,7 +52,7 @@ task bamCoverage{
         # Convert the output of samtools depth into a compressed format
         ${DEPTH2COV_C} -d ~{sampleName}.depth -f ${PREFIX}.fa.fai -o ~{sampleName}.~{sampleSuffix}.~{platform}.cov
         # Convert cov to counts
-        ${COV2COUNTS_C} -i ~{sampleName}.cov -o ~{sampleName}.~{sampleSuffix}.~{platform}.counts
+        ${COV2COUNTS_C} -i ~{sampleName}.~{sampleSuffix}.~{platform}.cov -o ~{sampleName}.~{sampleSuffix}.~{platform}.counts
         # Calculate mean and standard deviation
         python3 ${CALC_MEAN_SD_PY} --countsInput ~{sampleName}.~{sampleSuffix}.~{platform}.counts --meanOutput cov_mean.txt --sdOutput cov_sd.txt
         gzip ~{sampleName}.~{sampleSuffix}.~{platform}.cov
