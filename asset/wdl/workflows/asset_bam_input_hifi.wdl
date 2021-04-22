@@ -23,7 +23,8 @@ workflow assetHiFiPlatform {
     
     call asset_t.ast_pbTask as hifiAssetTask{
         input:
-            sampleName = "${sampleName}.${sampleSuffix}.hifi",
+            sampleName = "${sampleName}.${sampleSuffix}",
+            platform = "hifi",
             pafFiles = hifiBam2Paf.pafFile,
             coverageMean = hifiCoverageMean,
             coverageSD = hifiCoverageSd,
