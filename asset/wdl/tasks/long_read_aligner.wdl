@@ -105,8 +105,7 @@ task alignment{
         fi
         
         fileBasename=$(basename ~{readFastq_or_queryAssembly})
-        ${ALIGNER_CMD} -a -x ~{preset} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} > ${fileBasename%.*.*}.sam
-        samtools view -S -b ${fileBasename%.*.*}.sam > ${fileBasename%.*.*}.bam
+        ${ALIGNER_CMD} -a -x ~{preset} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} | samtools view -h -b > ${fileBasename%.*.*}.bam
         
         if [ -z ~{suffix} ]; then
             OUTPUT_FILE=${fileBasename%.*.*}.sorted.bam
