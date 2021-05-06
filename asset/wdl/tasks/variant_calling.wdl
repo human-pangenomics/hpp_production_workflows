@@ -123,6 +123,7 @@ task callVariant{
         samtools index ${BAM_PREFIX}.bam
 
         gunzip -c ~{assemblyFastaGz} > asm.fa
+        samtools faidx asm.fa
         mkdir split_beds
         python3 ${SPLIT_BED_PY} --bed ~{bed} --n ~{threadCount} --dir split_beds --prefix tmp
         mkdir vcf_files
