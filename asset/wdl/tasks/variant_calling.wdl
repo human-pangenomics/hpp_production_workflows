@@ -5,6 +5,7 @@ workflow VariantCalling{
         File assemblyFastaGz
         File bam
         File bamIndex
+        Int ploidy = 2
         Int numberOfCallerNodes=16
         Int nodeThreadCount=16
         String sampleName
@@ -25,6 +26,7 @@ workflow VariantCalling{
                 assemblyFastaGz = assemblyFastaGz,
                 bam = part.left,
                 bed = part.right,
+                ploidy = ploidy
         }
     }
     call mergeVcf{
@@ -61,20 +63,26 @@ task splitBam{
         # echo each line of the script to stdout so we can see what is happening
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
-        
+
+        ## unzip fasta file and produce its index file        
         ASSEMBLY_NAME=$(basename ~{assemblyFastaGz})
         ASSEMBLY_PREFIX=${ASSEMBLY_NAME%%.fa.gz}
         gunzip -c ~{assemblyFastaGz} > ${ASSEMBLY_PREFIX}.fa
         samtools faidx ${ASSEMBLY_PREFIX}.fa
+
+        ## hard link the bam and bai files to the working directory
         BAM_NAME=$(basename ~{bam})
         BAM_PREFIX=${BAM_NAME%%.bam}
         ln -f ~{bam} > ${BAM_PREFIX}.bam
         ln -f ~{bamIndex} > ${BAM_PREFIX}.bam.bai
+
         ## make a bed file that covers the whole assembly
         cat ${ASSEMBLY_PREFIX}.fa.fai | awk '{print $1"\t"0"\t"$2}' > ${ASSEMBLY_PREFIX}.bed
+
         ## split the bed file of the whole assembly into multiple bed files
         mkdir split_beds split_bams
         python3 ${SPLIT_BED_PY} --bed ${ASSEMBLY_PREFIX}.bed --n 16 --dir split_beds --prefix ${ASSEMBLY_PREFIX}
+
         ## make a separate bam for each bed file
         seq 1 ~{splitNumber} | xargs -I {} -n 1 -P ~{threadCount} sh -c "samtools view -h -b -L split_beds/${ASSEMBLY_PREFIX}_{}.bed ${BAM_PREFIX}.bam > split_bams/${BAM_PREFIX}_{}.bam"
     >>>
@@ -97,6 +105,7 @@ task callVariant{
         File bam
         File assemblyFastaGz
         File bed
+        Int ploidy
         # runtime configurations
         Int memSize=32
         Int threadCount=16
@@ -117,23 +126,31 @@ task callVariant{
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
         
+        ## hard link the bam file to the working directory and produce its index file
         BAM_NAME=$(basename ~{bam})
         BAM_PREFIX=${BAM_NAME%%.bam}
         ln -f ~{bam} > ${BAM_PREFIX}.bam
         samtools index ${BAM_PREFIX}.bam
 
+        ## unzip the fasta file and produce its index
         gunzip -c ~{assemblyFastaGz} > asm.fa
         samtools faidx asm.fa
+
+        ## split the previously split bed file again into smaller chunks for the sake of parallelism
         mkdir split_beds
         python3 ${SPLIT_BED_PY} --bed ~{bed} --n ~{threadCount} --dir split_beds --prefix tmp
+
+        ## run the variant caller for each small temporary bed file
         mkdir vcf_files
-        seq 1 ~{threadCount} | xargs -I {} -n 1 -P ~{threadCount} sh -c "bcftools mpileup -a FORMAT/AD -a INFO/AD -q20 -B -d 100000 -f asm.fa -R split_beds/tmp_{}.bed ${BAM_PREFIX}.bam | bcftools call -cv --ploidy 2 -Oz -o vcf_files/tmp.{}.vcf.gz"
-        for filename in $(ls vcf_files);do bcftools index vcf_files/${filename};done
+        seq 1 ~{threadCount} | xargs -I {} -n 1 -P ~{threadCount} sh -c "bcftools mpileup -a FORMAT/AD -a INFO/AD -q20 -B -d 100000 -f asm.fa -R split_beds/tmp_{}.bed ${BAM_PREFIX}.bam | bcftools call -cv --ploidy ~{ploidy} -Oz -o vcf_files/tmp.{}.vcf.gz"
         
-        ## merge the temp vcf files and merge them into a single vcf
-        bcftools merge --force-samples -o merged.vcf.gz -Oz vcf_files/*.vcf.gz
+        ## make a header for the merged vcf file
+        zcat vcf_files/tmp.1.vcf.gz | awk 'substr($0,1,1) == "#"' | awk -v colname="${BAM_PREFIX}" '{if ($1 == "#CHROM"){ for(i =1; i < 9; i++){printf("%s\t",$i)}; printf("%s\n",colname)} else {print $0}}' > merged.vcf
+        zcat vcf_files/*.vcf.gz | awk 'substr($0,1,1) != "#"' >> merged.vcf
+        
+        ## sort the merged vcf file and produce the final gzipped vcf file
         mkdir final_vcf
-        bcftools sort -o final_vcf/${BAM_PREFIX}.vcf.gz -Oz merged.vcf.gz
+        bcftools sort -o final_vcf/${BAM_PREFIX}.vcf.gz -Oz merged.vcf
     >>>
     runtime {
         docker: dockerImage
@@ -175,9 +192,15 @@ task mergeVcf{
 
         mkdir vcf_files
         ln ~{sep=" " vcfGzFiles} vcf_files
-        for filename in $(ls vcf_files);do bcftools index vcf_files/${filename};done
-        bcftools merge --force-samples -Oz -o merged.vcf.gz vcf_files/*.vcf.gz
-        bcftools sort -o ~{outputName}.vcf.gz -Oz merged.vcf.gz
+        files=(vcf_files/*) 
+
+        ## make a header for the merged vcf file
+        zcat ${files[0]} | awk 'substr($0,1,1) == "#"' | awk -v colname="~{outputName}" '{if ($1 == "#CHROM"){ for(i =1; i < 9; i++){printf("%s\t",$i)}; printf("%s\n",colname)} else {print $0}}' > merged.vcf
+        zcat vcf_files/*.vcf.gz | awk 'substr($0,1,1) != "#"' >> merged.vcf
+
+        ## sort the merged vcf file and produce the final gzipped vcf file
+        mkdir final_vcf
+        bcftools sort -o final_vcf/~{outputName}.vcf.gz -Oz merged.vcf
     >>>
     runtime {
         docker: dockerImage
@@ -188,7 +211,7 @@ task mergeVcf{
         zones: zones
     }
     output {
-        File vcfGz = "~{outputName}.vcf.gz"
+        File vcfGz = "final_vcf/~{outputName}.vcf.gz"
     }
 
 }
