@@ -145,7 +145,7 @@ task callVariant{
         seq 1 ~{threadCount} | xargs -I {} -n 1 -P ~{threadCount} sh -c "bcftools mpileup -a FORMAT/AD -a INFO/AD -q20 -B -d 100000 -f asm.fa -R split_beds/tmp_{}.bed ${BAM_PREFIX}.bam | bcftools call -cv --ploidy ~{ploidy} -Oz -o vcf_files/tmp.{}.vcf.gz"
         
         ## make a header for the merged vcf file
-        zcat vcf_files/tmp.1.vcf.gz | awk 'substr($0,1,1) == "#"' | awk -v colname="${BAM_PREFIX}" '{if ($1 == "#CHROM"){ for(i =1; i < 9; i++){printf("%s\t",$i)}; printf("%s\n",colname)} else {print $0}}' > merged.vcf
+        zcat vcf_files/tmp.1.vcf.gz | awk 'substr($0,1,1) == "#"' | awk -v colname="${BAM_PREFIX}" '{if ($1 == "#CHROM"){ for(i =1; i < 10; i++){printf("%s\t",$i)}; printf("%s\n",colname)} else {print $0}}' > merged.vcf
         zcat vcf_files/*.vcf.gz | awk 'substr($0,1,1) != "#"' >> merged.vcf
         
         ## sort the merged vcf file and produce the final gzipped vcf file
@@ -195,7 +195,7 @@ task mergeVcf{
         files=(vcf_files/*) 
 
         ## make a header for the merged vcf file
-        zcat ${files[0]} | awk 'substr($0,1,1) == "#"' | awk -v colname="~{outputName}" '{if ($1 == "#CHROM"){ for(i =1; i < 9; i++){printf("%s\t",$i)}; printf("%s\n",colname)} else {print $0}}' > merged.vcf
+        zcat ${files[0]} | awk 'substr($0,1,1) == "#"' | awk -v colname="~{outputName}" '{if ($1 == "#CHROM"){ for(i =1; i < 10; i++){printf("%s\t",$i)}; printf("%s\n",colname)} else {print $0}}' > merged.vcf
         zcat vcf_files/*.vcf.gz | awk 'substr($0,1,1) != "#"' >> merged.vcf
 
         ## sort the merged vcf file and produce the final gzipped vcf file
