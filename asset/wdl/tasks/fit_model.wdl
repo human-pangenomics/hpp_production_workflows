@@ -2,6 +2,9 @@ version 1.0
 
 workflow runFitModel{
     call fitModel
+    output {
+       File probabilityTable = fitModel.probabilityTable 
+    }
 }
 task fitModel {
     input {

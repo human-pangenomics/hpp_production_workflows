@@ -66,6 +66,9 @@ workflows:
    -  name: FitModelByCoverage
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/workflows/fit_model_by_coverage.wdl
+   -  name: FitModelByCounts
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/fit_model.wdl
    -  name: AssetBamInput
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/workflows/asset_bam_input.wdl
