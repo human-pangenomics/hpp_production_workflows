@@ -44,7 +44,7 @@ task mapBlocks {
         #samtools view -F256 -F4 ~{alignmentBam} | awk '$5 < 20' |  cut -f1-6 > mq_less_20_no_seq.sam
         samtools view -f4 ~{alignmentBam} | cut -f1 > unmapped_contigs.txt
         
-        FILENAME_BAM=$(basename ~{alignmentBed})
+        FILENAME_BAM=$(basename ~{alignmentBam})
         PREFIX_BAM=${FILENAME%.bam}
         samtools view -h -b -F256 -F4 -q20 ~{alignmentBam} | bedtools bamtobed -i - | bedtools sort -i - | bedtools merge -i - > ${PREFIX_BAM}.mq_gt_20.bed
         mkdir output
