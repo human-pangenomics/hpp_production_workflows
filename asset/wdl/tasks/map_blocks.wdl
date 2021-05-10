@@ -40,7 +40,7 @@ task mapBlocks {
         
         FILENAME=$(basename ~{blocksBed})
         PREFIX=${FILENAME%.bed}
-        cat ~{blocksBed} | awk '($3-$2)>10' > ${PREFIX}_gt10.bed
+        cat ~{blocksBed} | bedtools merge -i - -d 10 | awk '($3-$2)>10' > ${PREFIX}.merged_10.gt_10.bed
         samtools view -F256 -F4 -q20 ~{alignmentBam} | cut -f1-6 > no_seq.sam
         #samtools view -F256 -F4 ~{alignmentBam} | awk '$5 < 20' |  cut -f1-6 > mq_less_20_no_seq.sam
         samtools view -f4 ~{alignmentBam} | cut -f1 > unmapped_contigs.txt
@@ -49,13 +49,13 @@ task mapBlocks {
         PREFIX_BAM=${FILENAME%.bam}
         samtools view -h -b -F256 -F4 -q20 ~{alignmentBam} | bedtools bamtobed -i - | bedtools sort -i - | bedtools merge -i - > ${PREFIX_BAM}.mq_gt_20.bed
         mkdir output
-        python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ${PREFIX}_gt10.bed --fai ~{fai} --outputContig output/contig.bed --outputMapped output/ref.bed --outputSkipped output/skipped.bed
+        python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ${PREFIX}.merged_10.gt_10.bed --fai ~{fai} --outputContig output/contig.bed --outputMapped output/ref.bed --outputSkipped output/skipped.bed
         #python3 $MAP_BLOCKS_PY --sam mq_less_20_no_seq.sam --bed ~{blocksBed} --outputContig output/contig_20.bed --outputMapped output/ref_20.bed --outputSkipped output/skipped_20.bed
         #cat output/contig.bed output/contig_20.bed | bedtools sort -i - | bedtools merge -i - > output/contig_all.bed
         #cat output/skipped.bed output/skipped_20.bed | bedtools sort -i - | bedtools merge -i - > output/skipped_all.bed
         #bedtools subtract -a output/skipped_all.bed -b output/contig_all.bed | bedtools sort -i - | bedtools merge -i - > output/${PREFIX}.~{suffix}.skipped.bed
         #bedtools subtract -a output/contig_20.bed -b output/contig.bed | bedtools sort -i - | bedtools merge -i - > output/${PREFIX}.~{suffix}.mq_lq20.bed
-        cat ${PREFIX}_gt10.bed | grep -f unmapped_contigs.txt | bedtools sort -i - | bedtools merge -i - > output/${PREFIX}.~{suffix}.unmapped.bed
+        cat ${PREFIX}.merged_10.gt_10.bed | grep -f unmapped_contigs.txt | bedtools sort -i - | bedtools merge -i - > output/${PREFIX}.~{suffix}.unmapped.bed
         bedtools sort -i output/contig.bed | bedtools merge -i - > output/${PREFIX}.~{suffix}.mapped.merged.bed
         mv output/contig.bed output/${PREFIX}.~{suffix}.mapped.bed
         bedtools sort -i output/ref.bed | bedtools merge -i - > output/${PREFIX}.~{suffix}.ref.merged.bed
