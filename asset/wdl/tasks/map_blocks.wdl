@@ -46,7 +46,7 @@ task mapBlocks {
         samtools view -f4 ~{alignmentBam} | cut -f1 > unmapped_contigs.txt
         
         FILENAME_BAM=$(basename ~{alignmentBam})
-        PREFIX_BAM=${FILENAME%.bam}
+        PREFIX_BAM=${FILENAME_BAM%.bam}
         samtools view -h -b -F256 -F4 -q20 ~{alignmentBam} | bedtools bamtobed -i - | bedtools sort -i - | bedtools merge -i - > ${PREFIX_BAM}.mq_gt_20.bed
         mkdir output
         python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ${PREFIX}.merged_10.gt_10.bed --fai ~{fai} --outputContig output/contig.bed --outputMapped output/ref.bed --outputSkipped output/skipped.bed
