@@ -69,6 +69,9 @@ workflows:
    -  name: FitModelByCounts
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/fit_model.wdl
+   -  name: ProbTable2Bed
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/prob_table2bed.wdl
    -  name: AssetBamInput
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/workflows/asset_bam_input.wdl
