@@ -10,6 +10,7 @@ workflow runMapBlocks{
         #File skippedBlocksBed = mapBlocks.skippedBlocksBed
         File mergedRefBlocksBed = mapBlocks.mergedRefBlocksBed
         File refBlocksBed = mapBlocks.refBlocksBed
+        File alignmentBed = mapBlocks.alignmentBed
     }
 }
 task mapBlocks {
@@ -42,6 +43,10 @@ task mapBlocks {
         samtools view -F256 -F4 -q20 ~{alignmentBam} | cut -f1-6 > no_seq.sam
         #samtools view -F256 -F4 ~{alignmentBam} | awk '$5 < 20' |  cut -f1-6 > mq_less_20_no_seq.sam
         samtools view -f4 ~{alignmentBam} | cut -f1 > unmapped_contigs.txt
+        
+        FILENAME_BAM=$(basename ~{alignmentBed})
+        PREFIX_BAM=${FILENAME%.bam}
+        samtools view -h -b -F256 -F4 -q20 ~{alignmentBam} | bedtools bamtobed -i - | bedtools sort -i - | bedtools merge -i - > ${PREFIX_BAM}.mq_gt_20.bed
         mkdir output
         python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ${PREFIX}_gt10.bed --outputContig output/contig.bed --outputMapped output/ref.bed --outputSkipped output/skipped.bed
         #python3 $MAP_BLOCKS_PY --sam mq_less_20_no_seq.sam --bed ~{blocksBed} --outputContig output/contig_20.bed --outputMapped output/ref_20.bed --outputSkipped output/skipped_20.bed
@@ -70,6 +75,7 @@ task mapBlocks {
         #File skippedBlocksBed = glob("output/*.${suffix}.skipped.bed")[0]
         File refBlocksBed = glob("output/*.${suffix}.ref.bed")[0]
         File mergedRefBlocksBed = glob("output/*.${suffix}.ref.merged.bed")[0]
+        File alignmentBed = glob("*.mq_gt_20.bed")[0]
     }
 }
 
