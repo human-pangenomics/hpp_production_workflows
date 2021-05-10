@@ -17,6 +17,7 @@ task mapBlocks {
     input {
         File blocksBed
         File alignmentBam
+        File fai
         String suffix
         # runtime configurations
         Int memSize=8
@@ -48,7 +49,7 @@ task mapBlocks {
         PREFIX_BAM=${FILENAME%.bam}
         samtools view -h -b -F256 -F4 -q20 ~{alignmentBam} | bedtools bamtobed -i - | bedtools sort -i - | bedtools merge -i - > ${PREFIX_BAM}.mq_gt_20.bed
         mkdir output
-        python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ${PREFIX}_gt10.bed --outputContig output/contig.bed --outputMapped output/ref.bed --outputSkipped output/skipped.bed
+        python3 $MAP_BLOCKS_PY --sam no_seq.sam --bed ${PREFIX}_gt10.bed --fai ~{fai} --outputContig output/contig.bed --outputMapped output/ref.bed --outputSkipped output/skipped.bed
         #python3 $MAP_BLOCKS_PY --sam mq_less_20_no_seq.sam --bed ~{blocksBed} --outputContig output/contig_20.bed --outputMapped output/ref_20.bed --outputSkipped output/skipped_20.bed
         #cat output/contig.bed output/contig_20.bed | bedtools sort -i - | bedtools merge -i - > output/contig_all.bed
         #cat output/skipped.bed output/skipped_20.bed | bedtools sort -i - | bedtools merge -i - > output/skipped_all.bed
