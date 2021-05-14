@@ -28,9 +28,15 @@ RUN wget ftp://ftp.ncbi.nlm.nih.gov/pub/kitts/VSlistTo1HitPerLine.awk && \
 
 ### special blast version needed for makeblastdb and vecscreen
 WORKDIR /opt/blast
-RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.5.0/ncbi-blast-2.5.0+-x64-linux.tar.gz && \
-    tar xvf ncbi-blast-2.5.0+-x64-linux.tar.gz && \
-    rm ncbi-blast-2.5.0+-x64-linux.tar.gz
+RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.7.1/ncbi-blast-2.7.1+-x64-linux.tar.gz && \
+    tar xvf ncbi-blast-2.7.1+-x64-linux.tar.gz && \
+    rm ncbi-blast-2.7.1+-x64-linux.tar.gz
+
+### a script to chunk assembly, vecscreen requires
+ENV PATH="/root/bin/python_3.6.0/bin/:${PATH}"
+RUN /root/bin/python_3.6.0/bin/pip3 install biopython
+COPY chunk_assembly.py /usr/bin
+COPY unchunk_vecscreen.py /usr/bin
 
 
 WORKDIR /data

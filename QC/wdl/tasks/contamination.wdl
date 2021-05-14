@@ -1,5 +1,27 @@
 version 1.0
 
+
+#workflow runContamination {
+#
+#    input {
+#        File assemblyFasta
+#        File vecscreenContaminationDatabase
+#        String dockerImage="tpesout/hpp_blast:latest"
+#    }
+#
+#    call contaminationVecscreen {
+#        input:
+#            assemblyFasta=assemblyFasta,
+#            vecscreenContaminationDatabase=vecscreenContaminationDatabase,
+#            dockerImage=dockerImage
+#    }
+#
+#	output {
+#	    File vecscreenContamination = contaminationVecscreen.outputVecscreen
+#	}
+#}
+
+
 workflow runContamination {
 
     input {
@@ -9,11 +31,11 @@ workflow runContamination {
         File mitoContaminationDatabase
         File plastidsContaminationDatabase
         File vecscreenContaminationDatabase
-        File refseqContaminationDatabase
+        File rrnaContaminationDatabase
+        Array[File] refseqContaminationDatabases
         String dockerImage="tpesout/hpp_blast:latest"
     }
 
-    ### Dipcall (v0.1): main version ###
     call contaminationEuk {
         input:
             assemblyFasta=assemblyFasta,
@@ -38,16 +60,24 @@ workflow runContamination {
             vecscreenContaminationDatabase=vecscreenContaminationDatabase,
             dockerImage=dockerImage
     }
+    call contaminationRRNA {
+        input:
+            assemblyFasta=assemblyFasta,
+            rrnaContaminationDatabase=rrnaContaminationDatabase,
+            dockerImage=dockerImage
+    }
     call contaminationWindowmasker {
         input:
             assemblyFasta=assemblyFasta,
             dockerImage=dockerImage
     }
-    call contaminationRefseq {
-        input:
-            assemblyWindowmaskedFasta=contaminationWindowmasker.outputWindowmasker,
-            refseqContaminationDatabase=refseqContaminationDatabase,
-            dockerImage=dockerImage
+    scatter (refseqContaminationDatabase in refseqContaminationDatabases) {
+        call contaminationRefseq {
+            input:
+                assemblyWindowmaskedFasta=contaminationWindowmasker.outputWindowmasker,
+                refseqContaminationDatabase=refseqContaminationDatabase,
+                dockerImage=dockerImage
+        }
     }
     call mergeContaminationResults {
         input:
@@ -55,7 +85,8 @@ workflow runContamination {
             eukOut=contaminationEuk.outputEuk,
             mitoOut=contaminationMito.outputMito,
             plastidsOut=contaminationPlastids.outputPlastids,
-            refseqOut=contaminationRefseq.outputRefseq,
+            rrnaOut=contaminationRRNA.outputRRNA,
+            refseqOuts=contaminationRefseq.outputRefseq,
             vecscreenOut=contaminationVecscreen.outputVecscreen,
             dockerImage=dockerImage
     }
@@ -65,7 +96,7 @@ workflow runContamination {
 	    File mitoContamination = contaminationMito.outputMito
 	    File plastidsContamination = contaminationPlastids.outputPlastids
 	    File windowmaskedFasta=contaminationWindowmasker.outputWindowmasker
-	    File refseqContamination = contaminationRefseq.outputRefseq
+	    Array[File] refseqContamination = contaminationRefseq.outputRefseq
 	    File mergedResult = mergeContaminationResults.outputSummary
 	}
 }
@@ -106,14 +137,19 @@ task contaminationEuk {
         PREFIX="${ASM_FILENAME%.*}"
 
         # make db index
-        date
-        ln -s ~{eukContaminationDatabase}
-        makeblastdb -in `basename ~{eukContaminationDatabase}` -input_type fasta -dbtype nucl
+        DB_FILENAME=$(basename -- "~{eukContaminationDatabase}")
+        if [[ $DB_FILENAME =~ \.gz$ ]]; then
+            cp ~{eukContaminationDatabase} .
+            gunzip $DB_FILENAME
+            DB_FILENAME="${DB_FILENAME%.gz}"
+        else
+            ln -s ~{eukContaminationDatabase}
+        fi
+        makeblastdb -in $DB_FILENAME -input_type fasta -dbtype nucl
 
         # blastoff
-        date
         blastn -query $ASM_FILENAME \
-            -db `basename ~{eukContaminationDatabase}` \
+            -db $DB_FILENAME \
             -task megablast \
             -num_threads ~{threadCount} \
             -word_size 28 \
@@ -127,7 +163,7 @@ task contaminationEuk {
             > $PREFIX.contam_in_euks.awk
 
         echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore\tsubject description" >$PREFIX.contam_in_euks.tsv
-        cat $PREFIX.contam_in_euks.awk | grep -v "^#" >>$PREFIX.contam_in_euks.tsv
+        cat $PREFIX.contam_in_euks.awk | { grep -v "^#" || true; } >>$PREFIX.contam_in_euks.tsv
 
 	>>>
 	output {
@@ -178,12 +214,19 @@ task contaminationMito {
         PREFIX="${ASM_FILENAME%.*}"
 
         # make db index
-        ln -s ~{mitoContaminationDatabase}
-        makeblastdb -in `basename ~{mitoContaminationDatabase}` -input_type fasta -dbtype nucl
+        DB_FILENAME=$(basename -- "~{mitoContaminationDatabase}")
+        if [[ $DB_FILENAME =~ \.gz$ ]]; then
+            cp ~{mitoContaminationDatabase} .
+            gunzip $DB_FILENAME
+            DB_FILENAME="${DB_FILENAME%.gz}"
+        else
+            ln -s ~{mitoContaminationDatabase}
+        fi
+        makeblastdb -in $DB_FILENAME -input_type fasta -dbtype nucl
 
         # blastoff
         blastn -query $ASM_FILENAME \
-            -db `basename ~{mitoContaminationDatabase}` \
+            -db $DB_FILENAME \
             -task megablast \
             -num_threads ~{threadCount} \
             -word_size 28 \
@@ -198,7 +241,7 @@ task contaminationMito {
             > $PREFIX.mito.awk
 
         echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore\tsubject description" >$PREFIX.mito.tsv
-        cat $PREFIX.mito.awk | grep -v "^#" >>$PREFIX.mito.tsv
+        cat $PREFIX.mito.awk | { grep -v "^#" || true; } >>$PREFIX.mito.tsv
 
 	>>>
 	output {
@@ -232,7 +275,7 @@ task contaminationPlastids {
         # cause a bash script to exit immediately when a command fails
         set -e
         # cause the bash shell to treat unset variables as an error and exit immediately
-        ###set -u
+        set -u
         # echo each line of the script to stdout so we can see what is happening
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
@@ -249,12 +292,19 @@ task contaminationPlastids {
         PREFIX="${ASM_FILENAME%.*}"
 
         # make db index
-        ln -s ~{plastidsContaminationDatabase}
-        makeblastdb -in `basename ~{plastidsContaminationDatabase}` -input_type fasta -dbtype nucl
+        DB_FILENAME=$(basename -- "~{plastidsContaminationDatabase}")
+        if [[ $DB_FILENAME =~ \.gz$ ]]; then
+            cp ~{plastidsContaminationDatabase} .
+            gunzip $DB_FILENAME
+            DB_FILENAME="${DB_FILENAME%.gz}"
+        else
+            ln -s ~{plastidsContaminationDatabase}
+        fi
+        makeblastdb -in $DB_FILENAME -input_type fasta -dbtype nucl
 
         # blastoff
         blastn -query $ASM_FILENAME \
-            -db `basename ~{plastidsContaminationDatabase}` \
+            -db $DB_FILENAME \
             -task megablast \
             -num_threads ~{threadCount} \
             -word_size 28 \
@@ -269,7 +319,7 @@ task contaminationPlastids {
             > $PREFIX.plastids.awk
 
         echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore\tsubject description" >$PREFIX.plastids.tsv
-        cat $PREFIX.plastids.awk | grep -v "^#" >>$PREFIX.plastids.tsv
+        cat $PREFIX.plastids.awk | { grep -v "^#" || true; } >>$PREFIX.plastids.tsv
 
 	>>>
 	output {
@@ -320,12 +370,19 @@ task contaminationRRNA {
         PREFIX="${ASM_FILENAME%.*}"
 
         # make db index
-        ln -s ~{rrnaContaminationDatabase}
-        makeblastdb -in `basename ~{rrnaContaminationDatabase}` -input_type fasta -dbtype nucl
+        DB_FILENAME=$(basename -- "~{rrnaContaminationDatabase}")
+        if [[ $DB_FILENAME =~ \.gz$ ]]; then
+            cp ~{rrnaContaminationDatabase} .
+            gunzip $DB_FILENAME
+            DB_FILENAME="${DB_FILENAME%.gz}"
+        else
+            ln -s ~{rrnaContaminationDatabase}
+        fi
+        makeblastdb -in $DB_FILENAME -input_type fasta -dbtype nucl
 
         # blastoff
-        blastn -query $chunked_assembly \
-            -db `basename ~{rrnaContaminationDatabase}` \
+        blastn -query $ASM_FILENAME \
+            -db $DB_FILENAME \
             -task megablast \
             -num_threads ~{threadCount} \
             -template_length 18 \
@@ -349,9 +406,12 @@ task contaminationRRNA {
             | awk '$4>=100' \
             > $PREFIX.rrna.awk
 
+        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore\tsubject description" >$PREFIX.rrna.tsv
+        cat $PREFIX.rrna.awk | { grep -v "^#" || true; } >>$PREFIX.rrna.tsv
+
 	>>>
 	output {
-		File outputRRNA = glob("*.rrna.awk")[0]
+		File outputRRNA = glob("*.rrna.tsv")[0]
 	}
     runtime {
         memory: memSizeGB + " GB"
@@ -396,9 +456,7 @@ task contaminationWindowmasker {
         fi
         PREFIX="${ASM_FILENAME%.*}"
 
-
         windowmasker -mk_counts -in $ASM_FILENAME -out $PREFIX.stage1
-        #windowmasker -ustat $PREFIX.stage1 -in $ASM_FILENAME -out $PREFIX.wm -dust true
         windowmasker -ustat $PREFIX.stage1 -in $ASM_FILENAME -out $PREFIX.masked.fa -dust true -outfmt fasta
 
 	>>>
@@ -445,12 +503,19 @@ task contaminationRefseq {
         RSDB_ID="${RSDB_ID%.*}"
 
         # make db index
-        ln -s ~{refseqContaminationDatabase}
-        makeblastdb -in `basename ~{refseqContaminationDatabase}` -input_type fasta -dbtype nucl
+        DB_FILENAME=$(basename -- "~{refseqContaminationDatabase}")
+        if [[ $DB_FILENAME =~ \.gz$ ]]; then
+            cp ~{refseqContaminationDatabase} .
+            gunzip $DB_FILENAME
+            DB_FILENAME="${DB_FILENAME%.gz}"
+        else
+            ln -s ~{refseqContaminationDatabase}
+        fi
+        makeblastdb -in $DB_FILENAME -input_type fasta -dbtype nucl
 
         # blastoff
         blastn -query $ASM_FILENAME \
-            -db `basename ~{refseqContaminationDatabase}` \
+            -db $DB_FILENAME \
             -task megablast \
             -num_threads ~{threadCount} \
             -word_size 28 \
@@ -466,8 +531,9 @@ task contaminationRefseq {
             > $PREFIX.refseq.$RSDB_ID.out
 #            -negative_taxidlist ${negative_tax_id_list} \
 
-        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore\tsubject description" >$PREFIX.refseq.$RSDB_ID.tsv
-        cat $PREFIX.refseq.$RSDB_ID.out | grep -v "^#" >>$PREFIX.refseq.$RSDB_ID.tsv
+        echo -e "========== Vecscreen: $RSDB_ID ==========" >$PREFIX.refseq.$RSDB_ID.tsv
+        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore\tsubject description" >>$PREFIX.refseq.$RSDB_ID.tsv
+        cat $PREFIX.refseq.$RSDB_ID.out | { grep -v "^#" || true; } >>$PREFIX.refseq.$RSDB_ID.tsv
 
 	>>>
 	output {
@@ -518,25 +584,37 @@ task contaminationVecscreen {
         fi
         PREFIX="${ASM_FILENAME%.*}"
 
-        # index it
-        ln -s ~{vecscreenContaminationDatabase}
-        /opt/blast/ncbi-blast-2.5.0+/bin/makeblastdb -in `basename ~{vecscreenContaminationDatabase}` -input_type fasta -dbtype nucl
-        ls -lah
+        # chunk it (vecscreen cannot handle long sequences)
+        chunk_assembly.py $ASM_FILENAME $ASM_FILENAME.chunked
+
+        # index it (old version of blast.. don't know if we NEED 2.7.1 but the latest doesn't work)
+        DB_FILENAME=$(basename -- "~{vecscreenContaminationDatabase}")
+        if [[ $DB_FILENAME =~ \.gz$ ]]; then
+            cp ~{vecscreenContaminationDatabase} .
+            gunzip $DB_FILENAME
+            DB_FILENAME="${DB_FILENAME%.gz}"
+        else
+            ln -s ~{vecscreenContaminationDatabase}
+        fi
+        /opt/blast/ncbi-blast-2.7.1+/bin/makeblastdb -in $DB_FILENAME -input_type fasta -dbtype nucl
 
         # screen it
-        vecscreen -d `basename ~{vecscreenContaminationDatabase}` \
+        vecscreen -d $DB_FILENAME \
             -f3 \
-            -i $ASM_FILENAME \
-            -o $PREFIX.vecscreen.euk.out ~{vecscreenExtraArguments}
+            -i $ASM_FILENAME.chunked \
+            -o $PREFIX.vecscreen.out ~{vecscreenExtraArguments}
         VSlistTo1HitPerLine.awk \
             suspect=0 \
             weak=0 \
-            $PREFIX.vecscreen.euk.out \
-            > $PREFIX.vecscreen.euk.filtered.out
+            $PREFIX.vecscreen.out \
+            > $PREFIX.vecscreen.filtered.out
+
+        # unchunk it
+        unchunk_vecscreen.py $PREFIX.vecscreen.filtered.out $PREFIX.vecscreen.tsv
 
 	>>>
 	output {
-		File outputVecscreen = glob("*.vecscreen.euk.filtered.out")[0]
+		File outputVecscreen = glob("*.vecscreen.tsv")[0]
 	}
     runtime {
         memory: memSizeGB + " GB"
@@ -553,8 +631,10 @@ task mergeContaminationResults {
         String assemblyIdentifier
         File eukOut
         File mitoOut
+        File rrnaOut
         File plastidsOut
-        File refseqOut
+        Array[File] refseqOuts
+        File rrnaOut
         File vecscreenOut
         Int memSizeGB = 2
         Int threadCount = 1
@@ -579,21 +659,25 @@ task mergeContaminationResults {
         echo "========== Eukaryote ==========" >>$OUT
         cat ~{eukOut} >>$OUT
 
-        echo "" >>out
+        echo "" >>$OUT
         echo "========== Mitocondria ==========" >>$OUT
         cat ~{mitoOut} >>$OUT
 
-        echo "" >>out
+        echo "" >>$OUT
         echo "========== Plastids ==========" >>$OUT
         cat ~{plastidsOut} >>$OUT
 
-        echo "" >>out
-        echo "========== RefSeq ==========" >>$OUT
-        cat ~{refseqOut} >>$OUT
+        echo "" >>$OUT
+        echo "========== RRNA ==========" >>$OUT
+        cat ~{rrnaOut} >>$OUT
 
-        echo "" >>out
+        echo "" >>$OUT
         echo "========== Vecscreen ==========" >>$OUT
         cat ~{vecscreenOut} >>$OUT
+
+        echo "" >>$OUT
+        echo "========== RefSeq ==========" >>$OUT
+        cat ~{sep=" " refseqOuts} >>$OUT
 
 	>>>
 	output {
