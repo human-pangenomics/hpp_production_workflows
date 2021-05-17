@@ -479,7 +479,7 @@ task contaminationRefseq {
         String refseqExtraArguments=""
         Int memSizeGB = 8
         Int threadCount = 8
-        Int diskSizeGB = 64
+        Int diskSizeGB = 128
         String dockerImage = "tpesout/hpp_blast:latest"
     }
 
