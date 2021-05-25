@@ -45,9 +45,9 @@ task bamCoverage{
 
         if (( ~{length(bamFiles)} == 1 ))
         then 
-            samtools depth -aa -Q ~{minMAPQ - 1} ~{sep=" " bamFiles}  > ~{sampleName}.depth
+            samtools depth -aa -Q ~{minMAPQ} ~{sep=" " bamFiles}  > ~{sampleName}.depth
         else
-            samtools depth -aa -Q ~{minMAPQ - 1} ~{sep=" " bamFiles} | awk '{sum=0; for (i=3; i<=NF; i++) { sum+= $i } {print $1,$2,sum}}' > ~{sampleName}.depth
+            samtools depth -aa -Q ~{minMAPQ} ~{sep=" " bamFiles} | awk '{sum=0; for (i=3; i<=NF; i++) { sum+= $i } {print $1,$2,sum}}' > ~{sampleName}.depth
         fi
         # Convert the output of samtools depth into a compressed format
         ${DEPTH2COV_C} -d ~{sampleName}.depth -f ${PREFIX}.fa.fai -o ~{sampleName}.~{sampleSuffix}.~{platform}.cov
