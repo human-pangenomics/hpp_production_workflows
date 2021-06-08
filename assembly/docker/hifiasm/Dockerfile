@@ -20,7 +20,7 @@ RUN cd /home/apps && \
 ENV PATH="/home/apps/yak:$PATH"
 
 RUN cd /home/apps && \
-	git clone --branch v0.11 https://github.com/chhylp123/hifiasm && \
+	git clone --branch 0.15.2 https://github.com/chhylp123/hifiasm && \
 	cd hifiasm && \
 	make
 ENV PATH="/home/apps/hifiasm:$PATH"
