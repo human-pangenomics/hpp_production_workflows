@@ -63,9 +63,15 @@ workflows:
    -  name: TrioHifiasmAssemblyYakInput
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly_yak_input.wdl
+   -  name: TrioHifiasmAssemblyYakInputCutadapt
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly_yak_input_cutadapt.wdl
    -  name: YakNoStats
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats.wdl
+   -  name: YakNoStatsHiFi
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats_hifi.wdl
    -  name: PhasedGFAs2Fasta
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/gfatools.wdl
