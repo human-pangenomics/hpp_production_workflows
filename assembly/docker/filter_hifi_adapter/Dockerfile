@@ -3,6 +3,10 @@ MAINTAINER Mobin Asri, masri@ucsc.edu
 
 RUN mkdir -p /home/apps
 
+## cutadapt
+
+RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y cutadapt
+
 ## blast
 
 RUN cd /home/apps && \
