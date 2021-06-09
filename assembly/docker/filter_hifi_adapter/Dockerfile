@@ -5,7 +5,7 @@ RUN mkdir -p /home/apps
 
 ## cutadapt
 
-RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y cutadapt
+RUN python3 -m pip install --upgrade pip && pip install git+https://github.com/marcelm/cutadapt.git
 
 ## blast
 
