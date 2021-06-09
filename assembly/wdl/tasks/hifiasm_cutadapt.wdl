@@ -147,8 +147,8 @@ task trioHifiasm {
     }
 
     output {
-        File outputPaternalGfa = "~{childID}.hap1.p_ctg.gfa"
-        File outputMaternalGfa = "~{childID}.hap2.p_ctg.gfa"
+        File outputPaternalGfa = "~{childID}.dip.hap1.p_ctg.gfa"
+        File outputMaternalGfa = "~{childID}.dip.hap2.p_ctg.gfa"
         File outputPaternalContigGfa = "~{childID}.pat.contig_gfa.tar.gz"
         File outputMaternalContigGfa = "~{childID}.mat.contig_gfa.tar.gz"
         File outputRawUnitigGfa = "~{childID}.raw_unitig_gfa.tar.gz"
