@@ -56,7 +56,10 @@ workflows:
       primaryDescriptorPath: /QC/wdl/tasks/extractMitoContigs.wdl
    -  name: dropFastaContigs
       subclass: WDL
-      primaryDescriptorPath: /QC/wdl/tasks/dropFastaContigs.wdl      
+      primaryDescriptorPath: /QC/wdl/tasks/dropFastaContigs.wdl
+   -  name: writeUnmappedReads
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/writeUnmappedReads.wdl      
    -  name: TrioHifiasmAssembly
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly.wdl
