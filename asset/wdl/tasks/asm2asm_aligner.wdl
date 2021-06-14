@@ -5,6 +5,7 @@ workflow asm2asmAlignment {
     input {
         String aligner="winnowmap"
         String preset
+        String extraParams = ""
         File queryAssemblyFastaGz
         File refAssemblyFastaGz
         String suffix=""
@@ -15,6 +16,7 @@ workflow asm2asmAlignment {
         input:
             aligner =  aligner,
             preset = preset,
+            extraParams = extraParams,
             suffix = suffix,
             refAssembly = refAssemblyFastaGz,
             readFastq_or_queryAssembly = queryAssemblyFastaGz,
