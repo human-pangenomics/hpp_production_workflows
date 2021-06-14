@@ -59,7 +59,10 @@ workflows:
       primaryDescriptorPath: /QC/wdl/tasks/dropFastaContigs.wdl
    -  name: writeUnmappedReads
       subclass: WDL
-      primaryDescriptorPath: /QC/wdl/tasks/writeUnmappedReads.wdl      
+      primaryDescriptorPath: /QC/wdl/tasks/writeUnmappedReads.wdl
+   -  name: fastqReadCounts
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/fastqReadCounts.wdl
    -  name: TrioHifiasmAssembly
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly.wdl
