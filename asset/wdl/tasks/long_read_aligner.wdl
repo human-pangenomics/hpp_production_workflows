@@ -8,6 +8,7 @@ workflow longReadAlignment {
     input {
         String aligner="winnowmap"
         String preset
+        String extraParams = ""
         String sampleName
         String sampleSuffix
         Array[File] readFiles
@@ -34,6 +35,7 @@ workflow longReadAlignment {
              input:
                  aligner =  aligner,
                  preset = preset,
+                 extraParams = extraParams,
                  refAssembly=assembly,
                  readFastq_or_queryAssembly = extractReads.extractedRead,
                  diskSize = extractReads.fileSizeGB * 3,
@@ -69,6 +71,7 @@ task alignment{
         String aligner
         String preset
         String suffix=""
+        String extraParams=""
         File readFastq_or_queryAssembly
         File refAssembly
         Int kmerSize=15
@@ -105,7 +108,7 @@ task alignment{
         fi
         
         fileBasename=$(basename ~{readFastq_or_queryAssembly})
-        ${ALIGNER_CMD} -a -x ~{preset} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} | samtools view -h -b > ${fileBasename%.*.*}.bam
+        ${ALIGNER_CMD} ~{extraParams} -a -x ~{preset} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} | samtools view -h -b > ${fileBasename%.*.*}.bam
         
         if [ -z ~{suffix} ]; then
             OUTPUT_FILE=${fileBasename%.*.*}.sorted.bam
