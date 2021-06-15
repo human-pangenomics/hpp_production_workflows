@@ -37,6 +37,7 @@ ENV PATH="/root/bin/python_3.6.0/bin/:${PATH}"
 RUN /root/bin/python_3.6.0/bin/pip3 install biopython
 COPY chunk_assembly.py /usr/bin
 COPY unchunk_vecscreen.py /usr/bin
+COPY update_refseq_out_with_species.py /usr/bin
 
 
 WORKDIR /data

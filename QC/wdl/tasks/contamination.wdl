@@ -157,12 +157,12 @@ task contaminationEuk {
             -best_hit_score_edge 0.1 \
             -dust yes \
             -evalue 0.0001 \
-            -outfmt '7 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore' \
+            -outfmt '7' \
             -perc_identity 90.0  ~{eukExtraArguments} \
             | awk '($3>=98.0 && $4>=50)||($3>=94.0 && $4>=100)||($3>=90.0 && $4>=200)' \
             > $PREFIX.contam_in_euks.awk
 
-        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore\tsubject description" >$PREFIX.contam_in_euks.tsv
+        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.contam_in_euks.tsv
         cat $PREFIX.contam_in_euks.awk | { grep -v "^#" || true; } >>$PREFIX.contam_in_euks.tsv
 
 	>>>
@@ -240,7 +240,7 @@ task contaminationMito {
             | awk '$4>=500' \
             > $PREFIX.mito.awk
 
-        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore\tsubject description" >$PREFIX.mito.tsv
+        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.mito.tsv
         cat $PREFIX.mito.awk | { grep -v "^#" || true; } >>$PREFIX.mito.tsv
 
 	>>>
@@ -318,7 +318,7 @@ task contaminationPlastids {
             | awk '$4>=500' \
             > $PREFIX.plastids.awk
 
-        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore\tsubject description" >$PREFIX.plastids.tsv
+        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.plastids.tsv
         cat $PREFIX.plastids.awk | { grep -v "^#" || true; } >>$PREFIX.plastids.tsv
 
 	>>>
@@ -406,7 +406,7 @@ task contaminationRRNA {
             | awk '$4>=100' \
             > $PREFIX.rrna.awk
 
-        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore\tsubject description" >$PREFIX.rrna.tsv
+        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.rrna.tsv
         cat $PREFIX.rrna.awk | { grep -v "^#" || true; } >>$PREFIX.rrna.tsv
 
 	>>>
@@ -499,8 +499,9 @@ task contaminationRefseq {
         ASM_FILENAME=$(basename -- "~{assemblyWindowmaskedFasta}")
         ln -s ~{assemblyWindowmaskedFasta}
         PREFIX="${ASM_FILENAME%.masked.fa}"
-        RSDB_ID=$(basename -- "~{refseqContaminationDatabase}")
-        RSDB_ID="${RSDB_ID%.*}"
+        RSDB_FILE=$(basename -- "~{refseqContaminationDatabase}")
+        RSDB_FILE_ID="${RSDB_FILE%.*}"
+        RSDB_ID="${RSDB_FILE%%.*}"
 
         # make db index
         DB_FILENAME=$(basename -- "~{refseqContaminationDatabase}")
@@ -528,12 +529,14 @@ task contaminationRefseq {
             -perc_identity 98 \
             -soft_masking true \
             -outfmt "7 std staxids sscinames" ~{refseqExtraArguments} \
-            > $PREFIX.refseq.$RSDB_ID.out
+            > $PREFIX.refseq.$RSDB_FILE_ID.out
 #            -negative_taxidlist ${negative_tax_id_list} \
 
-        echo -e "========== Vecscreen: $RSDB_ID ==========" >$PREFIX.refseq.$RSDB_ID.tsv
-        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore\tsubject description" >>$PREFIX.refseq.$RSDB_ID.tsv
-        cat $PREFIX.refseq.$RSDB_ID.out | { grep -v "^#" || true; } >>$PREFIX.refseq.$RSDB_ID.tsv
+        echo -e "========== RefSeq: $RSDB_FILE_ID ==========" >$PREFIX.refseq.$RSDB_FILE_ID.tmp
+        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >>$PREFIX.refseq.$RSDB_FILE_ID.tmp
+        cat $PREFIX.refseq.$RSDB_FILE_ID.out | { grep -v "^#" || true; } >>$PREFIX.refseq.$RSDB_FILE_ID.tmp
+
+        update_refseq_out_with_species.py $DB_FILENAME $PREFIX.refseq.$RSDB_FILE_ID.tmp $PREFIX.refseq.$RSDB_FILE_ID.tsv $RSDB_ID
 
 	>>>
 	output {
