@@ -3,6 +3,10 @@ MAINTAINER Mobin Asri, masri@ucsc.edu
 
 RUN mkdir -p /home/apps
 
+## cutadapt
+
+RUN python3 -m pip install --upgrade pip && pip install git+https://github.com/marcelm/cutadapt.git
+
 ## blast
 
 RUN cd /home/apps && \
