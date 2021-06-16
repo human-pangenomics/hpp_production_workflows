@@ -6,7 +6,7 @@ version 1.0
 #    input {
 #        File assemblyFasta
 #        File vecscreenContaminationDatabase
-#        String dockerImage="tpesout/hpp_blast:latest"
+#        String dockerImage="tpesout/hpp_contamination:latest"
 #    }
 #
 #    call contaminationVecscreen {
@@ -33,7 +33,7 @@ workflow runContamination {
         File vecscreenContaminationDatabase
         File rrnaContaminationDatabase
         Array[File] refseqContaminationDatabases
-        String dockerImage="tpesout/hpp_blast:latest"
+        String dockerImage="tpesout/hpp_contamination:latest"
     }
 
     call contaminationEuk {
@@ -122,7 +122,7 @@ task contaminationEuk {
         Int memSizeGB = 8
         Int threadCount = 8
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_blast:latest"
+        String dockerImage = "tpesout/hpp_contamination:latest"
     }
 
 	command <<<
@@ -201,7 +201,7 @@ task contaminationMito {
         Int memSizeGB = 8
         Int threadCount = 8
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_blast:latest"
+        String dockerImage = "tpesout/hpp_contamination:latest"
     }
 
 	command <<<
@@ -280,7 +280,7 @@ task contaminationPlastids {
         Int memSizeGB = 8
         Int threadCount = 8
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_blast:latest"
+        String dockerImage = "tpesout/hpp_contamination:latest"
     }
 
 	command <<<
@@ -359,7 +359,7 @@ task contaminationRRNA {
         Int memSizeGB = 8
         Int threadCount = 8
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_blast:latest"
+        String dockerImage = "tpesout/hpp_contamination:latest"
     }
 
 	command <<<
@@ -447,7 +447,7 @@ task contaminationWindowmasker {
         Int memSizeGB = 8
         Int threadCount = 8
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_blast:latest"
+        String dockerImage = "tpesout/hpp_contamination:latest"
     }
 
 	command <<<
@@ -497,7 +497,7 @@ task contaminationRefseq {
         Int memSizeGB = 8
         Int threadCount = 8
         Int diskSizeGB = 128
-        String dockerImage = "tpesout/hpp_blast:latest"
+        String dockerImage = "tpesout/hpp_contamination:latest"
     }
 
 	command <<<
@@ -578,7 +578,7 @@ task contaminationVecscreen {
         Int memSizeGB = 8
         Int threadCount = 8
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_blast:latest"
+        String dockerImage = "tpesout/hpp_contamination:latest"
     }
 
 	command <<<
@@ -659,7 +659,7 @@ task mergeContaminationResults {
         Int memSizeGB = 2
         Int threadCount = 1
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_blast:latest"
+        String dockerImage = "tpesout/hpp_contamination:latest"
     }
 
 	command <<<
@@ -726,7 +726,7 @@ task createContaminationBed {
         Int memSizeGB = 2
         Int threadCount = 1
         Int diskSizeGB = 64
-        String dockerImage = "tpesout/hpp_blast:latest"
+        String dockerImage = "tpesout/hpp_contamination:latest"
     }
 
 	command <<<

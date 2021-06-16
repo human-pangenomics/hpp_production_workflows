@@ -1,6 +1,6 @@
 # Definitions
 repository = tpesout
-identifier = hpp_blast
+identifier = hpp_contamination
 version = 0.0.0
 git_commit ?= $(shell git log --pretty=oneline -n 1 | cut -f1 -d " ")
 name = ${repository}/${identifier}
