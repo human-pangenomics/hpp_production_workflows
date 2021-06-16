@@ -90,7 +90,17 @@ workflow runContamination {
             vecscreenOut=contaminationVecscreen.outputVecscreen,
             dockerImage=dockerImage
     }
-
+    call createContaminationBed {
+        input:
+            assemblyIdentifier=assemblyIdentifier,
+            eukOut=contaminationEuk.outputEuk,
+            mitoOut=contaminationMito.outputMito,
+            plastidsOut=contaminationPlastids.outputPlastids,
+            rrnaOut=contaminationRRNA.outputRRNA,
+            refseqOuts=contaminationRefseq.outputRefseq,
+            vecscreenOut=contaminationVecscreen.outputVecscreen,
+            dockerImage=dockerImage
+    }
 	output {
 	    File eukContamination = contaminationEuk.outputEuk
 	    File mitoContamination = contaminationMito.outputMito
@@ -98,6 +108,8 @@ workflow runContamination {
 	    File windowmaskedFasta=contaminationWindowmasker.outputWindowmasker
 	    Array[File] refseqContamination = contaminationRefseq.outputRefseq
 	    File mergedResult = mergeContaminationResults.outputSummary
+	    File fullBed = createContaminationBed.fullContaminationBed
+	    File mergedBed = createContaminationBed.mergedContaminationBed
 	}
 }
 
@@ -148,7 +160,7 @@ task contaminationEuk {
         makeblastdb -in $DB_FILENAME -input_type fasta -dbtype nucl
 
         # blastoff
-        blastn -query $ASM_FILENAME \
+        time blastn -query $ASM_FILENAME \
             -db $DB_FILENAME \
             -task megablast \
             -num_threads ~{threadCount} \
@@ -162,8 +174,10 @@ task contaminationEuk {
             | awk '($3>=98.0 && $4>=50)||($3>=94.0 && $4>=100)||($3>=90.0 && $4>=200)' \
             > $PREFIX.contam_in_euks.awk
 
-        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.contam_in_euks.tsv
-        cat $PREFIX.contam_in_euks.awk | { grep -v "^#" || true; } >>$PREFIX.contam_in_euks.tsv
+        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.contam_in_euks.tmp
+        cat $PREFIX.contam_in_euks.awk | { grep -v "^#" || true; } >>$PREFIX.contam_in_euks.tmp
+
+        update_megablast_output_with_subject_description.py $DB_FILENAME $PREFIX.contam_in_euks.tmp $PREFIX.contam_in_euks.tsv
 
 	>>>
 	output {
@@ -225,7 +239,7 @@ task contaminationMito {
         makeblastdb -in $DB_FILENAME -input_type fasta -dbtype nucl
 
         # blastoff
-        blastn -query $ASM_FILENAME \
+        time blastn -query $ASM_FILENAME \
             -db $DB_FILENAME \
             -task megablast \
             -num_threads ~{threadCount} \
@@ -240,9 +254,10 @@ task contaminationMito {
             | awk '$4>=500' \
             > $PREFIX.mito.awk
 
-        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.mito.tsv
-        cat $PREFIX.mito.awk | { grep -v "^#" || true; } >>$PREFIX.mito.tsv
+        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.mito.tmp
+        cat $PREFIX.mito.awk | { grep -v "^#" || true; } >>$PREFIX.mito.tmp
 
+        update_megablast_output_with_subject_description.py $DB_FILENAME $PREFIX.mito.tmp $PREFIX.mito.tsv
 	>>>
 	output {
 		File outputMito = glob("*.mito.tsv")[0]
@@ -303,7 +318,7 @@ task contaminationPlastids {
         makeblastdb -in $DB_FILENAME -input_type fasta -dbtype nucl
 
         # blastoff
-        blastn -query $ASM_FILENAME \
+        time blastn -query $ASM_FILENAME \
             -db $DB_FILENAME \
             -task megablast \
             -num_threads ~{threadCount} \
@@ -318,9 +333,10 @@ task contaminationPlastids {
             | awk '$4>=500' \
             > $PREFIX.plastids.awk
 
-        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.plastids.tsv
-        cat $PREFIX.plastids.awk | { grep -v "^#" || true; } >>$PREFIX.plastids.tsv
+        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.plastids.tmp
+        cat $PREFIX.plastids.awk | { grep -v "^#" || true; } >>$PREFIX.plastids.tmp
 
+        update_megablast_output_with_subject_description.py $DB_FILENAME $PREFIX.plastids.tmp $PREFIX.plastids.tsv
 	>>>
 	output {
 		File outputPlastids = glob("*.plastids.tsv")[0]
@@ -381,7 +397,7 @@ task contaminationRRNA {
         makeblastdb -in $DB_FILENAME -input_type fasta -dbtype nucl
 
         # blastoff
-        blastn -query $ASM_FILENAME \
+        time blastn -query $ASM_FILENAME \
             -db $DB_FILENAME \
             -task megablast \
             -num_threads ~{threadCount} \
@@ -401,13 +417,14 @@ task contaminationRRNA {
             -perc_identity 93 \
             -reward 2 \
             -soft_masking true \
-            -outfmt 7 \
-            ~{rrnaExtraArguments} \
+            -outfmt 7 ~{rrnaExtraArguments} \
             | awk '$4>=100' \
             > $PREFIX.rrna.awk
 
-        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.rrna.tsv
-        cat $PREFIX.rrna.awk | { grep -v "^#" || true; } >>$PREFIX.rrna.tsv
+        echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.rrna.tmp
+        cat $PREFIX.rrna.awk | { grep -v "^#" || true; } >>$PREFIX.rrna.tmp
+
+        update_megablast_output_with_subject_description.py $DB_FILENAME $PREFIX.rrna.tmp $PREFIX.rrna.tsv
 
 	>>>
 	output {
@@ -536,7 +553,7 @@ task contaminationRefseq {
         echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >>$PREFIX.refseq.$RSDB_FILE_ID.tmp
         cat $PREFIX.refseq.$RSDB_FILE_ID.out | { grep -v "^#" || true; } >>$PREFIX.refseq.$RSDB_FILE_ID.tmp
 
-        update_refseq_out_with_species.py $DB_FILENAME $PREFIX.refseq.$RSDB_FILE_ID.tmp $PREFIX.refseq.$RSDB_FILE_ID.tsv $RSDB_ID
+        update_megablast_output_with_subject_description.py $DB_FILENAME $PREFIX.refseq.$RSDB_FILE_ID.tmp $PREFIX.refseq.$RSDB_FILE_ID.tsv $RSDB_ID
 
 	>>>
 	output {
@@ -685,6 +702,61 @@ task mergeContaminationResults {
 	>>>
 	output {
 		File outputSummary = glob("*.contamination.txt")[0]
+	}
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: dockerImage
+        preemptible: 1
+    }
+}
+
+
+task createContaminationBed {
+    input {
+        String assemblyIdentifier
+        File eukOut
+        File mitoOut
+        File rrnaOut
+        File plastidsOut
+        Array[File] refseqOuts
+        File rrnaOut
+        File vecscreenOut
+        Int memSizeGB = 2
+        Int threadCount = 1
+        Int diskSizeGB = 64
+        String dockerImage = "tpesout/hpp_blast:latest"
+    }
+
+	command <<<
+        # Set the exit code of a pipeline to that of the rightmost command
+        # to exit with a non-zero status, or zero if all commands of the pipeline exit
+        set -o pipefail
+        # cause a bash script to exit immediately when a command fails
+        set -e
+        # cause the bash shell to treat unset variables as an error and exit immediately
+        set -u
+        # echo each line of the script to stdout so we can see what is happening
+        # to turn off echo do 'set +o xtrace'
+        set -o xtrace
+
+        OUT="~{assemblyIdentifier}.full_contamination.bed"
+        echo "#contig\tstart\tstop\tcontamination_source\tcontamination_contig\tcontamination_description" >$OUT
+
+        cat ~{eukOut} | grep -v "^#" | awk '{print $1 "\t" $7 "\t" $8 "\tcontam_in_euk\t" $2 "\t" $13}' >>$OUT
+        cat ~{mitoOut} | grep -v "^#" | awk '{print $1 "\t" $7 "\t" $8 "\tmitochondria\t" $2 "\t" $13}' >>$OUT
+        cat ~{plastidsOut} | grep -v "^#" | awk '{print $1 "\t" $7 "\t" $8 "\tplastids\t" $2 "\t" $13}' >>$OUT
+        cat ~{rrnaOut} | grep -v "^#" | awk '{print $1 "\t" $7 "\t" $8 "\trrna\t" $2 "\t" $13}' >>$OUT
+        cat ~{sep=" " refseqOuts} | grep -v "^#" | awk '{print $1 "\t" $7 "\t" $8 "\trefseq\t" $2 "\t" $13}' >>$OUT
+        cat ~{vecscreenOut} | grep -v "^#" | awk '{print $1 "\t" $2 "\t" $3 "\tvecscreen\t" $4 "\t."}' >>$OUT
+
+        bedtools merge -c 4,5,6 -o collapse,collapse,collapse -i $OUT > ~{assemblyIdentifier}.merged_contamination.bed
+
+	>>>
+	output {
+		File fullContaminationBed = glob("*.full_contamination.bed")[0]
+		File mergedContaminationBed = glob("*.merged_contamination.bed")[0]
 	}
     runtime {
         memory: memSizeGB + " GB"

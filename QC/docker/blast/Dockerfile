@@ -32,12 +32,26 @@ RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.7.1/ncbi-blast-
     tar xvf ncbi-blast-2.7.1+-x64-linux.tar.gz && \
     rm ncbi-blast-2.7.1+-x64-linux.tar.gz
 
-### a script to chunk assembly, vecscreen requires
+### use python3, we have some scripts that need this
 ENV PATH="/root/bin/python_3.6.0/bin/:${PATH}"
-RUN /root/bin/python_3.6.0/bin/pip3 install biopython
+RUN ln -s /root/bin/python_3.6.0/bin/python3 /usr/bin/python && \
+    /root/bin/python_3.6.0/bin/pip3 install biopython
+
+### bedtools
+WORKDIR /opt/bedtools
+RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.28.0/bedtools-2.28.0.tar.gz && \
+    tar -zxvf bedtools-2.28.0.tar.gz && \
+    rm -r /opt/bedtools/bedtools-2.28.0.tar.gz && \
+    cd bedtools2 && \
+    make && \
+    ./bin/bedtools
+ENV PATH="$PATH:/opt/bedtools/bedtools2/bin/"
+
+### a script to chunk assembly, vecscreen requires
 COPY chunk_assembly.py /usr/bin
 COPY unchunk_vecscreen.py /usr/bin
-COPY update_refseq_out_with_species.py /usr/bin
+### a script which saves species' names to output
+COPY update_megablast_output_with_subject_description.py /usr/bin
 
 
 WORKDIR /data

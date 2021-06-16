@@ -3,13 +3,13 @@
 import sys
 
 def main():
-	if len(sys.argv) != 5:
+	if len(sys.argv) not in (4, 5):
 		exit('Wrong number of arguments')
 
 	reference_fasta = sys.argv[1]
 	megablast_input_file = sys.argv[2]
 	megablast_output_file = sys.argv[3]
-	refseq_id = sys.argv[4]
+	ancillary_info = None if len(sys.argv) == 4 else sys.argv[4]
 
 	# build map
 	id_map = dict()
@@ -31,21 +31,27 @@ def main():
 			if len(line) == 0:
 				empty_count += 1
 			elif line.startswith("#"):
-				line = line + "\trefseq_id\tsubject_metadata"
+				line = line + "\tsubject_metadata"
 				header_count += 1
 			else:
 				parts = line.split('\t')
 				if len(parts) < 2:
 					malformed_count += 1
 				elif parts[1] in id_map:
-					line = line + "\t" + refseq_id + "\t" + id_map[parts[1]]
+					if ancillary_info is not None:
+						line = line + "\t({}) {}".format(ancillary_info, id_map[parts[1]])
+					else:
+						line = line + "\t{}".format(id_map[parts[1]])
 					found_subject_count += 1
 				else:
-					line = line + "\t" + refseq_id + "\tN/A"
+					if ancillary_info is not None:
+						line = line + "\t({}) N/A".format(ancillary_info)
+					else:
+						line = line + "\tN/A"
 					missing_subject_count += 1
 			fout.write(line + "\n")
 
-	print("Updated RefSeq megablast output with reference sequence metadata:", file=sys.stderr)
+	print("Updated megablast output with reference sequence description:", file=sys.stderr)
 	print("\tHeader:    {}".format(header_count), file=sys.stderr)
 	print("\tFound:     {}".format(found_subject_count), file=sys.stderr)
 	print("\tMissing:   {}".format(missing_subject_count), file=sys.stderr)
