@@ -385,6 +385,9 @@ task contaminationRRNA {
         fi
         PREFIX="${ASM_FILENAME%.*}"
 
+        # chunk it (vecscreen cannot handle long sequences)
+        chunk_assembly.py $ASM_FILENAME $ASM_FILENAME.chunked
+
         # make db index
         DB_FILENAME=$(basename -- "~{rrnaContaminationDatabase}")
         if [[ $DB_FILENAME =~ \.gz$ ]]; then
@@ -397,7 +400,7 @@ task contaminationRRNA {
         makeblastdb -in $DB_FILENAME -input_type fasta -dbtype nucl
 
         # blastoff
-        time blastn -query $ASM_FILENAME \
+        time blastn -query $ASM_FILENAME.chunked \
             -db $DB_FILENAME \
             -task megablast \
             -num_threads ~{threadCount} \
@@ -419,7 +422,10 @@ task contaminationRRNA {
             -soft_masking true \
             -outfmt 7 ~{rrnaExtraArguments} \
             | awk '$4>=100' \
-            > $PREFIX.rrna.awk
+            > $PREFIX.rrna.awk.chunked
+
+        # unchunk it
+        unchunk_vecscreen.py $PREFIX.rrna.awk.chunked $PREFIX.rrna.awk
 
         echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.rrna.tmp
         cat $PREFIX.rrna.awk | { grep -v "^#" || true; } >>$PREFIX.rrna.tmp

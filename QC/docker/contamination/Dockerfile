@@ -47,9 +47,10 @@ RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.28.0/bedtools-2
     ./bin/bedtools
 ENV PATH="$PATH:/opt/bedtools/bedtools2/bin/"
 
-### a script to chunk assembly, vecscreen requires
+### scripts to chunk/unchunk assembly, vecscreen and rrna require smaller query
 COPY chunk_assembly.py /usr/bin
 COPY unchunk_vecscreen.py /usr/bin
+COPY unchunk_blast.py /usr/bin
 ### a script which saves species' names to output
 COPY update_megablast_output_with_subject_description.py /usr/bin
 
