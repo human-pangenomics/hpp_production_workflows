@@ -8,13 +8,13 @@ END_IDX=7
 
 def main():
 
-	if len(sys.argv) != 3:
+	if len(sys.argv) < 3:
 		exit('Wrong number of arguments')
 
 	blast_input_file = sys.argv[1]
 	blast_output_file = sys.argv[2]
 
-	threshold_length = 1000000
+	threshold_length = 1000000 if len(sys.argv) < 4 else int(sys.argv[3])
 
 	with open(blast_input_file, 'r') as fin, open(blast_output_file, 'w') as fout:
 		for i, line in enumerate(fin):

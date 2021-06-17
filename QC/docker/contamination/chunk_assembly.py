@@ -5,14 +5,15 @@ from Bio import SeqIO
 
 def main():
 
-	if len(sys.argv) != 3:
+	if len(sys.argv) < 3:
 		exit('Wrong number of arguments')
 
 	fasta_input_file = sys.argv[1]
 	fasta_output_file = sys.argv[2]
 
-	threshold_length = 1000000
-	overlap_length = 10000
+	threshold_length = 1000000 if len(sys.argv) < 4 else int(sys.argv[3])
+	overlap_length = 10000 if len(sys.argv) < 5 else int(sys.argv[4])
+
 	minimum_record_size = 11
 
 

@@ -10,8 +10,7 @@ def main():
 	vecscreen_input_file = sys.argv[1]
 	vecscreen_output_file = sys.argv[2]
 
-	threshold_length = 1000000
-	overlap_length = 10000
+	threshold_length = 1000000 if len(sys.argv) < 4 else int(sys.argv[3])
 
 	with open(vecscreen_input_file, 'r') as fin, open(vecscreen_output_file, 'w') as fout:
 		for i, line in enumerate(fin):
