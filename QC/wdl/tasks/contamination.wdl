@@ -425,7 +425,7 @@ task contaminationRRNA {
             > $PREFIX.rrna.awk.chunked
 
         # unchunk it
-        unchunk_vecscreen.py $PREFIX.rrna.awk.chunked $PREFIX.rrna.awk
+        unchunk_blast.py $PREFIX.rrna.awk.chunked $PREFIX.rrna.awk
 
         echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.rrna.tmp
         cat $PREFIX.rrna.awk | { grep -v "^#" || true; } >>$PREFIX.rrna.tmp
