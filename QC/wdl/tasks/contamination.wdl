@@ -355,6 +355,8 @@ task contaminationRRNA {
     input {
         File assemblyFasta
         File rrnaContaminationDatabase
+        Int chunkSize = 500000
+        Int chunkOverlap = 5000
         String rrnaExtraArguments=""
         Int memSizeGB = 8
         Int threadCount = 8
@@ -386,7 +388,7 @@ task contaminationRRNA {
         PREFIX="${ASM_FILENAME%.*}"
 
         # chunk it (vecscreen cannot handle long sequences)
-        chunk_assembly.py $ASM_FILENAME $ASM_FILENAME.chunked 500000
+        chunk_assembly.py $ASM_FILENAME $ASM_FILENAME.chunked ~{chunkSize} ~{chunkOverlap}
 
         # make db index
         DB_FILENAME=$(basename -- "~{rrnaContaminationDatabase}")
@@ -425,7 +427,7 @@ task contaminationRRNA {
             > $PREFIX.rrna.awk.chunked
 
         # unchunk it
-        unchunk_blast.py $PREFIX.rrna.awk.chunked $PREFIX.rrna.awk 500000
+        unchunk_blast.py $PREFIX.rrna.awk.chunked $PREFIX.rrna.awk 250000
 
         echo -e "#query acc.ver\tsubject acc.ver\t% id\tlength\tmsmatch\tgaps\tq start\tq end\ts start\ts end\tevalue\tscore" >$PREFIX.rrna.tmp
         cat $PREFIX.rrna.awk | { grep -v "^#" || true; } >>$PREFIX.rrna.tmp
@@ -581,6 +583,8 @@ task contaminationVecscreen {
         File assemblyFasta
         File vecscreenContaminationDatabase
         String vecscreenExtraArguments=""
+        Int chunkSize = 1000000
+        Int chunkOverlap = 10000
         Int memSizeGB = 8
         Int threadCount = 8
         Int diskSizeGB = 64
@@ -611,7 +615,7 @@ task contaminationVecscreen {
         PREFIX="${ASM_FILENAME%.*}"
 
         # chunk it (vecscreen cannot handle long sequences)
-        chunk_assembly.py $ASM_FILENAME $ASM_FILENAME.chunked
+        chunk_assembly.py $ASM_FILENAME $ASM_FILENAME.chunked ~{chunkSize} ~{chunkOverlap}
 
         # index it (old version of blast.. don't know if we NEED 2.7.1 but the latest doesn't work)
         DB_FILENAME=$(basename -- "~{vecscreenContaminationDatabase}")
@@ -636,7 +640,7 @@ task contaminationVecscreen {
             > $PREFIX.vecscreen.filtered.out
 
         # unchunk it
-        unchunk_vecscreen.py $PREFIX.vecscreen.filtered.out $PREFIX.vecscreen.tsv
+        unchunk_vecscreen.py $PREFIX.vecscreen.filtered.out $PREFIX.vecscreen.tsv ~{chunkSize}
 
 	>>>
 	output {

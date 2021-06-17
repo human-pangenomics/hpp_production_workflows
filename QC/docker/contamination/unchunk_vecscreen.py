@@ -25,9 +25,9 @@ def main():
 
 			# get chunking parts
 			chunked_contig_parts = chunked_contig.split(".")
-			if len(parts) <= 1 or not (chunked_contig_parts[-1].startswith("chunk_") and chunked_contig_parts[-1].endswith("M")):
+			if len(parts) <= 1 or not chunked_contig_parts[-1].startswith("chunk_"):
 				raise Exception("Error parsing chunked annotation at line {} in {}: {}".format(i,vecscreen_input_file, line))
-			chunk_idx = int(chunked_contig_parts[-1].lstrip("chunk_").rstrip("M"))
+			chunk_idx = int(chunked_contig_parts[-1].lstrip("chunk_"))
 			contig = ".".join(chunked_contig_parts[0:-1])
 
 			# write it out

@@ -28,7 +28,7 @@ def main():
 				slice_count = 0
 				while (slice_count * threshold_length) < len(record) - (threshold_length+overlap_length):
 					record_slice = record[(slice_count*threshold_length):((slice_count+1)*threshold_length + overlap_length)]
-					record_slice.id += '.chunk_{}M'.format(str(slice_count+1))
+					record_slice.id += '.chunk_{}'.format(str(slice_count+1))
 
 					record_slice.description = ''
 					records_to_write.append(record_slice)
@@ -37,7 +37,7 @@ def main():
 				final_record_slice = record[(slice_count*threshold_length):]
 
 				if slice_count > 0:
-					final_record_slice.id += '.chunk_' + str(slice_count+1)
+					final_record_slice.id += '.chunk_{}'.format(str(slice_count+1))
 				final_record_slice.description = ''
 
 				records_to_write.append(final_record_slice)
