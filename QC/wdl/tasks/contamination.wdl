@@ -744,12 +744,12 @@ task createContaminationBed {
         OUT="~{assemblyIdentifier}.full_contamination.bed"
         echo "#contig\tstart\tstop\tcontamination_source\tcontamination_contig\tcontamination_description" >$OUT
 
-        cat ~{eukOut} | { grep -v "^#" || true; } | awk '{print $1 "\t" $7 "\t" $8 "\tcontam_in_euk\t" $2 "\t" $13}' >>$OUT
-        cat ~{mitoOut} | { grep -v "^#" || true; } | awk '{print $1 "\t" $7 "\t" $8 "\tmitochondria\t" $2 "\t" $13}' >>$OUT
-        cat ~{plastidsOut} | { grep -v "^#" || true; } | awk '{print $1 "\t" $7 "\t" $8 "\tplastids\t" $2 "\t" $13}' >>$OUT
-        cat ~{rrnaOut} | { grep -v "^#" || true; } | awk '{print $1 "\t" $7 "\t" $8 "\trrna\t" $2 "\t" $13}' >>$OUT
-        cat ~{sep=" " refseqOuts} | { grep -v "^#" || true; } | awk '{print $1 "\t" $7 "\t" $8 "\trefseq\t" $2 "\t" $13}' >>$OUT
-        cat ~{vecscreenOut} | { grep -v "^#" || true; } | awk '{print $1 "\t" $2 "\t" $3 "\tvecscreen\t" $4 "\t."}' >>$OUT
+        cat ~{eukOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\tcontam_in_euk\t" $2 "\t" $13}' >>$OUT
+        cat ~{mitoOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\tmitochondria\t" $2 "\t" $13}' >>$OUT
+        cat ~{plastidsOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\tplastids\t" $2 "\t" $13}' >>$OUT
+        cat ~{rrnaOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\trrna\t" $2 "\t" $13}' >>$OUT
+        cat ~{sep=" " refseqOuts} | { grep -v "^#" || true; } | { grep -v "==========" || true; } | awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\trefseq\t" $2 "\t" $13}' >>$OUT
+        cat ~{vecscreenOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\tvecscreen\t" $4 "\t"}' >>$OUT
 
         cat $OUT | bedtools sort >tmp
         bedtools merge -c 4,5,6 -o collapse,collapse,collapse -i tmp > ~{assemblyIdentifier}.merged_contamination.bed
