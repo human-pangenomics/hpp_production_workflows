@@ -4,7 +4,7 @@ import sys
 
 def main():
 
-	if len(sys.argv) != 3:
+	if len(sys.argv) < 3:
 		exit('Wrong number of arguments')
 
 	vecscreen_input_file = sys.argv[1]
