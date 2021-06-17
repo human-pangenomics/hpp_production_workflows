@@ -751,7 +751,8 @@ task createContaminationBed {
         cat ~{sep=" " refseqOuts} | { grep -v "^#" || true; } | awk '{print $1 "\t" $7 "\t" $8 "\trefseq\t" $2 "\t" $13}' >>$OUT
         cat ~{vecscreenOut} | { grep -v "^#" || true; } | awk '{print $1 "\t" $2 "\t" $3 "\tvecscreen\t" $4 "\t."}' >>$OUT
 
-        bedtools merge -c 4,5,6 -o collapse,collapse,collapse -i $OUT > ~{assemblyIdentifier}.merged_contamination.bed
+        cat $OUT | bedtools sort >tmp
+        bedtools merge -c 4,5,6 -o collapse,collapse,collapse -i tmp > ~{assemblyIdentifier}.merged_contamination.bed
 
 	>>>
 	output {
