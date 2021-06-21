@@ -1,27 +1,6 @@
 version 1.0
 
 
-#workflow runContamination {
-#
-#    input {
-#        File assemblyFasta
-#        File vecscreenContaminationDatabase
-#        String dockerImage="tpesout/hpp_contamination:latest"
-#    }
-#
-#    call contaminationVecscreen {
-#        input:
-#            assemblyFasta=assemblyFasta,
-#            vecscreenContaminationDatabase=vecscreenContaminationDatabase,
-#            dockerImage=dockerImage
-#    }
-#
-#	output {
-#	    File vecscreenContamination = contaminationVecscreen.outputVecscreen
-#	}
-#}
-
-
 workflow runContamination {
 
     input {
@@ -389,6 +368,7 @@ task contaminationRRNA {
 
         # a hack to test without rebuilding docker
         cat `which chunk_assembly.py` | sed 's/slice_count > 0/slice_count > 0 or True/' >tmp
+        chmod +x tmp
         mv tmp `which chunk_assembly.py`
 
         # chunk it
