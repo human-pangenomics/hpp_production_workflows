@@ -387,7 +387,11 @@ task contaminationRRNA {
         fi
         PREFIX="${ASM_FILENAME%.*}"
 
-        # chunk it (vecscreen cannot handle long sequences)
+        # a hack to test without rebuilding docker
+        cat `which chunk_assembly.py` | sed 's/slice_count > 0/slice_count > 0 or True/' >tmp
+        mv tmp `which chunk_assembly.py`
+
+        # chunk it
         chunk_assembly.py $ASM_FILENAME $ASM_FILENAME.chunked ~{chunkSize} ~{chunkOverlap}
 
         # make db index

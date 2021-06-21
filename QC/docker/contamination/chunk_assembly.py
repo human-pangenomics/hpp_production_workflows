@@ -35,9 +35,7 @@ def main():
 					slice_count += 1
 
 				final_record_slice = record[(slice_count*threshold_length):]
-
-				if slice_count > 0:
-					final_record_slice.id += '.chunk_{}'.format(str(slice_count+1))
+				final_record_slice.id += '.chunk_' + str(slice_count+1)
 				final_record_slice.description = ''
 
 				records_to_write.append(final_record_slice)
