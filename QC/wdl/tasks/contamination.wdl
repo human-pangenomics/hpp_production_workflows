@@ -366,11 +366,6 @@ task contaminationRRNA {
         fi
         PREFIX="${ASM_FILENAME%.*}"
 
-        # a hack to test without rebuilding docker
-        cat `which chunk_assembly.py` | sed 's/slice_count > 0/slice_count > 0 or True/' >tmp
-        chmod +x tmp
-        mv tmp `which chunk_assembly.py`
-
         # chunk it
         chunk_assembly.py $ASM_FILENAME $ASM_FILENAME.chunked ~{chunkSize} ~{chunkOverlap}
 
@@ -746,7 +741,7 @@ task createContaminationBed {
         cat ~{vecscreenOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\tvecscreen\t" $4 "\t" $4}' >>$OUT
 
         cat $OUT | bedtools sort >tmp
-        bedtools merge -c 4,5,6 -o collapse,collapse,collapse -i tmp > ~{assemblyIdentifier}.merged_contamination.bed
+        bedtools merge -delim ";" -c 4,5,6 -o distinct,collapse,collapse -i tmp > ~{assemblyIdentifier}.merged_contamination.bed
 
 	>>>
 	output {
