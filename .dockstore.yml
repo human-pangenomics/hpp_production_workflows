@@ -33,6 +33,9 @@ workflows:
    -  name: FinalizeAssembly
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/finalizeAssembly.wdl
+   -  name: finalizeGenbankAssembly
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/finalizeGenbankAssembly.wdl
    -  name: findMitoContigs
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/findMitoContigs.wdl
