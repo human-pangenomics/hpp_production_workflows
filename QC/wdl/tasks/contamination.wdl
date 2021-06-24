@@ -4,7 +4,7 @@ version 1.0
 workflow runContamination {
 
     input {
-        String assemblyIdentifier
+        String? assemblyIdentifier
         File assemblyFasta
         File eukContaminationDatabase
         File mitoContaminationDatabase
@@ -61,6 +61,7 @@ workflow runContamination {
     call mergeContaminationResults {
         input:
             assemblyIdentifier=assemblyIdentifier,
+            assemblyFasta=assemblyFasta,
             eukOut=contaminationEuk.outputEuk,
             mitoOut=contaminationMito.outputMito,
             plastidsOut=contaminationPlastids.outputPlastids,
@@ -72,6 +73,7 @@ workflow runContamination {
     call createContaminationBed {
         input:
             assemblyIdentifier=assemblyIdentifier,
+            assemblyFasta=assemblyFasta,
             eukOut=contaminationEuk.outputEuk,
             mitoOut=contaminationMito.outputMito,
             plastidsOut=contaminationPlastids.outputPlastids,
@@ -91,6 +93,7 @@ workflow runContamination {
 	    File mergedResult = mergeContaminationResults.outputSummary
 	    File fullBed = createContaminationBed.fullContaminationBed
 	    File mergedBed = createContaminationBed.mergedContaminationBed
+	    File contaminationCoverage = createContaminationBed.contaminationCoverage
 	}
 }
 
@@ -639,7 +642,8 @@ task contaminationVecscreen {
 
 task mergeContaminationResults {
     input {
-        String assemblyIdentifier
+        String? assemblyIdentifier
+        File assemblyFasta
         File eukOut
         File mitoOut
         File rrnaOut
@@ -665,7 +669,11 @@ task mergeContaminationResults {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
 
-        OUT="~{assemblyIdentifier}.contamination.txt"
+        if [[ -z "~{assemblyIdentifier}" ]] ; then
+            OUT = `basename ~{assemblyFasta} | sed 's/.fa\(sta\)\?\(.gz\)\?//'`
+        else
+            OUT="~{assemblyIdentifier}.contamination.txt"
+        fi
 
         echo "========== Eukaryote ==========" >>$OUT
         cat ~{eukOut} >>$OUT
@@ -706,7 +714,8 @@ task mergeContaminationResults {
 
 task createContaminationBed {
     input {
-        String assemblyIdentifier
+        String? assemblyIdentifier
+        File assemblyFasta
         File eukOut
         File mitoOut
         File rrnaOut
@@ -732,23 +741,47 @@ task createContaminationBed {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
 
-        OUT="~{assemblyIdentifier}.full_contamination.bed"
-        echo "#contig\\tstart\\tstop\\tcontamination_source\\tcontamination_contig\\tcontamination_description" >$OUT
+        # get filenames
+        if [[ -z "~{assemblyIdentifier}" ]] ; then
+            ASM_ID=`basename ~{assemblyFasta} | sed 's/.fa\(sta\)\?\(.gz\)\?//'`
+        else
+            ASM_ID="~{assemblyIdentifier}.contamination.txt"
+        fi
+        OUT="${ASM_ID}.full_contamination.bed"
 
-        cat ~{eukOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\tcontam_in_euk\t" $2 "\t" $13}' >>$OUT
-        cat ~{mitoOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\tmitochondria\t" $2 "\t" $13}' >>$OUT
-        cat ~{plastidsOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\tplastids\t" $2 "\t" $13}' >>$OUT
-        cat ~{rrnaOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\trrna\t" $2 "\t" $13}' >>$OUT
-        cat ~{sep=" " refseqOuts} | { grep -v "^#" || true; } | { grep -v "==========" || true; } | awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\trefseq\t" $2 "\t" $13}' >>$OUT
-        cat ~{vecscreenOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\tvecscreen\t" $4 "\t" $4}' >>$OUT
+        # output header
+        echo -e "#contig\tstart\tstop\tcontamination_source\tcontamination_contig\tcontamination_description" >$OUT
 
+        # blast output is 1-based, bed is 0-based, so we subtract 1 from start pos
+        cat ~{eukOut}       | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\tcontam_in_euk\t" $2 "\t" $13}' >>$OUT
+        cat ~{mitoOut}      | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\tmitochondria\t" $2 "\t" $13}' >>$OUT
+        cat ~{plastidsOut}  | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\tplastids\t" $2 "\t" $13}' >>$OUT
+        cat ~{rrnaOut}      | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\trrna\t" $2 "\t" $13}' >>$OUT
+        cat ~{vecscreenOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $2 - 1 "\t" $3 "\tvecscreen\t" $4 "\t" $4}' >>$OUT
+        cat ~{sep=" " refseqOuts} | { grep -v "^#" || true; } | { grep -v "==========" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\trefseq\t" $2 "\t" $13}' >>$OUT
+
+        # merge results
         cat $OUT | bedtools sort >tmp
-        bedtools merge -delim ";" -c 4,5,6 -o distinct,collapse,collapse -i tmp > ~{assemblyIdentifier}.merged_contamination.bed
+        bedtools merge -delim ";" -c 4,5,6 -o distinct,collapse,collapse -i tmp > ${ASM_ID}.merged_contamination.bed
+
+        # genome coverage
+        ln -s ~{assemblyFasta} .
+        ASM=$(basename ~{assemblyFasta})
+        samtools faidx $ASM
+        bedtools genomecov -i ${ASM_ID}.merged_contamination.bed -g $ASM.fai | awk '$2 == 1 {print $1 "\t" $4 "\t" $5}' | sort -nr -k 3 >tmp
+
+        # annotate coverage with types of matches
+        while read LINE; do
+            CTG=$(echo "$LINE" | cut -f1)
+            MATCHES=$(cat ${ASM_ID}.merged_contamination.bed | awk -v CTG=$CTG '$1 == CTG' | cut -f4 | sed 's/;/\n/' | sort | uniq | sed -z 's/\n/,/g;s/,$//')
+            echo -e "$LINE\t$MATCHES" >>${ASM_ID}.contamination_coverage.tsv
+        done <tmp
 
 	>>>
 	output {
 		File fullContaminationBed = glob("*.full_contamination.bed")[0]
 		File mergedContaminationBed = glob("*.merged_contamination.bed")[0]
+		File contaminationCoverage = glob("*.contamination_coverage.tsv")[0]
 	}
     runtime {
         memory: memSizeGB + " GB"
