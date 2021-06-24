@@ -84,8 +84,10 @@ workflow runContamination {
 	    File eukContamination = contaminationEuk.outputEuk
 	    File mitoContamination = contaminationMito.outputMito
 	    File plastidsContamination = contaminationPlastids.outputPlastids
+	    File rrnaContamination = contaminationRRNA.outputRRNA
 	    File windowmaskedFasta=contaminationWindowmasker.outputWindowmasker
 	    Array[File] refseqContamination = contaminationRefseq.outputRefseq
+	    File vecscreenContamination = contaminationVecscreen.outputVecscreen
 	    File mergedResult = mergeContaminationResults.outputSummary
 	    File fullBed = createContaminationBed.fullContaminationBed
 	    File mergedBed = createContaminationBed.mergedContaminationBed
