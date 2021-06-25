@@ -723,6 +723,7 @@ task createContaminationBed {
         Array[File] refseqOuts
         File rrnaOut
         File vecscreenOut
+        Int bedtoolsMergeDistance = 0
         Int memSizeGB = 2
         Int threadCount = 1
         Int diskSizeGB = 64
@@ -762,11 +763,15 @@ task createContaminationBed {
 
         # merge results
         cat $OUT | bedtools sort >tmp
-        bedtools merge -delim ";" -c 4,5,6 -o distinct,collapse,collapse -i tmp > ${ASM_ID}.merged_contamination.bed
+        bedtools merge -d ~{bedtoolsMergeDistance} -delim ";" -c 4,5,6 -o distinct,distinct,distinct -i tmp > ${ASM_ID}.merged_contamination.bed
 
         # genome coverage
         ln -s ~{assemblyFasta} .
         ASM=$(basename ~{assemblyFasta})
+        if [[ ~{assemblyFasta} =~ \.gz$ ]]; then
+            gunzip -k $ASM
+            ASM="${ASM%.gz}"
+        fi
         samtools faidx $ASM
         bedtools genomecov -i ${ASM_ID}.merged_contamination.bed -g $ASM.fai | awk '$2 == 1 {print $1 "\t" $4 "\t" $5}' | sort -nr -k 3 >tmp
 
