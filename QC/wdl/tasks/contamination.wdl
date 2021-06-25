@@ -766,11 +766,13 @@ task createContaminationBed {
         bedtools merge -d ~{bedtoolsMergeDistance} -delim ";" -c 4,5,6 -o distinct,distinct,distinct -i tmp > ${ASM_ID}.merged_contamination.bed
 
         # genome coverage
-        ln -s ~{assemblyFasta} .
         ASM=$(basename ~{assemblyFasta})
         if [[ ~{assemblyFasta} =~ \.gz$ ]]; then
-            gunzip -k $ASM
+            cp ~{assemblyFasta} .
+            gunzip $ASM
             ASM="${ASM%.gz}"
+        else
+            ln -s ~{assemblyFasta} .
         fi
         samtools faidx $ASM
         bedtools genomecov -i ${ASM_ID}.merged_contamination.bed -g $ASM.fai | awk '$2 == 1 {print $1 "\t" $4 "\t" $5}' | sort -nr -k 3 >tmp
