@@ -6,49 +6,61 @@ workflow runContamination {
     input {
         String? assemblyIdentifier
         File assemblyFasta
-        File eukContaminationDatabase
-        File mitoContaminationDatabase
-        File plastidsContaminationDatabase
-        File vecscreenContaminationDatabase
-        File rrnaContaminationDatabase
+        File? eukContaminationDatabase
+        File? mitoContaminationDatabase
+        File? plastidsContaminationDatabase
+        File? vecscreenContaminationDatabase
+        File? rrnaContaminationDatabase
         Array[File] refseqContaminationDatabases
         String dockerImage="tpesout/hpp_contamination:latest"
     }
 
-    call contaminationEuk {
-        input:
-            assemblyFasta=assemblyFasta,
-            eukContaminationDatabase=eukContaminationDatabase,
-            dockerImage=dockerImage
+    if (defined(eukContaminationDatabase)) {
+        call contaminationEuk {
+            input:
+                assemblyFasta=assemblyFasta,
+                eukContaminationDatabase=eukContaminationDatabase,
+                dockerImage=dockerImage
+        }
     }
-    call contaminationMito {
-        input:
-            assemblyFasta=assemblyFasta,
-            mitoContaminationDatabase=mitoContaminationDatabase,
-            dockerImage=dockerImage
+    if (defined(mitoContaminationDatabase)) {
+        call contaminationMito {
+            input:
+                assemblyFasta=assemblyFasta,
+                mitoContaminationDatabase=mitoContaminationDatabase,
+                dockerImage=dockerImage
+        }
     }
-    call contaminationPlastids {
-        input:
-            assemblyFasta=assemblyFasta,
-            plastidsContaminationDatabase=plastidsContaminationDatabase,
-            dockerImage=dockerImage
+    if (defined(plastidsContaminationDatabase)) {
+        call contaminationPlastids {
+            input:
+                assemblyFasta=assemblyFasta,
+                plastidsContaminationDatabase=plastidsContaminationDatabase,
+                dockerImage=dockerImage
+        }
     }
-    call contaminationVecscreen {
-        input:
-            assemblyFasta=assemblyFasta,
-            vecscreenContaminationDatabase=vecscreenContaminationDatabase,
-            dockerImage=dockerImage
+    if (defined(vecscreenContaminationDatabase)) {
+        call contaminationVecscreen {
+            input:
+                assemblyFasta=assemblyFasta,
+                vecscreenContaminationDatabase=vecscreenContaminationDatabase,
+                dockerImage=dockerImage
+        }
     }
-    call contaminationRRNA {
-        input:
-            assemblyFasta=assemblyFasta,
-            rrnaContaminationDatabase=rrnaContaminationDatabase,
-            dockerImage=dockerImage
+    if (defined(rrnaContaminationDatabase)) {
+        call contaminationRRNA {
+            input:
+                assemblyFasta=assemblyFasta,
+                rrnaContaminationDatabase=rrnaContaminationDatabase,
+                dockerImage=dockerImage
+        }
     }
-    call contaminationWindowmasker {
-        input:
-            assemblyFasta=assemblyFasta,
-            dockerImage=dockerImage
+    if (length(refseqContaminationDatabases) > 0) {
+        call contaminationWindowmasker {
+            input:
+                assemblyFasta=assemblyFasta,
+                dockerImage=dockerImage
+        }
     }
     scatter (refseqContaminationDatabase in refseqContaminationDatabases) {
         call contaminationRefseq {
@@ -83,13 +95,13 @@ workflow runContamination {
             dockerImage=dockerImage
     }
 	output {
-	    File eukContamination = contaminationEuk.outputEuk
-	    File mitoContamination = contaminationMito.outputMito
-	    File plastidsContamination = contaminationPlastids.outputPlastids
-	    File rrnaContamination = contaminationRRNA.outputRRNA
-	    File windowmaskedFasta=contaminationWindowmasker.outputWindowmasker
+	    File? eukContamination = contaminationEuk.outputEuk
+	    File? mitoContamination = contaminationMito.outputMito
+	    File? plastidsContamination = contaminationPlastids.outputPlastids
+	    File? rrnaContamination = contaminationRRNA.outputRRNA
+	    File? windowmaskedFasta=contaminationWindowmasker.outputWindowmasker
 	    Array[File] refseqContamination = contaminationRefseq.outputRefseq
-	    File vecscreenContamination = contaminationVecscreen.outputVecscreen
+	    File? vecscreenContamination = contaminationVecscreen.outputVecscreen
 	    File mergedResult = mergeContaminationResults.outputSummary
 	    File fullBed = createContaminationBed.fullContaminationBed
 	    File mergedBed = createContaminationBed.mergedContaminationBed
@@ -101,7 +113,7 @@ workflow runContamination {
 task contaminationEuk {
     input {
         File assemblyFasta
-        File eukContaminationDatabase
+        File? eukContaminationDatabase
         String eukExtraArguments=""
         Int memSizeGB = 8
         Int threadCount = 8
@@ -180,7 +192,7 @@ task contaminationEuk {
 task contaminationMito {
     input {
         File assemblyFasta
-        File mitoContaminationDatabase
+        File? mitoContaminationDatabase
         String mitoExtraArguments=""
         Int memSizeGB = 8
         Int threadCount = 8
@@ -259,7 +271,7 @@ task contaminationMito {
 task contaminationPlastids {
     input {
         File assemblyFasta
-        File plastidsContaminationDatabase
+        File? plastidsContaminationDatabase
         String plastidsExtraArguments=""
         Int memSizeGB = 8
         Int threadCount = 8
@@ -338,7 +350,7 @@ task contaminationPlastids {
 task contaminationRRNA {
     input {
         File assemblyFasta
-        File rrnaContaminationDatabase
+        File? rrnaContaminationDatabase
         Int chunkSize = 500000
         Int chunkOverlap = 5000
         String rrnaExtraArguments=""
@@ -435,7 +447,6 @@ task contaminationRRNA {
 task contaminationWindowmasker {
     input {
         File assemblyFasta
-        String refseqExtraArguments=""
         Int memSizeGB = 8
         Int threadCount = 8
         Int diskSizeGB = 64
@@ -483,8 +494,8 @@ task contaminationWindowmasker {
 
 task contaminationRefseq {
     input {
-        File assemblyWindowmaskedFasta
-        File refseqContaminationDatabase
+        File? assemblyWindowmaskedFasta
+        File? refseqContaminationDatabase
         String refseqExtraArguments=""
         Int memSizeGB = 8
         Int threadCount = 8
@@ -565,7 +576,7 @@ task contaminationRefseq {
 task contaminationVecscreen {
     input {
         File assemblyFasta
-        File vecscreenContaminationDatabase
+        File? vecscreenContaminationDatabase
         String vecscreenExtraArguments=""
         Int chunkSize = 1000000
         Int chunkOverlap = 10000
@@ -644,13 +655,13 @@ task mergeContaminationResults {
     input {
         String? assemblyIdentifier
         File assemblyFasta
-        File eukOut
-        File mitoOut
-        File rrnaOut
-        File plastidsOut
+        File? eukOut
+        File? mitoOut
+        File? rrnaOut
+        File? plastidsOut
         Array[File] refseqOuts
-        File rrnaOut
-        File vecscreenOut
+        File? rrnaOut
+        File? vecscreenOut
         Int memSizeGB = 2
         Int threadCount = 1
         Int diskSizeGB = 64
@@ -674,29 +685,48 @@ task mergeContaminationResults {
         else
             OUT="~{assemblyIdentifier}.contamination.txt"
         fi
+        touch $OUT
 
-        echo "========== Eukaryote ==========" >>$OUT
-        cat ~{eukOut} >>$OUT
+        # contam in euks
+        if [[ -f "~{eukOut}" ]] ; then
+            echo "========== Eukaryote ==========" >>$OUT
+            cat ~{eukOut} >>$OUT
+        fi
 
-        echo "" >>$OUT
-        echo "========== Mitocondria ==========" >>$OUT
-        cat ~{mitoOut} >>$OUT
+        # mitochondria
+        if [[ -f "~{mitoOut}" ]] ; then
+            echo "" >>$OUT
+            echo "========== Mitocondria ==========" >>$OUT
+            cat ~{mitoOut} >>$OUT
+        fi
 
-        echo "" >>$OUT
-        echo "========== Plastids ==========" >>$OUT
-        cat ~{plastidsOut} >>$OUT
+        # plastids
+        if [[ -f "~{plastidsOut}" ]] ; then
+            echo "" >>$OUT
+            echo "========== Plastids ==========" >>$OUT
+            cat ~{plastidsOut} >>$OUT
+        fi
 
-        echo "" >>$OUT
-        echo "========== RRNA ==========" >>$OUT
-        cat ~{rrnaOut} >>$OUT
+        # ribosomal rna
+        if [[ -f "~{rrnaOut}" ]] ; then
+            echo "" >>$OUT
+            echo "========== RRNA ==========" >>$OUT
+            cat ~{rrnaOut} >>$OUT
+        fi
 
-        echo "" >>$OUT
-        echo "========== Vecscreen ==========" >>$OUT
-        cat ~{vecscreenOut} >>$OUT
+        # vecscreen
+        if [[ -f "~{vecscreenOut}" ]] ; then
+            echo "" >>$OUT
+            echo "========== Vecscreen ==========" >>$OUT
+            cat ~{vecscreenOut} >>$OUT
+        fi
 
-        echo "" >>$OUT
-        echo "========== RefSeq ==========" >>$OUT
-        cat ~{sep=" " refseqOuts} >>$OUT
+        # refseq
+        if [[ -z "~{true="" false="NO_REFSEQ" length(refseqOuts) > 0}" ]] ; then
+            echo "" >>$OUT
+            echo "========== RefSeq ==========" >>$OUT
+            cat ~{sep=" " refseqOuts} >>$OUT
+        fi
 
 	>>>
 	output {
@@ -716,13 +746,13 @@ task createContaminationBed {
     input {
         String? assemblyIdentifier
         File assemblyFasta
-        File eukOut
-        File mitoOut
-        File rrnaOut
-        File plastidsOut
+        File? eukOut
+        File? mitoOut
+        File? rrnaOut
+        File? plastidsOut
         Array[File] refseqOuts
-        File rrnaOut
-        File vecscreenOut
+        File? rrnaOut
+        File? vecscreenOut
         Int bedtoolsMergeDistance = 0
         Int memSizeGB = 2
         Int threadCount = 1
@@ -746,20 +776,45 @@ task createContaminationBed {
         if [[ -z "~{assemblyIdentifier}" ]] ; then
             ASM_ID=`basename ~{assemblyFasta} | sed 's/.fa\(sta\)\?\(.gz\)\?//'`
         else
-            ASM_ID="~{assemblyIdentifier}.contamination.txt"
+            ASM_ID="~{assemblyIdentifier}"
         fi
         OUT="${ASM_ID}.full_contamination.bed"
 
         # output header
         echo -e "#contig\tstart\tstop\tcontamination_source\tcontamination_contig\tcontamination_description" >$OUT
 
+        # save all data (if there is a file for it)
         # blast output is 1-based, bed is 0-based, so we subtract 1 from start pos
-        cat ~{eukOut}       | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\tcontam_in_euk\t" $2 "\t" $13}' >>$OUT
-        cat ~{mitoOut}      | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\tmitochondria\t" $2 "\t" $13}' >>$OUT
-        cat ~{plastidsOut}  | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\tplastids\t" $2 "\t" $13}' >>$OUT
-        cat ~{rrnaOut}      | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\trrna\t" $2 "\t" $13}' >>$OUT
-        cat ~{vecscreenOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $2 - 1 "\t" $3 "\tvecscreen\t" $4 "\t" $4}' >>$OUT
-        cat ~{sep=" " refseqOuts} | { grep -v "^#" || true; } | { grep -v "==========" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\trefseq\t" $2 "\t" $13}' >>$OUT
+
+        # contam in euks
+        if [[ -f "~{eukOut}" ]] ; then
+            cat ~{eukOut}       | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\tcontam_in_euk\t" $2 "\t" $13}' >>$OUT
+        fi
+
+        # mito
+        if [[ -f "~{mitoOut}" ]] ; then
+            cat ~{mitoOut}      | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\tmitochondria\t" $2 "\t" $13}' >>$OUT
+        fi
+
+        # plastids
+        if [[ -f "~{plastidsOut}" ]] ; then
+            cat ~{plastidsOut}  | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\tplastids\t" $2 "\t" $13}' >>$OUT
+        fi
+
+        # ribosomal RNA
+        if [[ -f "~{rrnaOut}" ]] ; then
+            cat ~{rrnaOut}      | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\trrna\t" $2 "\t" $13}' >>$OUT
+        fi
+
+        # vecscreen
+        if [[ -f "~{vecscreenOut}" ]] ; then
+            cat ~{vecscreenOut} | { grep -v "^#" || true; } | awk -F "\t" '{print $1 "\t" $2 - 1 "\t" $3 "\tvecscreen\t" $4 "\t" $4}' >>$OUT
+        fi
+
+        # refseq
+        if [[ -z "~{true="" false="NO_REFSEQ" length(refseqOuts) > 0}" ]] ; then
+            cat ~{sep=" " refseqOuts} | { grep -v "^#" || true; } | { grep -v "==========" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\trefseq\t" $2 "\t" $13}' >>$OUT
+        fi
 
         # merge results
         cat $OUT | bedtools sort >tmp
