@@ -817,7 +817,7 @@ task createContaminationBed {
         fi
 
         # merge results (unless we don't have results)
-        cat $OUT | {grep -v "^$" || true; } | bedtools sort >tmp
+        cat $OUT | { grep -v "^$" || true; } | bedtools sort >tmp
         ls -lah
         if [[ ! -s "tmp" ]] ; then
             bedtools merge -d ~{bedtoolsMergeDistance} -delim ";" -c 4,5,6 -o distinct,distinct,distinct -i tmp > ${ASM_ID}.merged_contamination.bed
