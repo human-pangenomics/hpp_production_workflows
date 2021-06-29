@@ -681,7 +681,7 @@ task mergeContaminationResults {
         set -o xtrace
 
         if [[ -z "~{assemblyIdentifier}" ]] ; then
-            OUT=`basename ~{assemblyFasta} | sed 's/.fa\(sta\)\?\(.gz\)\?//'`
+            OUT="$(basename ~{assemblyFasta} | sed 's/.fa\(sta\)\?\(.gz\)\?//').contamination.txt"
         else
             OUT="~{assemblyIdentifier}.contamination.txt"
         fi
@@ -817,7 +817,8 @@ task createContaminationBed {
         fi
 
         # merge results (unless we don't have results)
-        cat $OUT | bedtools sort >tmp
+        cat $OUT | {grep -v "^$" || true; } | bedtools sort >tmp
+        ls -lah
         if [[ ! -s "tmp" ]] ; then
             bedtools merge -d ~{bedtoolsMergeDistance} -delim ";" -c 4,5,6 -o distinct,distinct,distinct -i tmp > ${ASM_ID}.merged_contamination.bed
 
