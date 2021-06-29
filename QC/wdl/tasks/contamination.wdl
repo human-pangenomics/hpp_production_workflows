@@ -681,7 +681,7 @@ task mergeContaminationResults {
         set -o xtrace
 
         if [[ -z "~{assemblyIdentifier}" ]] ; then
-            OUT = `basename ~{assemblyFasta} | sed 's/.fa\(sta\)\?\(.gz\)\?//'`
+            OUT=`basename ~{assemblyFasta} | sed 's/.fa\(sta\)\?\(.gz\)\?//'`
         else
             OUT="~{assemblyIdentifier}.contamination.txt"
         fi
@@ -816,28 +816,33 @@ task createContaminationBed {
             cat ~{sep=" " refseqOuts} | { grep -v "^#" || true; } | { grep -v "==========" || true; } | awk -F "\t" '{print $1 "\t" $7 - 1 "\t" $8 "\trefseq\t" $2 "\t" $13}' >>$OUT
         fi
 
-        # merge results
+        # merge results (unless we don't have results)
         cat $OUT | bedtools sort >tmp
-        bedtools merge -d ~{bedtoolsMergeDistance} -delim ";" -c 4,5,6 -o distinct,distinct,distinct -i tmp > ${ASM_ID}.merged_contamination.bed
+        if [[ ! -s "tmp" ]] ; then
+            bedtools merge -d ~{bedtoolsMergeDistance} -delim ";" -c 4,5,6 -o distinct,distinct,distinct -i tmp > ${ASM_ID}.merged_contamination.bed
 
-        # genome coverage
-        ASM=$(basename ~{assemblyFasta})
-        if [[ ~{assemblyFasta} =~ \.gz$ ]]; then
-            cp ~{assemblyFasta} .
-            gunzip $ASM
-            ASM="${ASM%.gz}"
+            # genome coverage
+            ASM=$(basename ~{assemblyFasta})
+            if [[ ~{assemblyFasta} =~ \.gz$ ]]; then
+                cp ~{assemblyFasta} .
+                gunzip $ASM
+                ASM="${ASM%.gz}"
+            else
+                ln -s ~{assemblyFasta} .
+            fi
+            samtools faidx $ASM
+            bedtools genomecov -i ${ASM_ID}.merged_contamination.bed -g $ASM.fai | awk '$2 == 1 {print $1 "\t" $4 "\t" $5}' | sort -nr -k 3 >tmp
+
+            # annotate coverage with types of matches
+            while read LINE; do
+                CTG=$(echo "$LINE" | cut -f1)
+                MATCHES=$(cat ${ASM_ID}.merged_contamination.bed | awk -v CTG=$CTG '$1 == CTG' | cut -f4 | sed 's/;/\n/' | sort | uniq | sed -z 's/\n/,/g;s/,$//')
+                echo -e "$LINE\t$MATCHES" >>${ASM_ID}.contamination_coverage.tsv
+            done <tmp
         else
-            ln -s ~{assemblyFasta} .
+            touch ${ASM_ID}.merged_contamination.bed
+            touch ${ASM_ID}.contamination_coverage.tsv
         fi
-        samtools faidx $ASM
-        bedtools genomecov -i ${ASM_ID}.merged_contamination.bed -g $ASM.fai | awk '$2 == 1 {print $1 "\t" $4 "\t" $5}' | sort -nr -k 3 >tmp
-
-        # annotate coverage with types of matches
-        while read LINE; do
-            CTG=$(echo "$LINE" | cut -f1)
-            MATCHES=$(cat ${ASM_ID}.merged_contamination.bed | awk -v CTG=$CTG '$1 == CTG' | cut -f4 | sed 's/;/\n/' | sort | uniq | sed -z 's/\n/,/g;s/,$//')
-            echo -e "$LINE\t$MATCHES" >>${ASM_ID}.contamination_coverage.tsv
-        done <tmp
 
 	>>>
 	output {
