@@ -220,3 +220,47 @@ task ast_pbTask{
         File coverageWig = "~{sampleName}.~{platform}.cov.wig"
     }
 }
+
+
+task ast_pbTask_cov_output{
+    input{
+        String sampleName
+        String platform
+        Array[File] pafFiles
+        # runtime configurations
+        Int memSize
+        Int threadCount
+        Int diskSize
+        String dockerImage="quay.io/masri2019/hpp_asset:latest"
+        Int preemptible
+    }
+    command <<<
+        # Set the exit code of a pipeline to that of the rightmost command
+        # to exit with a non-zero status, or zero if all commands of the pipeline exit
+        set -o pipefail
+        # cause a bash script to exit immediately when a command fails
+        set -e
+        # cause the bash shell to treat unset variables as an error and exit immediately
+        set -u
+        # echo each line of the script to stdout so we can see what is happening
+        # to turn off echo do 'set +o xtrace'
+        set -o xtrace
+
+        # run asset to find supportive blocks
+        ast_pb -m5 -M100 ~{sep=" " pafFiles} > ~{sampleName}.~{platform}.bed
+        mv pb.cov.wig ~{sampleName}.~{platform}.cov.wig
+        sed -i "1s/.*/track type=\"wiggle_0\" name=\"~{sampleName} ~{platform} coverage\"/" ~{sampleName}.~{platform}.cov.wig
+    >>>
+    runtime {
+        docker: dockerImage
+        memory: memSize + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSize + " SSD"
+        preemptible : preemptible
+    }
+    output{
+        File supportBed = "~{sampleName}.~{platform}.bed"
+        File coverageWig = "~{sampleName}.~{platform}.cov.wig"
+        File coverage = "~{sampleName}.~{platform}.cov"
+    }
+}

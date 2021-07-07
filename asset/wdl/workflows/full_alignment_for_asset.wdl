@@ -1,7 +1,7 @@
 version 1.0 
 
 import "../tasks/bwa.wdl" as bwa_t
-import "../tasks/long_read_aligner.wdl" as longReadAligner_t
+import "../../../coverage/wdl/tasks/long_read_aligner.wdl" as longReadAligner_t
 
 workflow fullAlignmentForAsset {
     input {

@@ -57,21 +57,6 @@ workflows:
    -  name: Asset
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/asset.wdl
-   -  name: Bam2Paf
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/tasks/bam2paf.wdl
-   -  name: BamCoverage
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/tasks/bam_coverage.wdl
-   -  name: FitModelByCoverage
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/workflows/fit_model_by_coverage.wdl
-   -  name: FitModelByCounts
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/tasks/fit_model.wdl
-   -  name: ProbTable2Bed
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/tasks/prob_table2bed.wdl
    -  name: AssetBamInput
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/workflows/asset_bam_input.wdl
@@ -99,15 +84,12 @@ workflows:
    -  name: AssetMergeLongRead
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/asset_merge_long_read.wdl
-   -  name: MapBlocks
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/tasks/map_blocks.wdl
    -  name: Bed2Fasta
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/bed2fasta.wdl
    -  name: Asm2AsmAligner
       subclass: WDL
-      primaryDescriptorPath: /asset/wdl/tasks/asm2asm_aligner.wdl
+      primaryDescriptorPath: /coverage/wdl/tasks/asm2asm_aligner.wdl
    -  name: ProduceFai
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/produce_fai.wdl
@@ -117,3 +99,81 @@ workflows:
    -  name: DownSampling
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/down_sampling.wdl
+   -  name: ProjectBlocks
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/project_blocks.wdl
+   -  name: ProjectBlocksMale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/project_blocks_male.wdl
+   -  name: ProjectBlocksFemale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/project_blocks_female.wdl
+   -  name: ProduceAutosomalBed 
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/produce_autosomal_bed.wdl
+   -  name: ProduceSexBed
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/produce_sex_bed.wdl
+   -  name: SubsetCoverage
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/subset_coverage.wdl
+   -  name: LongReadAlignerSplit
+      subclass: WDL
+      primaryDescriptorPath: /asset/wdl/tasks/long_read_aligner_split.wdl
+   -  name: UnionBedFiles
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/union_bed_files.wdl
+   -  name: SubtractBedFiles
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/subtract_bed_files.wdl
+   -  name: ExclusionStepMale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/exclusion_step_male.wdl
+   -  name: ExclusionStepFemale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/exclusion_step_female.wdl
+   -  name: FillGapsMale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/fill_gaps_male.wdl
+   -  name: FillGapsFemale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/fill_gaps_female.wdl
+   -  name: SubsetCoverageMale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/subset_coverage_male.wdl
+   -  name: SubsetCoverageFemale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/subset_coverage_female.wdl
+   -  name: Cov2Counts
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/cov2counts.wdl
+   -  name: Cov2CountsMale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/cov2counts_male.wdl
+   -  name: Cov2CountsFemale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/cov2counts_female.wdl
+   -  name: FitModelMale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/fit_model_male.wdl
+   -  name: FitModelFemale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/fit_model_female.wdl
+   -  name: FindBlocksMale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/find_blocks_male.wdl
+   -  name: FindBlocksFemale
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/find_blocks_female.wdl
+   -  name: Bam2Paf
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/bam2paf.wdl
+   -  name: BamCoverage
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/bam_coverage.wdl
+   -  name: FitModelByCounts
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/fit_model.wdl
+   -  name: ProbTable2Bed
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/prob_table2bed.wdl

@@ -1,8 +1,8 @@
-version 1.0 
+version 1.0
 
 import "../tasks/asset.wdl" as asset_t
-import "../tasks/bam2paf.wdl" as bam2paf_t
-import "../tasks/bam_coverage.wdl" as bam_coverage_t
+import "../../../coverage/wdl/tasks/bam2paf.wdl" as bam2paf_t
+import "../../../coverage/wdl/tasks/bam_coverage.wdl" as bam_coverage_t
 import "../tasks/tar.wdl" as tar_t
 
 workflow assetTwoPlatforms {
@@ -11,12 +11,16 @@ workflow assetTwoPlatforms {
         String sampleSuffix
         Array[File] ontBamFiles
         Array[File] hifiBamFiles
+        Float ontCoverageMean
+        Float ontCoverageSd
+        Float hifiCoverageMean
+        Float hifiCoverageSd
         Int minMAPQ = 21
     }
     
     scatter(bamFile in ontBamFiles) {
         call bam2paf_t.bam2paf as ontBam2Paf {
-            input: 
+            input:
                 bamFile = bamFile,
                 minMAPQ = minMAPQ
         }
@@ -30,23 +34,12 @@ workflow assetTwoPlatforms {
         }
     }
     
-    call bam_coverage_t.bamCoverage as ontBamCoverage {
-        input:
-            bamFiles = ontBamFiles,
-            minMAPQ = minMAPQ
-    }
- 
-    call bam_coverage_t.bamCoverage as hifiBamCoverage {
-        input:
-            bamFiles = hifiBamFiles,
-            minMAPQ = minMAPQ
-    }
     call asset_t.ast_pbTask as ontAssetTask{
         input:
             sampleName = "${sampleName}.${sampleSuffix}.ont",
             pafFiles = ontBam2Paf.pafFile,
-            coverageMean = ontBamCoverage.coverageMean,
-            coverageSD = ontBamCoverage.coverageSD,
+            coverageMean = ontCoverageMean,
+            coverageSD = ontCoverageSd,
             memSize = 32,
             threadCount = 8,
             diskSize = 256,
@@ -56,8 +49,8 @@ workflow assetTwoPlatforms {
         input:
             sampleName = "${sampleName}.${sampleSuffix}.hifi",
             pafFiles = hifiBam2Paf.pafFile,
-            coverageMean = hifiBamCoverage.coverageMean,
-            coverageSD = hifiBamCoverage.coverageSD,
+            coverageMean = hifiCoverageMean,
+            coverageSD = hifiCoverageSd,
             memSize = 32,
             threadCount = 8,
             diskSize = 256,

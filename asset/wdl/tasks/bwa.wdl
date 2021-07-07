@@ -1,6 +1,6 @@
 version 1.0
 
-import "merge_bams.wdl" as merge_bams_t
+import "../../../coverage/wdl/tasks/merge_bams.wdl" as merge_bams_t
 import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
 import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
 

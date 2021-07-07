@@ -1,0 +1,34 @@
+FROM quay.io/masri2019/hpp_base:latest
+MAINTAINER Mobin Asri, masri@ucsc.edu
+
+RUN apt-get update && apt-get install -y zip unzip curl
+RUN mkdir -p /home/apps
+## Winnowmap
+RUN cd /home/apps && \
+    wget https://github.com/marbl/Winnowmap/archive/refs/tags/v2.03.zip && \
+    unzip v2.03.zip && \
+    rm v2.03.zip && \
+    cd Winnowmap-2.03 && \
+    make -j8
+ENV PATH="/home/apps/Winnowmap-2.03/bin:${PATH}"
+
+## minimap2
+RUN cd /home/apps && \
+    wget https://github.com/lh3/minimap2/archive/refs/tags/v2.20.zip && \
+    unzip v2.20.zip && \
+    rm v2.20.zip && \
+    cd minimap2-2.20 && \
+    make
+ENV PATH="/home/apps/minimap2-2.20:${PATH}"
+ENV PAFTOOLS_PATH="/home/apps/minimap2-2.20/misc/paftools.js"
+
+## k8
+RUN cd /home/apps && \
+    curl -L https://github.com/attractivechaos/k8/releases/download/v0.2.4/k8-0.2.4.tar.bz2 | tar -jxf -
+RUN cd /home/apps/k8-0.2.4/ && cp k8-`uname -s` k8
+ENV PATH="/home/apps/k8-0.2.4:$PATH"
+
+## UCSC convention is to work in /data
+RUN mkdir -p /data
+WORKDIR /data
+

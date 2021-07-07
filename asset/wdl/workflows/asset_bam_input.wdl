@@ -1,8 +1,8 @@
 version 1.0 
 
 import "../tasks/asset.wdl" as asset_t
-import "../tasks/bam2paf.wdl" as bam2paf_t
-import "../tasks/bam_coverage.wdl" as bam_coverage_t
+import "../../../coverage/wdl/tasks/bam2paf.wdl" as bam2paf_t
+import "../../../coverage/wdl/tasks/bam_coverage.wdl" as bam_coverage_t
 import "../tasks/tar.wdl" as tar_t
 
 workflow assetFourPlatforms {
@@ -67,7 +67,7 @@ workflow assetFourPlatforms {
     call tar_t.tarGz as coverageFilesTar{
         input:
             tarGzName = "${sampleName}.${sampleSuffix}.coverage",
-            files = [asset.hicCoverageWig, asset.hifiCoverageWig, asset.ontCoverageWig, asset.bionanoCoverageWig, asset.hicCoverage, hifiBamCoverage.coverage, ontBamCoverage.coverage]
+            files = [asset.hicCoverageWig, asset.hifiCoverageWig, asset.ontCoverageWig, asset.bionanoCoverageWig, asset.hicCoverage, hifiBamCoverage.coverageGz, ontBamCoverage.coverageGz]
     }
     output {
         File assetOutputsTarGz = assetTar.fileTarGz
