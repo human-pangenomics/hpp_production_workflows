@@ -176,7 +176,7 @@ Its output is a file with `.table` suffix. It contains a TAB-delimited table wit
 |freq  |float   |The frequency of the coverage value in the first column                     |
 |fit  |float   |The frequency value fit to the model    |
 |error  |float   |The weight of the error component       |
-|extra  |float  |The weight of the extra component               |
+|extra  |float  |The weight of the duplicated component               |
 |haploid  |float|The weight of the haploid component                      |
 |collapsed  |float   |The weight of the collapsed component                    |
 
@@ -254,6 +254,9 @@ HG03453
 HG02622
 HG02572
 ````
+
+3. The contigs that couldn't be mapped to the reference chm13v1.0+hg38Y are not partitioned so they are not included in this analysis. In future developements we have to find which partition those contigs are coming from.
+
 ### Data, Source Code and Workflows Availability
 
 The haplotype-resolved assemblies of the HPRC-Y1 samples and their corresponding data sets are available in
