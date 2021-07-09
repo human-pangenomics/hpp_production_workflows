@@ -69,6 +69,7 @@ task alignment{
         String aligner
         String preset
         String suffix=""
+        String options=""
         File readFastq_or_queryAssembly
         File refAssembly
         Int kmerSize=15
@@ -105,7 +106,7 @@ task alignment{
         fi
         
         fileBasename=$(basename ~{readFastq_or_queryAssembly})
-        ${ALIGNER_CMD} -a -x ~{preset} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} | samtools view -h -b > ${fileBasename%.*.*}.bam
+        ${ALIGNER_CMD} ~{options} -a -x ~{preset} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} | samtools view -h -b > ${fileBasename%.*.*}.bam
         
         if [ -z ~{suffix} ]; then
             OUTPUT_FILE=${fileBasename%.*.*}.sorted.bam
