@@ -32,15 +32,18 @@ workflow longReadAlignmentSplit {
                 dockerImage="tpesout/hpp_base:latest"
         }
     }
-    call readSetSplitter_t.readSetSplitter {
-        input:
-            readFastqs = extractReads.extractedRead,
-            splitNumber = splitNumber
-    }
     call arithmetic_t.sum as readSize {
         input:
             integers=extractReads.fileSizeGB
     }
+
+    call readSetSplitter_t.readSetSplitter {
+        input:
+            readFastqs = extractReads.extractedRead,
+            splitNumber = splitNumber,
+            diskSize = readSize.value * 2.5
+    }
+   
     scatter (readFastq in readSetSplitter.splitReadFastqs) {
          ## align reads to the assembly
          call longReadAligner_t.alignment{
