@@ -17,7 +17,7 @@ workflow longReadAlignmentSplit {
         File assembly
         File? referenceFasta
         Int preemptible=2
-        Int extractReadsDiskSize=256
+        Int extractReadsDiskSize=512
         String zones
     }
 
