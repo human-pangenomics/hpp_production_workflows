@@ -41,7 +41,7 @@ workflow longReadAlignmentSplit {
         input:
             readFastqs = extractReads.extractedRead,
             splitNumber = splitNumber,
-            diskSize = readSize.value * 2.5
+            diskSize = floor(readSize.value * 2.5)
     }
    
     scatter (readFastq in readSetSplitter.splitReadFastqs) {
