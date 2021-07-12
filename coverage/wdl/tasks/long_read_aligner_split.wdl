@@ -65,7 +65,8 @@ workflow longReadAlignmentSplit {
     ## merge the bam files
     call mergeBams_t.merge as mergeBams{
         input:
-            sampleName = "${sampleName}.${sampleSuffix}",
+            sampleName = sampleName,
+            sampleSuffix = sampleSuffix,
             sortedBamFiles = alignment.sortedBamFile,
             # runtime configurations
             diskSize = floor(bamSize.value * 2.5),
