@@ -17,7 +17,7 @@ workflow longReadAlignmentSplit {
         File assembly
         File? referenceFasta
         Int preemptible=2
-        Int extractReadsDiskSize=256
+        Int extractReadsDiskSize=512
         String zones
     }
 
@@ -32,15 +32,18 @@ workflow longReadAlignmentSplit {
                 dockerImage="tpesout/hpp_base:latest"
         }
     }
-    call readSetSplitter_t.readSetSplitter {
-        input:
-            readFastqs = extractReads.extractedRead,
-            splitNumber = splitNumber
-    }
     call arithmetic_t.sum as readSize {
         input:
             integers=extractReads.fileSizeGB
     }
+
+    call readSetSplitter_t.readSetSplitter {
+        input:
+            readFastqs = extractReads.extractedRead,
+            splitNumber = splitNumber,
+            diskSize = floor(readSize.value * 2.5)
+    }
+   
     scatter (readFastq in readSetSplitter.splitReadFastqs) {
          ## align reads to the assembly
          call longReadAligner_t.alignment{
@@ -49,7 +52,7 @@ workflow longReadAlignmentSplit {
                  preset = preset,
                  refAssembly=assembly,
                  readFastq_or_queryAssembly = readFastq,
-                 diskSize = floor(readSize.value / splitNumber) * 4,
+                 diskSize = 8 + floor(readSize.value / splitNumber) * 5,
                  preemptible = preemptible,
                  zones = zones
         }
@@ -62,7 +65,8 @@ workflow longReadAlignmentSplit {
     ## merge the bam files
     call mergeBams_t.merge as mergeBams{
         input:
-            sampleName = "${sampleName}.${sampleSuffix}",
+            sampleName = sampleName,
+            sampleSuffix = sampleSuffix,
             sortedBamFiles = alignment.sortedBamFile,
             # runtime configurations
             diskSize = floor(bamSize.value * 2.5),

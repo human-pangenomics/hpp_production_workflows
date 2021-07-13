@@ -12,6 +12,7 @@ task merge{
     input{
         Array[File] sortedBamFiles
         String sampleName
+        String sampleSuffix
         # runtime configurations
         Int memSize=32
         Int threadCount=8
@@ -32,8 +33,8 @@ task merge{
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
         
-        samtools merge -@ ~{threadCount} ~{sampleName}.bam ~{sep=" " sortedBamFiles}
-        samtools index -@ ~{threadCount} ~{sampleName}.bam
+        samtools merge -@ ~{threadCount} ~{sampleName}.~{sampleSuffix}.bam ~{sep=" " sortedBamFiles}
+        samtools index -@ ~{threadCount} ~{sampleName}.~{sampleSuffix}.bam
     >>>
     runtime {
         docker: dockerImage
@@ -44,8 +45,8 @@ task merge{
         zones: zones
     }
     output {
-        File mergedBam = "~{sampleName}.bam"
-        File mergedBai = "~{sampleName}.bam.bai"
+        File mergedBam = "~{sampleName}.~{sampleSuffix}.bam"
+        File mergedBai = "~{sampleName}.~{sampleSuffix}.bam.bai"
     }
 }
 
