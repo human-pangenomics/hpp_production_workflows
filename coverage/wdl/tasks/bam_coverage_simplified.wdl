@@ -36,12 +36,12 @@ task bamCoverage{
         
         # Extract assembly and index
         FA_FILENAME=`basename ~{assemblyFastaGz}`
-        FA_PREFIX="${FILENAME%.*.*}"
+        FA_PREFIX="${FA_FILENAME%.*.*}"
         gunzip -c ~{assemblyFastaGz} > ${FA_PREFIX}.fa
         samtools faidx ${FA_PREFIX}.fa
 
         BAM_FILENAME=`basename ~{bamFile}`
-        BAM_PREFIX="${FILENAME%.*}"
+        BAM_PREFIX="${BAM_FILENAME%.*}"
         samtools depth -aa -Q ~{minMAPQ} ~{bamFile}  > ${BAM_PREFIX}.depth
         
         # Convert the output of samtools depth into a compressed format
