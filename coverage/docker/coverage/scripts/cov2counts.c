@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <inttypes.h>
 
 void cov2counts(char* inPath, char* outPath){
     FILE * fp;
@@ -11,7 +12,7 @@ void cov2counts(char* inPath, char* outPath){
     char * token;
     int start=0, end=0, cov=0;
     int maxCov = 1000;
-    int* counts = malloc( (maxCov + 1) * sizeof(int));
+    int64_t* counts = malloc( (maxCov + 1) * sizeof(int64_t));
     // initialize counts
     for(int i = 0; i <= maxCov; i++){
 	    counts[i] = 0;
@@ -33,7 +34,7 @@ void cov2counts(char* inPath, char* outPath){
 	token = strtok(NULL, "\t");
         cov = atoi(token);
 	if (cov > maxCov) {
-		counts = (int*) realloc(counts, (cov + 1) * sizeof(int));// since we expect a small number of coverages highar than 1000 it's seems efficient to increment the size one by one
+		counts = (int64_t*) realloc(counts, (cov + 1) * sizeof(int64_t));// since we expect a small number of coverages highar than 1000 it's seems efficient to increment the size one by one
 		// initialize just added elements
 		for(int i = (maxCov + 1); i <= cov; i++){
 			counts[i] = 0;
@@ -48,7 +49,7 @@ void cov2counts(char* inPath, char* outPath){
     if (fp == NULL)
         exit(EXIT_FAILURE);
     for(int i = 0; i <= maxCov; i++){
-            fprintf(fp, "%d\t%d\n", i, counts[i]);
+            fprintf(fp, "%d\t%" PRId64 "\n", i, counts[i]);
     }
     fclose(fp);
 }
