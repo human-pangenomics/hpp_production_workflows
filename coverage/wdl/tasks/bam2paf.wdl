@@ -1,7 +1,10 @@
 version 1.0
 
 workflow runBam2Paf{
-    call bam2paf    
+    call bam2paf
+    output{
+        File pafFile = bam2paf.pafFile
+    }  
 }
 task bam2paf{
     input{
