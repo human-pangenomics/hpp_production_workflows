@@ -6,7 +6,8 @@ workflow runProjectBlocks {
     input {
         String assemblyFastaGz
         File asm2refBam
-        File refBlocksBed
+        File blocksBed
+        String mode='ref2asm'
         String suffix
     }
     call bam2paf_t.bam2paf {
@@ -15,24 +16,26 @@ workflow runProjectBlocks {
            minMAPQ = 0,
            primaryOnly = "yes"
     }
-    call projectRef2Asm {
+    call project {
         input:
-            refBlocksBed = refBlocksBed,
+            blocksBed = blocksBed,
             asm2refPaf = bam2paf.pafFile,
             sampleName = basename("${assemblyFastaGz}", ".fa.gz"),
-            suffix = suffix
+            suffix = suffix,
+            mode = mode
     }
     output {
-       File projectionBed = projectRef2Asm.projectionBed
+       File projectionBed = project.projectionBed
     }
 }
 
-task projectRef2Asm {
+task project {
     input {
-        File refBlocksBed
+        File blocksBed
         File asm2refPaf
         String sampleName
         String suffix
+        String mode
         # runtime configurations
         Int memSize=4
         Int threadCount=2
@@ -52,7 +55,7 @@ task projectRef2Asm {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
 
-        python3 ${PROJECT_BLOCKS_PY} --mode 'ref2asm' --paf ~{asm2refPaf} --blocks ~{refBlocksBed} --outputProjectable projectable.bed --outputProjection ~{sampleName}.~{suffix}.bed
+        python3 ${PROJECT_BLOCKS_PY} --mode ~{mode} --paf ~{asm2refPaf} --blocks ~{blocksBed} --outputProjectable projectable.bed --outputProjection ~{sampleName}.~{suffix}.bed
         mkdir output
         bedtools sort -i ~{sampleName}.~{suffix}.bed | bedtools merge -i - > output/~{sampleName}.~{suffix}.bed
 
