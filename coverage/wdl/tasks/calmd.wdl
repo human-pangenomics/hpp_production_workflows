@@ -9,6 +9,7 @@ workflow runCalmd{
 task calmd {
     input {
         File bamFile
+        File assemblyFastaGz
         # runtime configurations
         Int memSize=16
         Int threadCount=8
@@ -28,9 +29,13 @@ task calmd {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
         
-        FILENAME=$(basename ~{bamFile})
-        PREFIX=${FILENAME%.bam}
-        samtools calmd -@8 -b ~{bamFile} > ${PREFIX}.bam
+        BAM_FILENAME=$(basename ~{bamFile})
+        BAM_PREFIX=${BAM_FILENAME%.bam}
+       
+        ASM_FILENAME=$(basename ~{assemblyFastaGz})
+        ASM_PREFIX=${ASM_FILENAME%.fa.gz}
+        gunzip ~{assemblyFastaGz} > ${ASM_PREFIX}.fa
+        samtools calmd -@8 -b ~{bamFile} ${ASM_PREFIX}.fa > ${BAM_PREFIX}.bam
     >>> 
     runtime {
         docker: dockerImage
