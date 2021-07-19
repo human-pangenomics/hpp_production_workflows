@@ -180,3 +180,6 @@ workflows:
    -  name: ProbTable2Bed
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/prob_table2bed.wdl
+   -  name: CalMD
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/calmd.wdl
