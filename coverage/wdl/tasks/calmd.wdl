@@ -34,7 +34,7 @@ task calmd {
        
         ASM_FILENAME=$(basename ~{assemblyFastaGz})
         ASM_PREFIX=${ASM_FILENAME%.fa.gz}
-        gunzip ~{assemblyFastaGz} > ${ASM_PREFIX}.fa
+        gunzip -c  ~{assemblyFastaGz} > ${ASM_PREFIX}.fa
         samtools calmd -@8 -b ~{bamFile} ${ASM_PREFIX}.fa > ${BAM_PREFIX}.bam
     >>> 
     runtime {
