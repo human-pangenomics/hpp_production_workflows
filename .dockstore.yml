@@ -183,3 +183,6 @@ workflows:
    -  name: CalMD
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/calmd.wdl
+   -  name: ConcatAssemblies
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/concat_assemblies.wdl
