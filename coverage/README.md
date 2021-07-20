@@ -138,12 +138,12 @@ be calculated w/ `cov2counts` which is a binary executable. The source code is w
 ````
 The output file with `.counts` suffix is a 2-cloumn tab-delimited file; the first column shows a coverage and the second column shows the frequency of
 that coverage in the corresponding partition of the assembly. Using `.counts` files we can produce distribution plots easily. For example below we are 
-showing the coverage distributions for the 4 partitions of HG00621 maternal assembly.
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00621_dist.png" width="700" height="375">
+showing the coverage distributions for the 4 partitions of HG00438 paternal assembly.
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438.paternal.HiFi.dist.png" width="700" height="375">
 
 Here is a closer look on the lower distributions:
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00621_dist_zoom.png" width="700" height="375">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438.paternal.HiFi.dist.zoomed.png" width="700" height="375">
 
 The differences between the 4 distributions clearly show why we did the partitioning in the previous step.
 Then we pass each `.counts` file to `fit_model_extra.py` whose job is to fit the mixture model and find the best parameters through 
@@ -207,9 +207,9 @@ Here is an example of such a table:
 70	766435	565754.1385	0.0000	0.0000	0.1008	0.8992
 ````
 
-In the figure below we are showing the model components after being fit to the autosomal centromeres. It is again for the HG00621 maternal assembly:
+In the figure below we are showing the model components after being fit to the diploid centromeres. It is again for the HG00438 paternal assembly:
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00621_fit.png" width="700" height="375">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438.paternal.HiFi.diploid_cntr.png" width="700" height="375">
 
 ### 6. Extracting Blocks
 
@@ -217,7 +217,7 @@ Now we have to assign each coverage value to one of the four components (error, 
 we pick the component with the highest weight. For example for the coverage value, 0, the error component is being picked most of the times (the red line).
 In the figure below the coverage intervals are colored based on their assigned component.
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00621_fit_colored.png" width="700" height="375">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_fit_colored.png" width="700" height="375">
 
 After assigning the coverage values we then assign the bases of the corresponding assembly to the most probable component. Finally we will have 4 bed 
 files each of which points to the regions assinged to a single component.
