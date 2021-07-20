@@ -5,7 +5,7 @@ In this page we are explaining the steps toward the coverage analysis of HPRC-Y1
 - Align the long reads to each assembly
 - Calculate the read coverage of each base of the assembly 
 - Fit a mixture model to the coverage distribution
-- Extract the blocks that are assigned to the 4 main components of the model; erroreous, duplicated, haploid and collapsed.
+- Extract the blocks that are assigned to the 4 main components of the model; erroreous, haploid, diploid and collapsed.
 
 To be more specific each assembly is partitioned into two (for female samples) or four (for male samples) sets of regions and the third and fourth 
 steps above are applied on each set separately. We expect each partition to have different estimated paramters after fitting the model.
