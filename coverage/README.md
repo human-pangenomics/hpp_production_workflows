@@ -238,7 +238,7 @@ ${prefix}.collapsed.bed
 ### Known issues
 
 
-1. The haploid compoent may contain the regions with a deletion in only one haplotype (or we can equivalently say an insertion in the other haplotype). It may also contain the falsely duplicated regions. In order to separate these two sets of regions one solution is to do the read alignment to both haplotypes at the same time (Thanks to Heng Li for this idea). In that case we expect the main component to be haploid and if there is a homozygous block that exist in both haplotypes the read coverage should be randomly distributed between those two blocks. In another scenario if that homozygous block is falsely duplicated in both haplotypes the coverage analysis should be able to detect that. (This option is currently being explored.)
+1. The haploid component may contain the regions with a deletion in only one haplotype (or we can equivalently say an insertion in the other haplotype). It may also contain the falsely duplicated regions. In order to separate these two sets of regions one solution is to do the read alignment to both haplotypes at the same time (Thanks to Heng Li for this idea). In that case we expect the main component to be haploid and if there is a homozygous block that exist in both haplotypes the read coverage should be randomly distributed between those two blocks. In another scenario if that homozygous block is falsely duplicated in both haplotypes the coverage analysis should be able to detect that. (This option is currently being explored.)
 
 2. The more coverage we have the more accurate we will be in estimating the parameters of the model. So the samples that have low coverage may not provide a well-fitted coverage distribution. Here is a list of the samples with (<20X) ONT data:
 
