@@ -2,6 +2,9 @@ version 1.0
 
 workflow runConcatAssemblies{
     call concatAssemblies
+    output {
+        File diploidAssembly = concatAssemblies.diploidAssembly
+    }
 }
 
 task concatAssemblies {
