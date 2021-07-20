@@ -5,6 +5,7 @@ import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
 import "merge_bams.wdl" as mergeBams_t
 import "read_set_splitter.wdl" as readSetSplitter_t
 import "long_read_aligner.wdl" as longReadAligner_t
+import "calmd.wdl" as calmd_t
 
 workflow longReadAlignmentSplit {
     input {
@@ -18,7 +19,7 @@ workflow longReadAlignmentSplit {
         File? referenceFasta
         Int preemptible=2
         Int extractReadsDiskSize=512
-        String zones
+        String zones="us-west2-a"
     }
 
     scatter (readFile in readFiles) {
@@ -73,9 +74,19 @@ workflow longReadAlignmentSplit {
             preemptible = preemptible,
             zones = zones
     }
+    
+    ## add Md tag
+    call calmd_t.calmd {
+        input:
+            bamFile = mergeBams.mergedBam,
+            assemblyFastaGz = assembly,
+            diskSize = floor(bamSize.value * 2.5),
+            preemptible = preemptible,
+            zones = zones
+    }
     output {
-        File sortedBamFile = mergeBams.mergedBam
-        File baiFile = mergeBams.mergedBai
+        File bamFile = calmd.outputBamFile
+        File baiFile = calmd.outputBaiFile
     }
 }
 

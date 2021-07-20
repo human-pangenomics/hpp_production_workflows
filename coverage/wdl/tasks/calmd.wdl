@@ -1,9 +1,9 @@
 version 1.0 
 
-workflow runCalmd{
+workflow runCalMD{
     call calmd
     output{
-        File mdBamFile = calmd.mdBamFile
+        File outputBamFile = calmd.outputBamFile
     }
 }
 task calmd {
@@ -16,6 +16,7 @@ task calmd {
         Int diskSize=500
         String dockerImage="quay.io/masri2019/hpp_base:latest"
         Int preemptible=2
+        String zones="us-west2-a"
     }
     command <<<
         # Set the exit code of a pipeline to that of the rightmost command
@@ -36,6 +37,7 @@ task calmd {
         ASM_PREFIX=${ASM_FILENAME%.fa.gz}
         gunzip -c  ~{assemblyFastaGz} > ${ASM_PREFIX}.fa
         samtools calmd -@8 -b ~{bamFile} ${ASM_PREFIX}.fa > ${BAM_PREFIX}.bam
+        samtools index ${BAM_PREFIX}.bam
     >>> 
     runtime {
         docker: dockerImage
@@ -43,9 +45,11 @@ task calmd {
         cpu: threadCount
         disks: "local-disk " + diskSize + " SSD"
         preemptible : preemptible
+        zones : zones
     }
     output {
-        File mdBamFile = glob("*.bam")[0]
+        File outputBamFile = glob("*.bam")[0]
+        File outputBaiFile = glob("*.bam.bai")[0]
     }
 }
 
