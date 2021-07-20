@@ -153,14 +153,13 @@ consists of 4 main components and each component represents a specific type of r
 The 4 components:
 
 1. **Error component** which is modeled by a truncated exponential distribtuion. It represents the regions with very low read support.
-2. **Duplicated component** which is modeled by a gaussian distribution whose mean is constrained to be half of the haploid component's mean. It represents the
-regions prone to be duplicated. This mode also contains the  The weight of this component is usually less than 0.01 in non-centromeric partitions but it becomes noticeable
+2. **Haploid component** which is modeled by a gaussian distribution whose mean is constrained to be half of the haploid component's mean. It should mainly represents the haploid
+regions. We expect the false duplicated blocks to also appear in this component. The weight of this component is usually less than 0.01 in non-centromeric partitions but it becomes noticeable
 in centromeric ones. It is worth noting that according to the recent 
 [T2T paper, The complete sequence of a human genome,](https://www.biorxiv.org/content/10.1101/2021.05.26.445798v1.abstract) there exist
  some satellite arrays (especially HSAT1) where the ONT and HiFi coverage drops systematically due to bias in sample preparation and sequencing.
  As a result this mode should contain a mix of duplicated and coverage-biased blocks, which are not easy to be distiguished.
-3. **Haploid component** which is modeled by a gaussian distribution. It represents blocks with the coverages that we expect for an 
-error-free assembly.
+3. **Diploid component** which is modeled by a gaussian distribution. It represents blocks with the coverages that we expect for the homozygous blocks of an error-free assembly.
 4. **Collpased component** which is actually a set of components each of which follows a gaussian distribution and their means are constrained to be
 multiples of the haploid component's mean.
 
@@ -182,7 +181,7 @@ Its output is a file with `.table` suffix. It contains a TAB-delimited table wit
 
 Here is an example of such a table:
 ````
-#coverage	freq	fit	error	extra	haploid	collapsed
+#coverage	freq	fit	error	haploid	diploid	collapsed
 0	1633030	2479818.7542	0.9973	0.0009	0.0019	0.0000
 1	552306	1014768.3370	0.9890	0.0044	0.0067	0.0000
 2	311274	425804.6727	0.9564	0.0207	0.0229	0.0000
@@ -214,7 +213,7 @@ In the figure below we are showing the model components after being fit to the a
 
 ### 6. Extracting Blocks
 
-Now we have to assign each coverage value to one of the four components (error, duplicated, haploid and collapsed). To do so for each coverage value
+Now we have to assign each coverage value to one of the four components (error, haploid, diploid and collapsed). To do so for each coverage value
 we pick the component with the highest weight. For example for the coverage value, 0, the error component is being picked most of the times (the red line).
 In the figure below the coverage intervals are colored based on their assigned component.
 
@@ -239,11 +238,7 @@ ${prefix}.collapsed.bed
 ### Known issues
 
 
-1. The duplicated mode may contain the regions with a deletion in only one haplotype (or we can equivalently say an insertion in the other haplotype). One example of such region is shown below (~ 5Kb).
-
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/het_deletion.png" width="700" height="375">
-
-Based on this fact the heterozygosity may lead to overestimating weight of the duplicated mode. In order to avoid mixing this with truly misassembled segments we can use the option `-J` while calling `samtools depth`. This option will be explored and may be added in future developements.
+1. The haploid compoent may contain the regions with a deletion in only one haplotype (or we can equivalently say an insertion in the other haplotype). It may also contain the falsely duplicated regions. In order to separate these two sets of regions one solution is to do the read alignment to both haplotypes at the same time (Thanks to Heng Li for this idea). In that case we expect the main component to be haploid and if there is a homozygous block that exist in both haplotypes the read coverage should be randomly distributed between those two blocks. In another scenario if that homozygous block is falsely duplicated in both haplotypes the coverage analysis should be able to detect that. (This option is currently being explored.)
 
 2. The more coverage we have the more accurate we will be in estimating the parameters of the model. So the samples that have low coverage may not provide a well-fitted coverage distribution. Here is a list of the samples with (<20X) ONT data:
 
