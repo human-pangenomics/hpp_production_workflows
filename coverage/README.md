@@ -158,7 +158,7 @@ regions. We expect the false duplicated blocks to also appear in this component.
 in centromeric ones. It is worth noting that according to the recent 
 [T2T paper, The complete sequence of a human genome,](https://www.biorxiv.org/content/10.1101/2021.05.26.445798v1.abstract) there exist
  some satellite arrays (especially HSAT1) where the ONT and HiFi coverage drops systematically due to bias in sample preparation and sequencing.
- As a result this mode should contain a mix of duplicated and coverage-biased blocks, which are not easy to be distiguished.
+ As a result this mode should contain a mix of haploid, duplicated and coverage-biased blocks, which are not easy to be distiguished.
 3. **Diploid component** which is modeled by a gaussian distribution. It represents blocks with the coverages that we expect for the homozygous blocks of an error-free assembly.
 4. **Collpased component** which is actually a set of components each of which follows a gaussian distribution and their means are constrained to be
 multiples of the haploid component's mean.
