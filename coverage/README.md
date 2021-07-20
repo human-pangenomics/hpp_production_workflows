@@ -175,8 +175,8 @@ Its output is a file with `.table` suffix. It contains a TAB-delimited table wit
 |freq  |float   |The frequency of the coverage value in the first column                     |
 |fit  |float   |The frequency value fit to the model    |
 |error  |float   |The weight of the error component       |
-|extra  |float  |The weight of the duplicated component               |
-|haploid  |float|The weight of the haploid component                      |
+|haploid  |float  |The weight of the haploid component               |
+|diploid  |float|The weight of the diploid component                      |
 |collapsed  |float   |The weight of the collapsed component                    |
 
 Here is an example of such a table:
