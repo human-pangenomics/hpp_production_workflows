@@ -2,10 +2,10 @@ version 1.0
 
 import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
 import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
-import "merge_bams.wdl" as mergeBams_t
+import "merge_pafs.wdl" as mergePafs_t
 import "read_set_splitter.wdl" as readSetSplitter_t
 import "long_read_aligner.wdl" as longReadAligner_t
-import "calmd.wdl" as calmd_t
+
 
 workflow longReadAlignmentSplit {
     input {
@@ -47,46 +47,35 @@ workflow longReadAlignmentSplit {
    
     scatter (readFastq in readSetSplitter.splitReadFastqs) {
          ## align reads to the assembly
-         call longReadAligner_t.alignmentBam as alignment{
+         call longReadAligner_t.alignmentPaf as alignment{
              input:
                  aligner =  aligner,
                  preset = preset,
                  refAssembly=assembly,
                  readFastq_or_queryAssembly = readFastq,
-                 diskSize = 8 + floor(readSize.value / splitNumber) * 5,
+                 diskSize = 8 + floor(readSize.value / splitNumber * 2.5),
                  preemptible = preemptible,
                  zones = zones
         }
     }
-    call arithmetic_t.sum as bamSize {
+    call arithmetic_t.sum as pafSize {
         input:
             integers=alignment.fileSizeGB
     }
 
     ## merge the bam files
-    call mergeBams_t.merge as mergeBams{
+    call mergePafs_t.merge {
         input:
             sampleName = sampleName,
             sampleSuffix = sampleSuffix,
-            sortedBamFiles = alignment.sortedBamFile,
+            pafFiles = alignment.pafFile,
             # runtime configurations
-            diskSize = floor(bamSize.value * 2.5),
-            preemptible = preemptible,
-            zones = zones
-    }
-    
-    ## add Md tag
-    call calmd_t.calmd {
-        input:
-            bamFile = mergeBams.mergedBam,
-            assemblyFastaGz = assembly,
-            diskSize = floor(bamSize.value * 2.5),
+            diskSize = floor(pafSize.value * 2.5),
             preemptible = preemptible,
             zones = zones
     }
     output {
-        File bamFile = calmd.outputBamFile
-        File baiFile = calmd.outputBaiFile
+        File pafFile = merge.mergedPaf
     }
 }
 
