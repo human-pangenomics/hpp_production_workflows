@@ -179,7 +179,11 @@ task alignmentPaf{
             OUTPUT_FILE=${fileBasename%.*.*}.~{suffix}.paf
         fi
 
-        ${ALIGNER_CMD} ~{options} -x ~{preset} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} > ${OUTPUT_FILE}
+        if [ -z ~{preset} ]; then
+            ${ALIGNER_CMD} ~{options} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} > ${OUTPUT_FILE}
+        else
+            ${ALIGNER_CMD} ~{options} -x ~{preset} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} > ${OUTPUT_FILE}
+        fi
 
         du -s -BG ${OUTPUT_FILE} | sed 's/G.*//' > outputsize.txt
     >>>
