@@ -5,7 +5,7 @@ In this page we are explaining the steps toward the coverage analysis of HPRC-Y1
 - Align the long reads to each assembly
 - Calculate the read coverage of each base of the assembly 
 - Fit a mixture model to the coverage distribution
-- Extract the blocks that are assigned to the 4 main components of the model; erroreous, duplicated, haploid and collapsed.
+- Extract the blocks that are assigned to the 4 main components of the model; erroreous, haploid, diploid and collapsed.
 
 To be more specific each assembly is partitioned into two (for female samples) or four (for male samples) sets of regions and the third and fourth 
 steps above are applied on each set separately. We expect each partition to have different estimated paramters after fitting the model.
@@ -138,12 +138,12 @@ be calculated w/ `cov2counts` which is a binary executable. The source code is w
 ````
 The output file with `.counts` suffix is a 2-cloumn tab-delimited file; the first column shows a coverage and the second column shows the frequency of
 that coverage in the corresponding partition of the assembly. Using `.counts` files we can produce distribution plots easily. For example below we are 
-showing the coverage distributions for the 4 partitions of HG00621 maternal assembly.
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00621_dist.png" width="700" height="375">
+showing the coverage distributions for the 4 partitions of HG00438 paternal assembly.
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438.paternal.HiFi.dist.png" width="700" height="375">
 
 Here is a closer look on the lower distributions:
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00621_dist_zoom.png" width="700" height="375">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438.paternal.HiFi.dist.zoomed.png" width="700" height="375">
 
 The differences between the 4 distributions clearly show why we did the partitioning in the previous step.
 Then we pass each `.counts` file to `fit_model_extra.py` whose job is to fit the mixture model and find the best parameters through 
@@ -153,12 +153,12 @@ consists of 4 main components and each component represents a specific type of r
 The 4 components:
 
 1. **Error component** which is modeled by a truncated exponential distribtuion. It represents the regions with very low read support.
-2. **Haploid component** which is modeled by a gaussian distribution whose mean is constrained to be half of the haploid component's mean. It should mainly represents the haploid
+2. **Haploid component** which is modeled by a gaussian distribution whose mean is constrained to be half of the diploid component's mean. It should mainly represents the haploid
 regions. We expect the false duplicated blocks to also appear in this component. The weight of this component is usually less than 0.01 in non-centromeric partitions but it becomes noticeable
 in centromeric ones. It is worth noting that according to the recent 
 [T2T paper, The complete sequence of a human genome,](https://www.biorxiv.org/content/10.1101/2021.05.26.445798v1.abstract) there exist
  some satellite arrays (especially HSAT1) where the ONT and HiFi coverage drops systematically due to bias in sample preparation and sequencing.
- As a result this mode should contain a mix of haploid, duplicated and coverage-biased blocks, which are not easy to be distiguished.
+ As a result this mode should contain a mix of haploid, duplicated and coverage-biased blocks, which are not easy to be distiguished through the current analysis.
 3. **Diploid component** which is modeled by a gaussian distribution. It represents blocks with the coverages that we expect for the homozygous blocks of an error-free assembly.
 4. **Collpased component** which is actually a set of components each of which follows a gaussian distribution and their means are constrained to be
 multiples of the haploid component's mean.
@@ -175,8 +175,8 @@ Its output is a file with `.table` suffix. It contains a TAB-delimited table wit
 |freq  |float   |The frequency of the coverage value in the first column                     |
 |fit  |float   |The frequency value fit to the model    |
 |error  |float   |The weight of the error component       |
-|extra  |float  |The weight of the duplicated component               |
-|haploid  |float|The weight of the haploid component                      |
+|haploid  |float  |The weight of the haploid component               |
+|diploid  |float|The weight of the diploid component                      |
 |collapsed  |float   |The weight of the collapsed component                    |
 
 Here is an example of such a table:
@@ -207,9 +207,9 @@ Here is an example of such a table:
 70	766435	565754.1385	0.0000	0.0000	0.1008	0.8992
 ````
 
-In the figure below we are showing the model components after being fit to the autosomal centromeres. It is again for the HG00621 maternal assembly:
+In the figure below we are showing the model components after being fit to the diploid centromeres. It is again for the HG00438 paternal assembly:
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00621_fit.png" width="700" height="375">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438.paternal.HiFi.diploid_cntr.png" width="700" height="375">
 
 ### 6. Extracting Blocks
 
@@ -217,7 +217,7 @@ Now we have to assign each coverage value to one of the four components (error, 
 we pick the component with the highest weight. For example for the coverage value, 0, the error component is being picked most of the times (the red line).
 In the figure below the coverage intervals are colored based on their assigned component.
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00621_fit_colored.png" width="700" height="375">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_fit_colored.png" width="700" height="375">
 
 After assigning the coverage values we then assign the bases of the corresponding assembly to the most probable component. Finally we will have 4 bed 
 files each of which points to the regions assinged to a single component.
@@ -238,7 +238,7 @@ ${prefix}.collapsed.bed
 ### Known issues
 
 
-1. The haploid compoent may contain the regions with a deletion in only one haplotype (or we can equivalently say an insertion in the other haplotype). It may also contain the falsely duplicated regions. In order to separate these two sets of regions one solution is to do the read alignment to both haplotypes at the same time (Thanks to Heng Li for this idea). In that case we expect the main component to be haploid and if there is a homozygous block that exist in both haplotypes the read coverage should be randomly distributed between those two blocks. In another scenario if that homozygous block is falsely duplicated in both haplotypes the coverage analysis should be able to detect that. (This option is currently being explored.)
+1. The haploid component may contain the regions with a deletion in only one haplotype (or we can equivalently say an insertion in the other haplotype). It may also contain the falsely duplicated regions. In order to separate these two sets of regions one solution is to do the read alignment to both haplotypes at the same time (Thanks to Heng Li for this idea). In that case we expect the main component to be haploid and if there is a homozygous block that exist in both haplotypes the read coverage should be randomly distributed between those two blocks. In another scenario if that homozygous block is falsely duplicated in both haplotypes the coverage analysis should be able to detect that. (This option is currently being explored.)
 
 2. The more coverage we have the more accurate we will be in estimating the parameters of the model. So the samples that have low coverage may not provide a well-fitted coverage distribution. Here is a list of the samples with (<20X) ONT data:
 
