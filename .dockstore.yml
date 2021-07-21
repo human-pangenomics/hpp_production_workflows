@@ -120,6 +120,9 @@ workflows:
    -  name: LongReadAlignerSplit
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/long_read_aligner_split.wdl
+   -  name: LongReadAlignerSplitPaf
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/long_read_aligner_split_paf.wdl
    -  name: UnionBedFiles
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/union_bed_files.wdl
