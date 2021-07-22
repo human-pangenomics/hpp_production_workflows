@@ -45,15 +45,15 @@ workflow longReadAlignmentSplit {
             diskSize = floor(readSize.value * 2.5)
     }
    
-    scatter (readFastq in readSetSplitter.splitReadFastqs) {
+    scatter (readFastqAndSize in zip(readSetSplitter.splitReadFastqs, readSetSplitter.readSizes)) {
          ## align reads to the assembly
          call longReadAligner_t.alignmentBam as alignment{
              input:
                  aligner =  aligner,
                  preset = preset,
                  refAssembly=assembly,
-                 readFastq_or_queryAssembly = readFastq,
-                 diskSize = 8 + floor(readSize.value / splitNumber) * 5,
+                 readFastq_or_queryAssembly = readFastqAndSize.left,
+                 diskSize = 8 + floor(readFastqAndSize.right) * 3,
                  preemptible = preemptible,
                  zones = zones
         }

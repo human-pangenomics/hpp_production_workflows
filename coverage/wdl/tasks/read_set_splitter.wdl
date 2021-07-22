@@ -30,6 +30,7 @@ task readSetSplitter {
         readsPerFile=$(cat ~{sep=" " readFastqs} | wc -l | awk '{print int($1/(4 * ~{splitNumber})) + 1}')
         linesPerFile=$(( readsPerFile * 4 ))     
         cat ~{sep=" " readFastqs} | split -l $linesPerFile  --additional-suffix ".split.fq"
+        for i in *.split.fq;do du -s -BG $i | sed 's/G.*//';done > outputsize.txt
     >>> 
     runtime {
         docker: dockerImage
@@ -40,6 +41,7 @@ task readSetSplitter {
     }
     output {
         Array[File] splitReadFastqs = glob("*.split.fq")
+        Array[Float] readSizes = read_lines("outputsize.txt")
     }
 }
 
