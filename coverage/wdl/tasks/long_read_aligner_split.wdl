@@ -53,7 +53,7 @@ workflow longReadAlignmentSplit {
                  preset = preset,
                  refAssembly=assembly,
                  readFastq_or_queryAssembly = readFastqAndSize.left,
-                 diskSize = 8 + floor(readFastqAndSize.right) * 3,
+                 diskSize = 8 + floor(readFastqAndSize.right) * 5,
                  preemptible = preemptible,
                  zones = zones
         }
