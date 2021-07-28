@@ -106,6 +106,7 @@ workflow runContamination {
 	    File fullBed = createContaminationBed.fullContaminationBed
 	    File mergedBed = createContaminationBed.mergedContaminationBed
 	    File contaminationCoverage = createContaminationBed.contaminationCoverage
+	    File contaminationContigs = createContaminationBed.contaminationContigs
 	}
 }
 
@@ -754,6 +755,7 @@ task createContaminationBed {
         File? rrnaOut
         File? vecscreenOut
         Int bedtoolsMergeDistance = 0
+        Float discardContigCoverageThreshold = 0.95
         Int memSizeGB = 2
         Int threadCount = 1
         Int diskSizeGB = 64
@@ -840,9 +842,13 @@ task createContaminationBed {
                 MATCHES=$(cat ${ASM_ID}.merged_contamination.bed | awk -v CTG=$CTG '$1 == CTG' | cut -f4 | sed 's/;/\n/' | sort | uniq | sed -z 's/\n/,/g;s/,$//')
                 echo -e "$LINE\t$MATCHES" >>${ASM_ID}.contamination_coverage.tsv
             done <tmp
+
+            # annotate contigs to delete
+            cat ${ASM_ID}.contamination_coverage.tsv | awk '$3 >= ~{discardContigCoverageThreshold} | cut -f1 >${ASM_ID}.contamination_contigs.txt
         else
             touch ${ASM_ID}.merged_contamination.bed
             touch ${ASM_ID}.contamination_coverage.tsv
+            touch ${ASM_ID}.contamination_contigs.txt
         fi
 
 	>>>
@@ -850,6 +856,7 @@ task createContaminationBed {
 		File fullContaminationBed = glob("*.full_contamination.bed")[0]
 		File mergedContaminationBed = glob("*.merged_contamination.bed")[0]
 		File contaminationCoverage = glob("*.contamination_coverage.tsv")[0]
+		File contaminationContigs = glob("*.contamination_contigs.txt")[0]
 	}
     runtime {
         memory: memSizeGB + " GB"
