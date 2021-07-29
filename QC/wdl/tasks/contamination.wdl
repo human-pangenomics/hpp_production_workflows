@@ -844,7 +844,7 @@ task createContaminationBed {
             done <tmp
 
             # annotate contigs to delete
-            cat ${ASM_ID}.contamination_coverage.tsv | awk '$3 >= ~{discardContigCoverageThreshold} | cut -f1 >${ASM_ID}.contamination_contigs.txt
+            cat ${ASM_ID}.contamination_coverage.tsv | awk '$3 >= ~{discardContigCoverageThreshold}' | cut -f1 >${ASM_ID}.contamination_contigs.txt
         else
             touch ${ASM_ID}.merged_contamination.bed
             touch ${ASM_ID}.contamination_coverage.tsv
