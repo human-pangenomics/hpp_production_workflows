@@ -11,7 +11,7 @@ workflow asm2asmAlignment {
         String zones = "us-west2-a"
     }
     ## align query assembly to the ref assembly
-    call aligner_t.alignment{
+    call aligner_t.alignmentBam{
         input:
             aligner =  aligner,
             preset = preset,
@@ -24,6 +24,6 @@ workflow asm2asmAlignment {
             zones = zones
     }
     output {
-        File sortedBamFile = alignment.sortedBamFile
+        File sortedBamFile = alignmentBam.sortedBamFile
     }
 }
