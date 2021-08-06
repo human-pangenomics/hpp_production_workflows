@@ -18,24 +18,13 @@ workflow standardQualityControl {
         File geneAnnotationFile
     }
     
-    ### Dipcall (v0.1): main version ###
-    call dipcall_t.dipcall as dipcallV1 {
+    ### Dipcall (v0.3) ###
+    call dipcall_t.dipcall as dipcall {
         input:
             assemblyFastaPat=paternalAssembly,
             assemblyFastaMat=maternalAssembly,
             referenceFasta=referenceFasta,
-            isMaleSample=isMaleSample,
-            dockerImage="humanpangenomics/hpp_dipcall_v0.1:latest"
-    }
-
-    ### Dipcall (v0.2): still in beta ###
-    call dipcall_t.dipcall as dipcallV2 {
-        input:
-            assemblyFastaPat=paternalAssembly,
-            assemblyFastaMat=maternalAssembly,
-            referenceFasta=referenceFasta,
-            isMaleSample=isMaleSample,
-            dockerImage="humanpangenomics/hpp_dipcall_v0.2:latest"
+            isMaleSample=isMaleSample
     }
 
     ### Minimap2 Gene Stats ###
@@ -78,8 +67,7 @@ workflow standardQualityControl {
     call consolidate {
         input:
             sampleName = sampleName,
-            dipcallV1FullOutput = dipcallV1.outputTarball,
-            dipcallV2FullOutput = dipcallV2.outputTarball,
+            dipcallFullOutput = dipcall.outputTarball,
             paternalGeneStats = asmgenePaternal.geneStats,
             maternalGeneStats = asmgeneMaternal.geneStats,
             paternalQuastResults = quastPaternal.outputTarball,
@@ -88,8 +76,8 @@ workflow standardQualityControl {
     }
 
 	output {
-        File dipcallVCF = dipcallV1.outputVCF
-        File dipcallBED = dipcallV1.outputBED
+        File dipcallVCF = dipcall.outputVCF
+        File dipcallBED = dipcall.outputBED
         File asmgenePaternalSummary = asmgenePaternal.geneStats
         File asmgeneMaternalSummary = asmgeneMaternal.geneStats
         File quastPaternalSummary = quastPaternal.outputSummary
@@ -105,8 +93,7 @@ workflow standardQualityControl {
 task consolidate {
     input{
         String sampleName
-        File dipcallV1FullOutput
-        File dipcallV2FullOutput
+        File dipcallFullOutput
         File paternalGeneStats
         File maternalGeneStats
         File paternalQuastResults
@@ -140,17 +127,10 @@ task consolidate {
         cp ~{paternalGeneStats} $OUT/asmgene/pat/
         cp ~{maternalGeneStats} $OUT/asmgene/mat/
 
-        # dipcall (V0.1)
+        # dipcall
         mkdir $OUT/dipcall_v0.1
         cd $OUT/dipcall_v0.1
-        tar xvf ~{dipcallV1FullOutput}
-        mv *dipcall/* . ; rmdir *dipcall
-        cd ../..
-
-        # dipcall (V0.2)
-        mkdir $OUT/dipcall_v0.2
-        cd $OUT/dipcall_v0.2
-        tar xvf ~{dipcallV2FullOutput}
+        tar xvf ~{dipcallFullOutput}
         mv *dipcall/* . ; rmdir *dipcall
         cd ../..
 

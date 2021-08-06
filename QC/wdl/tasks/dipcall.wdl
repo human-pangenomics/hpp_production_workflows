@@ -14,7 +14,7 @@ task dipcall {
         Int memSizeGB = 64
         Int threadCount = 16
         Int diskSizeGB = 64
-        String dockerImage = "humanpangenomics/hpp_dipcall_v0.1:latest"
+        String dockerImage = "humanpangenomics/hpp_dipcall_v0.3:latest"
     }
 
 	command <<<
@@ -91,6 +91,7 @@ task dipcall {
         make -j 2 -f $PREFIX.mak
 
         # finalize
+        rm $PREFIX.dipcall/*sam.gz
         tar czvf $PREFIX.dipcall.tar.gz $PREFIX.dipcall/
         cp $PREFIX.dipcall/$PREFIX.dip.bed $PREFIX.dipcall.bed
         cp $PREFIX.dipcall/$PREFIX.dip.vcf.gz $PREFIX.dipcall.vcf.gz
