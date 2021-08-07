@@ -101,7 +101,7 @@ def main(index_path, output_dir, histogram_min, histogram_max, histogram_n_bins,
     n_items = 0
     with open(index_path) as file:
         for line in file:
-            length = int(line.split('\t')[1])
+            length = int(line.split('\t')[0])
             length_frequencies[length] += 1
             histogram.update(length)
             total_length += length

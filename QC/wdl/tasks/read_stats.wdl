@@ -48,10 +48,10 @@ workflow runReadStats {
     }
 
     # run ReadStats on individual files
-    scatter (lengthFile in indexReads.lengthFile) {
+    scatter (indexFile in indexReads.indexFile) {
         call readStats {
             input:
-                lengthFile=lengthFile,
+                indexFile=indexFile,
                 histogramMinLength=histogramMinLength,
                 histogramMaxLength=histogramMaxLength,
                 dockerImage=dockerImage
@@ -61,7 +61,7 @@ workflow runReadStats {
     # concatenate fai files (to give per-sample distribution)
     call concatFais {
         input:
-            lengthFiles=indexReads.lengthFile,
+            indexFiles=indexReads.indexFile,
             identifier=identifier,
 
     }
@@ -69,7 +69,7 @@ workflow runReadStats {
     # run readStats on concatenated fais
     call readStats as concatReadStats {
         input:
-            lengthFile=concatFais.lengthFile,
+            indexFile=concatFais.indexFile,
             histogramMinLength=histogramMinLength,
             histogramMaxLength=histogramMaxLength,
             dockerImage=dockerImage,
@@ -120,14 +120,14 @@ task indexReads {
         ln -s ~{readFile}
                 
         FILE=$(basename ~{readFile})
-        OUTPUT="$FILE.lengths"
+        OUTPUT="$FILE.fai"
 
         cat $FILE | awk '{if(NR%4==2) print length($1)}' > $OUTPUT
 
     >>>
 
     output {
-        File lengthFile = glob("*.lengths")[0]
+        File indexFile = glob("*.fai")[0]
 
     }
 
@@ -143,7 +143,7 @@ task indexReads {
 
 task readStats {
     input {
-        File lengthFile
+        File indexFile
         Int histogramMinLength = 0
         Int histogramMaxLength = 0
         Int memSizeGB = 2
@@ -165,11 +165,11 @@ task readStats {
         set -o xtrace
 
         # localize file
-        ln -s ~{lengthFile}
-        FILE=$(basename ~{lengthFile})
+        ln -s ~{indexFile}
+        FILE=$(basename ~{indexFile})
 
         # get output name
-        OUTPUT=$(basename ~{lengthFile} | sed -E 's/.(fastq|fq|fasta|fa).fai*$//')
+        OUTPUT=$(basename ~{indexFile} | sed -E 's/.(fastq|fq|fasta|fa).fai*$//')
 
         # hist parameters
         if [[ ~{histogramMinLength} -eq 0 && ~{histogramMaxLength} -eq 0 ]] ; then
@@ -261,7 +261,7 @@ task consolidateReadStats {
 
 task concatFais {
     input {
-        Array[File] lengthFiles
+        Array[File] indexFiles
         String identifier="sample"
         Int memSizeGB = 4
         Int threadCount = 1
@@ -282,13 +282,13 @@ task concatFais {
         set -o xtrace
 
         # concat all reports
-        for len_file in ~{sep=" " lengthFiles} ; do
-            cat $len_file >>~{identifier}.fastq.len
+        for fai_file in ~{sep=" " indexFiles} ; do
+            cat $fai_file >>~{identifier}.fastq.fai
         done
     >>>
 
     output {
-        File lengthFile = glob("~{identifier}.fastq.len")[0]
+        File indexFile = glob("~{identifier}.fastq.fai")[0]
     }
 
     runtime {
