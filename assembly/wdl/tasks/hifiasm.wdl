@@ -137,8 +137,8 @@ task trioHifiasm {
         mkdir ~{childID}.binFiles
         
         ln ~{childID}.dip.r_utg.* ~{childID}.raw_unitig_gfa
-        ln ~{childID}.hap1.p_ctg.* ~{childID}.pat.contig_gfa
-        ln ~{childID}.hap2.p_ctg.* ~{childID}.mat.contig_gfa
+        ln *.hap1.p_ctg.* ~{childID}.pat.contig_gfa
+        ln *.hap2.p_ctg.* ~{childID}.mat.contig_gfa
         ln *.bin ~{childID}.binFiles
         
         
@@ -165,8 +165,8 @@ task trioHifiasm {
     }
 
     output {
-        File outputPaternalGfa = "~{childID}.hap1.p_ctg.gfa"
-        File outputMaternalGfa = "~{childID}.hap2.p_ctg.gfa"
+        File outputPaternalGfa = "~{childID}.dip.hap1.p_ctg.gfa"
+        File outputMaternalGfa = "~{childID}.dip.hap2.p_ctg.gfa"
         File outputPaternalContigGfa = "~{childID}.pat.contig_gfa.tar.gz"
         File outputMaternalContigGfa = "~{childID}.mat.contig_gfa.tar.gz"
         File outputRawUnitigGfa = "~{childID}.raw_unitig_gfa.tar.gz"
