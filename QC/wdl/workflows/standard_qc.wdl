@@ -105,6 +105,9 @@ workflow standardQualityControl {
         File asmgeneMaternalSummary = asmgeneMaternal.geneStats
         File quastPaternalSummary = quastPaternal.outputSummary
         File quastMaternalSummary = quastMaternal.outputSummary
+        File merylSampleDB = meryl.sampleMerylDB
+        File merylMaternalHapmer = meryl.maternalHapmer
+        File merylPaternalHapmer = meryl.paternalHapmer
         File merquryQV = merqury.QV
         File yakSummary = yak.outputSummary
         File allResults = consolidate.allResults

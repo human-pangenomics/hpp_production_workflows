@@ -75,6 +75,9 @@ workflow standardQualityControlHaploid {
 	output {
         File asmgeneSummary = asmgene.geneStats
         File quastSummary = quast.outputSummary
+        File merylSampleDB = meryl.sampleMerylDB
+        File merylMaternalHapmer = meryl.maternalHapmer
+        File merylPaternalHapmer = meryl.paternalHapmer
         File merquryQV = merqury.QV
         File yakSummary = yak.outputSummary
         File allResults = consolidate.allResults

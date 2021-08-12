@@ -93,6 +93,9 @@ workflow fullQualityControl {
         File paternalQuastResults = quastPaternal.outputTarball
         File maternalQuastResults = quastMaternal.outputTarball
         File merylHapmerImages = meryl.hapmerImages
+        File merylSampleDB = meryl.sampleMerylDB
+        File merylMaternalHapmer = meryl.maternalHapmer
+        File merylPaternalHapmer = meryl.paternalHapmer
         File merquryQV = merqury.QV
         File merquryResults = merqury.outputTarball
 	}
