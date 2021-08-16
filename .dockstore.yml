@@ -66,6 +66,9 @@ workflows:
    -  name: fastqReadCounts
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/fastqReadCounts.wdl
+   -  name: fastqReadCoverage
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/fastqReadCoverage.wdl
    -  name: TrioHifiasmAssembly
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly.wdl
