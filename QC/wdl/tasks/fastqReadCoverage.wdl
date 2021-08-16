@@ -18,7 +18,9 @@ task sumFastqReads {
 
         Int memSizeGB = 4
         Int diskSizeGB = 128
-        String dockerImage = "ubuntu:latest"
+
+        ## Must give container with gawk (not mawk which uses 4-byte integers)
+        String dockerImage = "registry.access.redhat.com/ubi7/ubi:latest"
     }
 
     command <<<
