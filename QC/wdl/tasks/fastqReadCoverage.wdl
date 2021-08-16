@@ -32,7 +32,7 @@ task sumFastqReads {
 
         for fq in ~{sep=' ' inputFastq}
         do
-              FILE_BASES=$(zcat "${fq}" | awk '{if (NR % 2 == 0 && NR % 4 != 0) s+=length($0)} END {print s}')
+              FILE_BASES=$(zcat "${fq}" | awk '{if (NR % 2 == 0 && NR % 4 != 0) s+=length($0)} END {printf "%d" ,s}')
               BASES=$(( $BASES + $FILE_BASES ))
         done
 
