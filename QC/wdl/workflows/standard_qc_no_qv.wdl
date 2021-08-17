@@ -128,8 +128,8 @@ task consolidate {
         cp ~{maternalGeneStats} $OUT/asmgene/mat/
 
         # dipcall
-        mkdir $OUT/dipcall_v0.1
-        cd $OUT/dipcall_v0.1
+        mkdir $OUT/dipcall
+        cd $OUT/dipcall
         tar xvf ~{dipcallFullOutput}
         mv *dipcall/* . ; rmdir *dipcall
         cd ../..
