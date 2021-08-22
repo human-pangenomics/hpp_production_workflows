@@ -35,7 +35,7 @@ def main():
             contigIdx += 1
     for i in range(n):
         print("{}:\t{:.2f} Mb".format(i, groupSizes[i]/1e6))
-        with open("{}/{}_{}.bed".format(outputDir,prefix,i),"w") as f:
+        with open("{}/{}_{}.bed".format(outputDir, prefix, i+1),"w") as f:
             for contig, start, end in groupContigs[i]:
                 f.write("{}\t{}\t{}\n".format(contig, start, end))
 
