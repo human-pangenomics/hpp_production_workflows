@@ -96,6 +96,9 @@ workflows:
    -  name: VariantCalling
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/variant_calling.wdl
+   -  name: DeepVariant
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/deep_variant.wdl
    -  name: DownSampling
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/down_sampling.wdl

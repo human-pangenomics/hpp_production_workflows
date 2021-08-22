@@ -22,26 +22,21 @@ def main():
             end = int(elems[2])
             BedBlocks.append((contig,start,end))
             totalSize += end - start
-    intervalSize = int(totalSize / n) + 1
-    currBlock = BedBlocks[0]
-    currInterval = 0
-    startPoint = (currBlock[0],0)
-    blockIdx = 0
-    for i in range(1,n+1):
-        currInterval = 0
+    BedBlocks.sort(key= lambda x : x[1] - x[2])
+    intervalSize = int(totalSize / (n+1)) + 1
+    groupContigs = [[BedBlocks[i]] for i in range(n)] # initialize groups with the longest contigs
+    groupSizes = [BedBlocks[i][2] - BedBlocks[i][1] for i in range(n)]
+    contigIdx = n
+    print("Interval: {} Mb".format(intervalSize/1e6))
+    for i in range(n):
+        while groupSizes[i] < intervalSize and contigIdx < len(BedBlocks):
+            groupContigs[i].append(BedBlocks[contigIdx])
+            groupSizes[i] += BedBlocks[contigIdx][2] - BedBlocks[contigIdx][1]
+            contigIdx += 1
+    for i in range(n):
+        print("{}:\t{:.2f} Mb".format(i, groupSizes[i]/1e6))
         with open("{}/{}_{}.bed".format(outputDir,prefix,i),"w") as f:
-            while (startPoint[1] + intervalSize - currInterval) >= currBlock[2]:
-                f.write("{}\t{}\t{}\n".format(startPoint[0],startPoint[1],currBlock[2]))
-                currInterval += currBlock[2] - startPoint[1]
-                blockIdx += 1
-                if blockIdx >= len(BedBlocks):
-                    break
-                currBlock = BedBlocks[blockIdx]
-                startPoint = (currBlock[0],currBlock[1])
-            if (blockIdx >= len(BedBlocks)):
-                    break
-            if (currInterval < intervalSize):
-                f.write("{}\t{}\t{}\n".format(startPoint[0],startPoint[1],startPoint[1] + intervalSize - currInterval))
-                startPoint = (startPoint[0], startPoint[1] + intervalSize - currInterval)
+            for contig, start, end in groupContigs[i]:
+                f.write("{}\t{}\t{}\n".format(contig, start, end))
 
 main()

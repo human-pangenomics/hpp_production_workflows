@@ -15,6 +15,7 @@ ENV PATH="/home/apps/bcftools-1.12:$PATH"
 
 COPY ./scripts /home/scripts
 ENV SPLIT_BED_PY=/home/scripts/split_bed.py
+ENV SPLIT_BED_CONTIG_WISE_PY=/home/scripts/split_bed_contig_wise.py
 
 ## UCSC convention is to work in /data
 RUN mkdir -p /data
