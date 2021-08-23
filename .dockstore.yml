@@ -171,6 +171,9 @@ workflows:
    -  name: FindBlocksFemale
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/find_blocks_female.wdl
+   -  name: FindBlocks
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/find_blocks.wdl
    -  name: Bam2Paf
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/bam2paf.wdl
