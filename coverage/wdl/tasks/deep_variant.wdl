@@ -147,7 +147,7 @@ task callDeepVariant{
         --dry_run=false \
         --regions=~{bed}
 
-        pigz -p$(nproc) ${BAM_PREFIX}.vcf > ${BAM_PREFIX}.vcf.gz 
+        gzip -c ${BAM_PREFIX}.vcf > ${BAM_PREFIX}.vcf.gz 
         
     >>>
     runtime {
