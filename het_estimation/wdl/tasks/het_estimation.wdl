@@ -143,7 +143,7 @@ task partitionBed{
         cat ~{bed} | awk '($1 != "chrY") && ($1 != "chrX")' > outputs/$PREFIX.autosome.bed
         cat ~{bed} | awk '$1 == "chrX"' > outputs/$PREFIX.chrX.bed
         bedtools intersect -a ~{bed} -b ~{XYParBed} > outputs/$PREFIX.par.bed
-        bedtools subtract -a $PREFIX.chrX.bed -b ~{XYParBed} > outputs/$PREFIX.non_par_chrX.bed
+        bedtools subtract -a outputs/$PREFIX.chrX.bed -b ~{XYParBed} > outputs/$PREFIX.non_par_chrX.bed
         
     >>>
     runtime {
