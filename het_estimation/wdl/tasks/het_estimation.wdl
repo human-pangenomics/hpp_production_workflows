@@ -10,22 +10,15 @@ workflow runHetEstimation{
         String sampleName
         File patAsm2RefBam
 	File matAsm2RefBam
-        File patConfidentRefBed
-        File matConfidentRefBed
+        File confidentRefBed
         File dipVcfGz
         File XYParBed
-    }
-    # Get regions where both paternal and maternal assemblies have confident alignments
-    call bedtools_t.intersect {
-        input:
-            bedFiles = [patConfidentRefBed, matConfidentRefBed],
-            outputPrefix = "${sampleName}.confident.ref"
     }
     # Get heterozygousity statistics
     call hetEstimation {
         input:
             dipVcfGz = dipVcfGz,
-            confidentRefBed = intersect.intersectBed
+            confidentRefBed = confidentRefBed
     }
     call bam2paf_t.bam2paf as patBam2Paf {
         input:
@@ -45,7 +38,7 @@ workflow runHetEstimation{
     # 3. non PAR regions just X
     call partitionBed {
         input:
-            bed = intersect.intersectBed,
+            bed = confidentRefBed,
             XYParBed = XYParBed
     }
     # Project the three bed files to the assembly to find the 
