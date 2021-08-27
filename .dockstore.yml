@@ -189,3 +189,6 @@ workflows:
    -  name: ConcatAssemblies
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/concat_assemblies.wdl
+   -  name: HetEstimation
+      subclass: WDL
+      primaryDescriptorPath: /het_estimation/wdl/tasks/het_estimation.wdl
