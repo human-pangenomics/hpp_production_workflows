@@ -4,7 +4,7 @@ MAINTAINER Mobin Asri, masri@ucsc.edu
 RUN mkdir -p /home/apps
 
 COPY ./scripts /home/scripts
-RUN pip install edlib
+RUN pip3 install edlib
 ENV HET_ESTIMATOR_PY=/home/scripts/het_estimator.py
 
 ## UCSC convention is to work in /data

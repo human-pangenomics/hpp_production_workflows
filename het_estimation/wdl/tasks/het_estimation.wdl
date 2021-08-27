@@ -98,7 +98,7 @@ workflow runHetEstimation{
             blocksBed = partitionBed.parBed,
             asm2refPaf = matBam2Paf.pafFile,
             sampleName = sampleName,
-            suffix = "maternal.par",
+            suffix = "maternal.non_par_chrX",
             mode = "ref2asm"
     }
     call tar_t.tarGz as matTarGz{
