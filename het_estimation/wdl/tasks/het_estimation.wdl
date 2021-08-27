@@ -168,7 +168,7 @@ task hetEstimation {
         Int memSize=4
         Int threadCount=2
         Int diskSize=16
-        String dockerImage="quay.io/masri2019/hpp_het_estiamtion:latest"
+        String dockerImage="quay.io/masri2019/hpp_het_estimation:latest"
         Int preemptible=2
     }
     command <<<
