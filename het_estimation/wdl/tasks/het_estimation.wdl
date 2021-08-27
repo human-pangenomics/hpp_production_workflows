@@ -95,7 +95,7 @@ workflow runHetEstimation{
 
     call project_t.project as matProjectNonParX{
         input:
-            blocksBed = partitionBed.parBed,
+            blocksBed = partitionBed.nonParChrXBed,
             asm2refPaf = matBam2Paf.pafFile,
             sampleName = sampleName,
             suffix = "maternal.non_par_chrX",
