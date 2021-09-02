@@ -1,4 +1,4 @@
-## Heterozygosity of HPRC samples
+## Estimating the Heterozygosities of the HPRC samples
 
 This page describes the pipeline that produces the neccessary statistics for estimating the heterozygosities of the HPRC-Year1 samples.
 
@@ -149,4 +149,4 @@ We can again notice the dependency between the super population and this metric:
 For this metric only the autosomal regions are used.
 
 ### Results Availability
-A table is available [here](https://docs.google.com/spreadsheets/d/1SyyaY3vUzv89rCKqto9j0y5t6wE_Q8I5iMLlAJxTAbs/edit?usp=sharing) that contains the numbers and estimated values for all HPRC-Year1 samples.
+A table is available [here](https://docs.google.com/spreadsheets/d/1SyyaY3vUzv89rCKqto9j0y5t6wE_Q8I5iMLlAJxTAbs/edit?usp=sharing) which contains the numbers and estimated values for all HPRC-Year1 samples.
