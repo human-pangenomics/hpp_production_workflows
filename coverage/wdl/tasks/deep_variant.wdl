@@ -9,6 +9,8 @@ workflow VariantCalling{
         File bamIndex
         Int numberOfCallerNodes=16
         Int nodeThreadCount=16
+        String includeSecondary="False"
+        String includeSupplementary="False"
         String sampleName
         String sampleSuffix
         String platform
@@ -26,7 +28,9 @@ workflow VariantCalling{
             input:
                 assemblyFastaGz = assemblyFastaGz,
                 bam = part.left,
-                bed = part.right
+                bed = part.right,
+                includeSecondary = includeSecondary,
+                includeSupplementary = includeSupplementary
         }
     }
     call var_t.mergeVcf{
@@ -105,6 +109,8 @@ task callDeepVariant{
         File bam
         File assemblyFastaGz
         File bed
+        String includeSecondary="False"
+        String includeSupplementary="False"
         String modelType
         # runtime configurations
         Int memSize=32
@@ -136,12 +142,24 @@ task callDeepVariant{
         gunzip -c ~{assemblyFastaGz} > asm.fa
         samtools faidx asm.fa
 
+        MAKE_EXAMPLES_EXTRA_ARGS=""
+        if [ ~{includeSecondary} == "True"]; then
+            MAKE_EXAMPLES_EXTRA_ARGS="keep_secondary_alignments=true"
+        fi
+        if [ ~{includeSupplementary} == "True" ]; then
+            if [ -z ${MAKE_EXAMPLES_EXTRA_ARGS} ];then
+                ${MAKE_EXAMPLES_EXTRA_ARGS}="${MAKE_EXAMPLES_EXTRA_ARGS},"
+            fi
+            MAKE_EXAMPLES_EXTRA_ARGS="${MAKE_EXAMPLES_EXTRA_ARGS}keep_supplementary_alignments=true"
+        fi
+
         ## call deepvariant 
         /opt/deepvariant/bin/run_deepvariant \
         --model_type=~{modelType} \
         --ref=asm.fa \
         --reads=${BAM_PREFIX}.bam \
         --output_vcf=${BAM_PREFIX}.vcf \
+        --make_examples_extra_args=${MAKE_EXAMPLES_EXTRA_ARGS} \
         --call_variants_extra_args="use_openvino=true" \
         --num_shards=$(nproc) \
         --dry_run=false \
