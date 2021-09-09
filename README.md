@@ -55,6 +55,33 @@ In addition to the automated QC of assemblies, the following tasks are included:
 * read_stats.wdl: outputs read length statistics for bam/fastq files
 * mask_assembly.wdl: masks assemblies in regions found in bed file
 * dropFastaContigs.wdl: drops contigs from assemblies based on text file list of contigs to drop
+* contamination.wdl: detects contamination in assemblies
+
+#### Contamination
+
+The contamination workflow is modeled after an NCBI [document](https://https.ncbi.nlm.nih.gov/tools/vecscreen/contam/) 
+describing methods for detection and flagging of common
+contaminants in assemblies.  
+
+The workflow takes as input an assembly and
+contamination reference sequences to be used in the following subtasks.
+Each subtask is optional and is enabled by providing the reference sequence.
+* Eukaryotic Contamination: cloning artifacts that are likely to show up 
+as contaminants across all eukaryotic species: vector sequences, 
+E.coli genome, phage genomes, bacterial Insertion Sequences and 
+transposons [here](https://ftp.ncbi.nlm.nih.gov/pub/kitts/contam_in_euks.fa.gz)
+* Mitochondria: mitochondrial sequences end in genomic.fna.gz [here](https://ftp.ncbi.nlm.nih.gov/refseq/release/mitochondrion/)
+* Plastids: plastid sequences end in genomic.fna.gz [here](https://ftp.ncbi.nlm.nih.gov/refseq/release/plastid/)
+* Vecscreen: sequencing adaptor screens [here](https://ftp.ncbi.nlm.nih.gov/pub/kitts/adaptors_for_screening_euks.fa)
+* RRNA: ribosomal RNA [here](https://ftp.ncbi.nlm.nih.gov/pub/kitts/rrna.gz)
+* RefSeq: reference sequences from other species organized 
+[here](https://ftp.ncbi.nlm.nih.gov/refseq/release/) ending in genomic.fna.gz.
+Large files may need to be split into smaller shards.
+
+The output includes the direct output from each subtask, BED files 
+summarizing all the genomic locations where contamination was found, and 
+a file detailing the ratio of contamination sequence per assembly contig.
+
 ------------------ 
 
 
