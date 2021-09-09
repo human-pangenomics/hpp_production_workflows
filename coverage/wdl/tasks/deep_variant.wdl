@@ -148,7 +148,7 @@ task callDeepVariant{
         fi
         if [ ~{includeSupplementary} == "True" ]; then
             if [ -z ${MAKE_EXAMPLES_EXTRA_ARGS} ];then
-                ${MAKE_EXAMPLES_EXTRA_ARGS}="${MAKE_EXAMPLES_EXTRA_ARGS},"
+                MAKE_EXAMPLES_EXTRA_ARGS="${MAKE_EXAMPLES_EXTRA_ARGS},"
             fi
             MAKE_EXAMPLES_EXTRA_ARGS="${MAKE_EXAMPLES_EXTRA_ARGS}keep_supplementary_alignments=true"
         fi
