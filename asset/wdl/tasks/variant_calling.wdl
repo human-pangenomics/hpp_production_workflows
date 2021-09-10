@@ -5,6 +5,7 @@ workflow VariantCalling{
         File assemblyFastaGz
         File bam
         File bamIndex
+        Int minMAPQ
         Int ploidy = 2
         Int numberOfCallerNodes=16
         Int nodeThreadCount=16
@@ -26,7 +27,8 @@ workflow VariantCalling{
                 assemblyFastaGz = assemblyFastaGz,
                 bam = part.left,
                 bed = part.right,
-                ploidy = ploidy
+                ploidy = ploidy,
+                minMApQ = minMAPQ
         }
     }
     call mergeVcf{
@@ -106,6 +108,8 @@ task callVariant{
         File assemblyFastaGz
         File bed
         Int ploidy
+        Int minMAPQ
+        String extraArgs=""
         # runtime configurations
         Int memSize=32
         Int threadCount=16
@@ -139,10 +143,10 @@ task callVariant{
         ## split the previously split bed file again into smaller chunks for the sake of parallelism
         mkdir split_beds
         python3 ${SPLIT_BED_PY} --bed ~{bed} --n ~{threadCount} --dir split_beds --prefix tmp
-
+        
         ## run the variant caller for each small temporary bed file
         mkdir vcf_files
-        seq 1 ~{threadCount} | xargs -I {} -n 1 -P ~{threadCount} sh -c "bcftools mpileup -a FORMAT/AD -a INFO/AD -q20 -B -d 100000 -f asm.fa -R split_beds/tmp_{}.bed ${BAM_PREFIX}.bam | bcftools call -cv --ploidy ~{ploidy} -Oz -o vcf_files/tmp.{}.vcf.gz"
+        seq 1 ~{threadCount} | xargs -I {} -n 1 -P ~{threadCount} sh -c "bcftools mpileup -a FORMAT/AD -a INFO/AD ~{extraArgs} -q~{minMAPQ} -B -d 100000 -f asm.fa -R split_beds/tmp_{}.bed ${BAM_PREFIX}.bam | bcftools call -cv --ploidy ~{ploidy} -Oz -o vcf_files/tmp.{}.vcf.gz"
         
         ## make a header for the merged vcf file
         zcat vcf_files/tmp.1.vcf.gz | awk 'substr($0,1,1) == "#"' | awk -v colname="${BAM_PREFIX}" '{if ($1 == "#CHROM"){ for(i =1; i < 10; i++){printf("%s\t",$i)}; printf("%s\n",colname)} else {print $0}}' > merged.vcf
