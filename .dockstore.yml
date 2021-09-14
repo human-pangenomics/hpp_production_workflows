@@ -195,3 +195,6 @@ workflows:
    -  name: ConcatAssemblies
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/concat_assemblies.wdl
+   -  name: CoverageAnalysisV1
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/workflows/coverage_analysis_v1.wdl

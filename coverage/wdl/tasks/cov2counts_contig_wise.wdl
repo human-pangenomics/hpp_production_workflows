@@ -1,22 +1,20 @@
-version 1.0
+version 1.0 
 
-workflow runFindBlocks{
-    call findBlocks
+workflow runCov2CountsContigWise{
+    call cov2countsContigWise
     output {
-        File bedsTarGz = findBlocks.bedsTarGz
+        File contigCountsTarGz = cov2countsContigWise.contigCountsTarGz
+        File contigCovsTarGz = cov2countsContigWise.contigCovsTarGz
     }
 }
 
-
-task findBlocks {
+task cov2countsContigWise {
     input {
         File coverageGz
-        File table
-        String suffix="whole_genome_based"
         # runtime configurations
         Int memSize=8
-        Int threadCount=4
-        Int diskSize=128
+        Int threadCount=8
+        Int diskSize=64
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=2
     }
@@ -34,13 +32,22 @@ task findBlocks {
 
         FILENAME=$(basename ~{coverageGz})
         PREFIX=${FILENAME%.cov.gz}
+        
+        gunzip -c ~{coverageGz} > ${PREFIX}.cov
+        mkdir covs counts
+        # Make a separate cov file for each contig
+        ${SPLIT_CONTIGS_COV_BIN} -c ${PREFIX}.cov -p covs/${PREFIX}
+        # Count each contig-specific cov file
+        for c in $(ls covs);do ${COV2COUNTS_BIN} -i covs/$c -o counts/${c/.cov/.counts}; echo $c" finished";done
 
-        gunzip -c ~{coverageGz} > $PREFIX.cov
-        mkdir ~{suffix}
-        ${FIND_BLOCKS_BIN} -c $PREFIX.cov -t ~{table} -p ~{suffix}/${PREFIX}.~{suffix}
-        tar -cf ${PREFIX}.beds.~{suffix}.tar ~{suffix}
-        gzip ${PREFIX}.beds.~{suffix}.tar
-    >>>
+        # Compress Counts files
+        tar -cf ${PREFIX}.counts.tar counts
+        gzip ${PREFIX}.counts.tar
+
+        # Compress Cov files
+        tar -cf ${PREFIX}.covs.tar covs
+        gzip ${PREFIX}.covs.tar
+    >>> 
     runtime {
         docker: dockerImage
         memory: memSize + " GB"
@@ -49,6 +56,8 @@ task findBlocks {
         preemptible : preemptible
     }
     output {
-        File bedsTarGz = glob("*.${suffix}.tar.gz")[0]
+        File contigCountsTarGz = glob("*.counts.tar.gz")[0]
+        File contigCovsTarGz = glob("*.covs.tar.gz")[0]
     }
 }
+

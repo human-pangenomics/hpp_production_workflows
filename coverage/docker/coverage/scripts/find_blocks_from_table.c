@@ -31,7 +31,7 @@ int readNextBlock(FILE* fileReader, char** contig, int* blockStart, int* blockEn
 	 return 0;
     }
     if (line[0] == '>') {
-	token = strtok(line, "\t");
+	token = strtok(line, " ");
         strcpy(*contig, token + 1); // skip '>' and copy
 	printf("%s\n",*contig);
         readNextBlock(fileReader, contig, blockStart, blockEnd, coverage);

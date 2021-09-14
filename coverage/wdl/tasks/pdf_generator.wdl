@@ -1,21 +1,18 @@
-version 1.0
+version 1.0 
 
-workflow runFindBlocks{
-    call findBlocks
+workflow runPdfGenerator{
+    call pdfGenerator
     output {
-        File bedsTarGz = findBlocks.bedsTarGz
+        File pdf = pdfGenerator.pdf
     }
 }
-
-
-task findBlocks {
+task pdfGenerator{
     input {
-        File coverageGz
-        File table
-        String suffix="whole_genome_based"
+        File contigProbTablesTarGz
+        File genomeProbTable
         # runtime configurations
-        Int memSize=8
-        Int threadCount=4
+        Int memSize=16
+        Int threadCount=8
         Int diskSize=128
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=2
@@ -31,16 +28,14 @@ task findBlocks {
         # echo each line of the script to stdout so we can see what is happening
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
-
-        FILENAME=$(basename ~{coverageGz})
-        PREFIX=${FILENAME%.cov.gz}
-
-        gunzip -c ~{coverageGz} > $PREFIX.cov
-        mkdir ~{suffix}
-        ${FIND_BLOCKS_BIN} -c $PREFIX.cov -t ~{table} -p ~{suffix}/${PREFIX}.~{suffix}
-        tar -cf ${PREFIX}.beds.~{suffix}.tar ~{suffix}
-        gzip ${PREFIX}.beds.~{suffix}.tar
-    >>>
+        
+        mkdir tables
+        tar --strip-components 1 -xvzf ~{contigProbTablesTarGz} --directory tables
+        FILENAME=$(basename ~{contigProbTablesTarGz})
+        PREFIX=${FILENAME%.tables.tar.gz}
+        python3 ${PDF_GENERATOR_PY} --table  ~{genomeProbTable} --dir tables --pdf ${PREFIX}.cov_dist.pdf
+        
+    >>> 
     runtime {
         docker: dockerImage
         memory: memSize + " GB"
@@ -49,6 +44,7 @@ task findBlocks {
         preemptible : preemptible
     }
     output {
-        File bedsTarGz = glob("*.${suffix}.tar.gz")[0]
+        File pdf = glob("*.pdf")[0]
     }
 }
+

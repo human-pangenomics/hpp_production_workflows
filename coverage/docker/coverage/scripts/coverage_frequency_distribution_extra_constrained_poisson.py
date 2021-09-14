@@ -8,7 +8,8 @@ Created on Sun Jan 24 14:29:21 2021
 
 # Some statistics helper functions
 from copy import deepcopy
-from math import log, exp, sqrt, pi, ceil
+from math import log, exp, sqrt, pi, ceil, factorial
+from scipy.stats import poisson
 def exp_pdf(x, lam):
     if x < 0.0:
         return 0.0
@@ -22,6 +23,9 @@ def trunc_exp_pdf(x, lam, b):
 def norm_pdf(x, mu, sigma):
     z = (x - mu) / sigma
     return 1.0 / (sigma * sqrt(2.0 * pi)) * exp(-z * z / 2.0)
+
+def poisson_pdf(x, rate):
+    return poisson.pmf(x, rate)
 
 # adapted from https://en.wikipedia.org/wiki/Golden-section_search
 def golden_section_search(f, a, b, tol = 1e-6):
@@ -112,15 +116,15 @@ class CoverageDistribution:
         
         for iteration in range(max_iters):
             
-            print(f"iteration {iteration}")
-            print("\terr scale {}".format(cov_dist.err_scale))
-            print("\tcov per ploidy {}".format(cov_dist.cov_per_ploidy))
-            print("\tvar per ploidy {}".format(cov_dist.var_per_ploidy))
+            #print(f"iteration {iteration}")
+            #print("\terr rate {}".format(cov_dist.err_rate))
+            #print("\tcov per ploidy {}".format(cov_dist.cov_per_ploidy))
+            #print("\tvar per ploidy {}".format(cov_dist.var_per_ploidy))
             #print("\tcov extra {}".format(cov_dist.cov_extra))
             #print("\tvar extra {}".format(cov_dist.var_extra))
-            print("\tweight extra {}".format(cov_dist.mixture_weight_extra))
-            print("\tlow ploidy weights {}".format(", ".join("{:.3e}".format(v) for v in cov_dist.mixture_weights[:5])))
-            print("\thigh ploidy weights {}".format(", ".join("{:.3e}".format(v) for v in cov_dist.mixture_weights[-8:])))
+            #print("\tweight extra {}".format(cov_dist.mixture_weight_extra))
+            #print("\tlow ploidy weights {}".format(", ".join("{:.3e}".format(v) for v in cov_dist.mixture_weights[:5])))
+            #print("\thigh ploidy weights {}".format(", ".join("{:.3e}".format(v) for v in cov_dist.mixture_weights[-8:])))
             #c = sorted(spectrum)[:200]
             #plt.plot(c, [cov_dist.pdf(x) for x in c])
             #plt.plot(c, [spectrum[x] * cov_dist.pdf(round(cov_dist.cov_per_ploidy)) / spectrum[round(cov_dist.cov_per_ploidy)]  for x in c])
@@ -147,11 +151,13 @@ class CoverageDistribution:
                 weight_numer += prob * freq
                           
             # maximize likelihood for a truncated exponential
-            b = cov_dist.err_trunc_point()
-            llike = lambda lam: eff_N * log(lam) - eff_N * log(1.0 - exp(-lam * b)) - eff_sum * lam
-            rate = golden_section_search(llike, 0, b, tol / 100.0)
-            new_error_scale = 1.0 / rate
-
+            #b = cov_dist.err_trunc_point()
+            #llike = lambda lam: eff_N * log(lam) - eff_N * log(1.0 - exp(-lam * b)) - eff_sum * lam
+            #rate = golden_section_search(llike, 0, b, tol / 100.0)
+            #new_error_scale = 1.0 / rate
+            new_error_rate = eff_sum / eff_N
+            if new_error_rate > 5:
+                new_error_rate = 5
             # component weight is weighted proportion assigned to the error component
             new_mixture_weights.append(weight_numer / weight_denom)
 
@@ -178,7 +184,12 @@ class CoverageDistribution:
                     denom += prob * freq * ploidy
                     weight_numer += prob * freq
                 new_mixture_weights.append(weight_numer / weight_denom)
-             
+            
+            for cov in spectrum:
+                freq = spectrum[cov]
+                prob = assignment_extra[cov]
+                numer += freq * prob * cov_dist.cov_adj(cov)
+                denom += prob * freq * 0.5
             new_cov_per_ploidy = numer / denom
             
             # the haploid std deviation is the sqrt of the weighted average
@@ -203,21 +214,23 @@ class CoverageDistribution:
 
             # for extra mode
             new_cov_extra = new_cov_per_ploidy * 0.5
-           
-            numer = 0.0
-            denom = 0.0
-            for cov in spectrum:
-                freq = spectrum[cov]
-                prob = assignment_extra[cov]
-                dev = cov_dist.cov_adj(cov) - new_cov_extra
-                numer += freq * prob * dev * dev
-                denom += freq * prob
-            new_var_extra = numer /denom
+
+            new_var_extra = new_var_per_ploidy * 0.5
+
+            #numer = 0.0
+            #denom = 0.0
+            #for cov in spectrum:
+            #    freq = spectrum[cov]
+            #    prob = assignment_extra[cov]
+            #    dev = cov_dist.cov_adj(cov) - new_cov_extra
+            #    numer += freq * prob * dev * dev
+            #    denom += freq * prob
+            #new_var_extra = numer /denom
 
             # the next iteration's distrubition
             new_cov_dist = CoverageDistribution(new_cov_per_ploidy, new_var_per_ploidy,
-                                                new_error_scale, new_mixture_weights,
-                                                cov_dist.err_trunc_point(), new_cov_extra, new_var_extra, new_mixture_weight_extra)
+                                                new_error_rate, new_mixture_weights,
+                                                new_cov_extra, new_var_extra, new_mixture_weight_extra)
             
             converged = cov_dist.converged(new_cov_dist, tol)
             cov_dist = new_cov_dist
@@ -249,7 +262,7 @@ class CoverageDistribution:
             if spectrum[cov_value] > (0.75 * max_spectrum) and has_increased:
                 max_frequency = spectrum[cov_value]
                 cov_at_max_frequency = cov_value
-        print(max_spectrum, cov_at_max_frequency) 
+        #print(max_spectrum, cov_at_max_frequency) 
         cov_per_ploidy = cov_at_max_frequency
         var_per_ploidy = cov_per_ploidy
         
@@ -261,7 +274,7 @@ class CoverageDistribution:
             max_ploidy += 1
         
         # start with an arbitrary, small scale
-        err_scale = 0.01
+        err_rate = 1
         
         # the denominator along with pseudocounts
         total_count = sum(spectrum[cov] for cov in spectrum) + max_ploidy + 1
@@ -295,15 +308,14 @@ class CoverageDistribution:
                     count += spectrum[cov]
             mixture_weights.append(count / total_count)
         
-        return CoverageDistribution(cov_per_ploidy, var_per_ploidy, err_scale, mixture_weights, cov_per_ploidy, cov_extra, var_extra, mixture_weight_extra)
+        return CoverageDistribution(cov_per_ploidy, var_per_ploidy, err_rate, mixture_weights, cov_extra, var_extra, mixture_weight_extra)
     
-    def __init__(self, cov_per_ploidy, var_per_ploidy, err_scale, mixture_weights, err_trunc_point, cov_extra, var_extra, mixture_weight_extra,
-                 pseudo_cov = .25):
+    def __init__(self, cov_per_ploidy, var_per_ploidy, err_rate, mixture_weights, cov_extra, var_extra, mixture_weight_extra,
+                 pseudo_cov = 0):
         self.cov_per_ploidy = cov_per_ploidy
         self.var_per_ploidy = var_per_ploidy
-        self.err_scale = err_scale
+        self.err_rate = err_rate
         self.mixture_weights = mixture_weights
-        self.err_trunc = err_trunc_point
         self.pseudo_cov = pseudo_cov
         # "_extra" shows the characterestics of the ultra-long component
         self.cov_extra = cov_extra
@@ -326,13 +338,11 @@ class CoverageDistribution:
             return self.mixture_weight_extra * l
         if ploidy == 0:
             # error distribution, switch to rate parameterization
-            l = trunc_exp_pdf(cov, 1.0 / self.err_scale, self.err_trunc_point())
+            l = poisson_pdf(cov, self.err_rate)
         else:
             l = norm_pdf(cov, self.cov_per_ploidy * ploidy, sqrt(self.var_per_ploidy * ploidy))
         return self.mixture_weights[ploidy] * l
     
-    def err_trunc_point(self):
-        return self.err_trunc
     
     def component_probabilities(self, cov):
         likelihoods = [self.likelihood(ploidy, cov) for ploidy in range(-1, self.max_ploidy() + 1)]
@@ -348,7 +358,7 @@ class CoverageDistribution:
             return False
         if other.var_per_ploidy != 0.0 and abs(sqrt(self.var_per_ploidy / other.var_per_ploidy) - 1.0) > tol:
             return False
-        if other.err_scale != 0.0 and abs(self.err_scale / other.err_scale - 1.0) > tol:
+        if other.err_rate != 0.0 and abs(self.err_rate / other.err_rate - 1.0) > tol:
             return False
         max_ploidy_of_interest = 2
         for wt, other_wt, ploidy in zip(self.mixture_weights, other.mixture_weights, range(len(self.mixture_weights))):

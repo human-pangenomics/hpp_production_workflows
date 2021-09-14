@@ -1,0 +1,58 @@
+version 1.0 
+
+workflow runFitModelContigWise{
+    call fitModelContigWise
+    output {
+       File contigProbTablesTarGz = fitModelContigWise.contigProbTablesTarGz
+       File longContigNamesText = fitModelContigWise.longContigNamesText
+    }
+}
+
+task fitModelContigWise {
+    input {
+        File fai
+        File countsTarGz
+        Int minContigSize=5000000
+        # runtime configurations
+        Int memSize=4
+        Int threadCount=8
+        Int diskSize=64
+        String dockerImage="quay.io/masri2019/hpp_coverage:latest"
+        Int preemptible=2
+    }
+    command <<<
+        # Set the exit code of a pipeline to that of the rightmost command
+        # to exit with a non-zero status, or zero if all commands of the pipeline exit
+        set -o pipefail
+        # cause a bash script to exit immediately when a command fails
+        set -e
+        # cause the bash shell to treat unset variables as an error and exit immediately
+        set -u
+        # echo each line of the script to stdout so we can see what is happening
+        # to turn off echo do 'set +o xtrace'
+        set -o xtrace
+
+        mkdir counts tables
+        tar --strip-components 1 -xvzf ~{countsTarGz} --directory counts
+        
+        FILENAME="$(basename ~{countsTarGz})"
+        PREFIX=${FILENAME%.counts.tar.gz}
+        
+        cat ~{fai} | awk -vt=~{minContigSize} '$2>=t{print $1}' > ${PREFIX}.long_contig_names.txt
+        cat ${PREFIX}.long_contig_names.txt | xargs -I {} -n 1 -P ~{threadCount} sh -c "python3 ${FIT_MODEL_EXTRA_PY}  --counts counts/${PREFIX}.{}.counts --output tables/${PREFIX}.{}.table"
+        tar -cf ${PREFIX}.tables.tar tables
+        gzip ${PREFIX}.tables.tar
+    >>> 
+    runtime {
+        docker: dockerImage
+        memory: memSize + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSize + " SSD"
+        preemptible : preemptible
+    }
+    output {
+        File contigProbTablesTarGz = glob("*.tables.tar.gz")[0]
+        File longContigNamesText = glob("*.long_contig_names.txt")[0]
+    }
+}
+
