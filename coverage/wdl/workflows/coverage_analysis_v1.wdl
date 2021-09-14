@@ -99,23 +99,18 @@ task combineBeds {
         FILENAME=~{contigBedsTarGz}
         PREFIX=$(basename ${FILENAME%.*.*.tar.gz})
         
-        mkdir genome_based_excluded
-        grep -F -v -f ~{contigNamesText} genome_based/${PREFIX}.whole_genome_based.error.bed > genome_based_excluded/${PREFIX}.whole_genome_based.error.bed
-        grep -F -v -f ~{contigNamesText} genome_based/${PREFIX}.whole_genome_based.duplicated.bed > genome_based_excluded/${PREFIX}.whole_genome_based.dup.bed
-        grep -F -v -f ~{contigNamesText} genome_based/${PREFIX}.whole_genome_based.haploid.bed > genome_based_excluded/${PREFIX}.whole_genome_based.haploid.bed
-        grep -F -v -f ~{contigNamesText} genome_based/${PREFIX}.whole_genome_based.collapsed.bed > genome_based_excluded/${PREFIX}.whole_genome_based.collapsed.bed
-
-        mkdir combined
-        cat genome_based_excluded/*.error.bed contig_based/*.error.bed | bedtools sort -i - > combined/${PREFIX}.combined.error.bed
-        cat genome_based_excluded/*.dup.bed contig_based/*.duplicated.bed | bedtools sort -i - > combined/${PREFIX}.combined.duplicated.bed
-        cat genome_based_excluded/*.haploid.bed contig_based/*.haploid.bed | bedtools sort -i - > combined/${PREFIX}.combined.haploid.bed
-        cat genome_based_excluded/*.collapsed.bed contig_based/*.collapsed.bed | bedtools sort -i - > combined/${PREFIX}.combined.collapsed.bed
-
-        mkdir filtered
-        bedtools merge -d ~{mergeLength} -i combined/*.error.bed | awk '($3-$2) >= ~{minBlockLength}' > filtered/${PREFIX}.filtered.error.bed
-        bedtools merge -d ~{mergeLength} -i combined/*.duplicated.bed | awk '($3-$2) >= ~{minBlockLength}' > filtered/${PREFIX}.filtered.duplicated.bed
-        bedtools merge -d ~{mergeLength} -i combined/*.haploid.bed |  awk '($3-$2) >= ~{minBlockLength}' > filtered/${PREFIX}.filtered.haploid.bed
-        bedtools merge -d ~{mergeLength} -i combined/*.collapsed.bed |  awk '($3-$2) >= ~{minBlockLength}' > filtered/${PREFIX}.filtered.collapsed.bed
+        mkdir genome_based_excluded combined filtered
+        for c in error duplicated haploid collapsed
+        do
+            if [ -s "genome_based/${PREFIX}.whole_genome_based.${c}.bed" ]
+            then
+                grep -F -v -f ~{contigNamesText} genome_based/${PREFIX}.whole_genome_based.${c}.bed > genome_based_excluded/${PREFIX}.whole_genome_based.${c}.bed
+            else
+                echo "" > genome_based_excluded/${PREFIX}.whole_genome_based.${c}.bed
+            fi
+            cat genome_based_excluded/*.${c}.bed contig_based/*.${c}.bed | bedtools sort -i - > combined/${PREFIX}.combined.${c}.bed
+            bedtools merge -d ~{mergeLength} -i combined/*.${c}.bed | awk '($3-$2) >= ~{minBlockLength}' > filtered/${PREFIX}.filtered.${c}.bed
+        done
 
         tar -cf ${PREFIX}.beds.combined.tar combined
         gzip ${PREFIX}.beds.combined.tar
