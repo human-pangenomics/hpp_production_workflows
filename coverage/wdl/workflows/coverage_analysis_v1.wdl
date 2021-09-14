@@ -101,13 +101,13 @@ task combineBeds {
         
         mkdir genome_based_excluded
         grep -F -v -f ~{contigNamesText} genome_based/${PREFIX}.whole_genome_based.error.bed > genome_based_excluded/${PREFIX}.whole_genome_based.error.bed
-        grep -F -v -f ~{contigNamesText} genome_based/${PREFIX}.whole_genome_based.duplicated.bed > genome_based_excluded/${PREFIX}.whole_genome_based.duplicated.bed
+        grep -F -v -f ~{contigNamesText} genome_based/${PREFIX}.whole_genome_based.duplicated.bed > genome_based_excluded/${PREFIX}.whole_genome_based.dup.bed
         grep -F -v -f ~{contigNamesText} genome_based/${PREFIX}.whole_genome_based.haploid.bed > genome_based_excluded/${PREFIX}.whole_genome_based.haploid.bed
         grep -F -v -f ~{contigNamesText} genome_based/${PREFIX}.whole_genome_based.collapsed.bed > genome_based_excluded/${PREFIX}.whole_genome_based.collapsed.bed
 
         mkdir combined
         cat genome_based_excluded/*.error.bed contig_based/*.error.bed | bedtools sort -i - > combined/${PREFIX}.combined.error.bed
-        cat genome_based_excluded/*.duplicated.bed contig_based/*.duplicated.bed | bedtools sort -i - > combined/${PREFIX}.combined.duplicated.bed
+        cat genome_based_excluded/*.dup.bed contig_based/*.duplicated.bed | bedtools sort -i - > combined/${PREFIX}.combined.duplicated.bed
         cat genome_based_excluded/*.haploid.bed contig_based/*.haploid.bed | bedtools sort -i - > combined/${PREFIX}.combined.haploid.bed
         cat genome_based_excluded/*.collapsed.bed contig_based/*.collapsed.bed | bedtools sort -i - > combined/${PREFIX}.combined.collapsed.bed
 
