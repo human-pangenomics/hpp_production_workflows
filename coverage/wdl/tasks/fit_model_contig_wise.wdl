@@ -14,8 +14,8 @@ task fitModelContigWise {
         File countsTarGz
         Int minContigSize=5000000
         # runtime configurations
-        Int memSize=4
-        Int threadCount=8
+        Int memSize=8
+        Int threadCount=32
         Int diskSize=64
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=2
