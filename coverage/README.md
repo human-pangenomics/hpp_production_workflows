@@ -1,46 +1,28 @@
 ## A Mixture Model-Based Coverage Analysis For HPRC Y1 Assemblies
 
 ### Overview
-In this page we are explaining the steps toward the coverage analysis of HPRC-Y1 assemblies. Here is a summary of this analysis 
+On this page we are explaining the steps toward the coverage analysis of HPRC-Y1 assemblies. This analysis is still under development and this page will be updated once there is a newer version of the results. Here is a summary of this analysis 
 - Align the long reads to each assembly
 - Calculate the read coverage of each base of the assembly 
 - Fit a mixture model to the coverage distribution
-- Extract the blocks that are assigned to the 4 main components of the model; erroreous, haploid, diploid and collapsed.
-
-To be more specific each assembly is partitioned into two (for female samples) or four (for male samples) sets of regions and the third and fourth 
-steps above are applied on each set separately. We expect each partition to have different estimated paramters after fitting the model.
-There are two main factors that led to this partitioning. The first reason is that the centromeric regions are highly enriched 
-in false duplication and collapsing, which is not the case for non-centromeric regions. The other factor is that for male samples
-we expect to have half of the sequencing coverage in X and Y chromosomes and using the same model that was fit to the autosomes leads
-to overestimating the low-coverage blocks in sex chromosomes.
-
-Each haploid assembly of a female sample is partitioned into 2 sets of regions:
-1. non-centromeric (sex + autosome)
-2. centromeric (sex + autosome)
-
-Each haploid assembly of a male sample is partitioned into 4 sets of regions:
-
-1. Non-centromeric autosomes + pseudo-atousomal region (PAR)
-2. Centromeric autosomes
-3. Non-centromeric sex 
-4. Centromeric sex
+- Extract the blocks assigned to the model's 4 main components: erroreous, duplicated, haploid, and collapsed.
 
 ### 1. Read Alignment
-The ONT and HiFi reads are aligned to each assembly with winnowmap v2.0.
-Here are the main commands used for producing the alignments (adopted from the [winnowmap docs](https://github.com/marbl/Winnowmap)):
+The ONT and HiFi reads are aligned to each diploid assembly (~ 6Gbases long) with winnowmap v2.03. Since we are aligning the reads to the diploid assembly the expected base-level coverage should be half of the sequencing coverage.
+Here are the main commands used for producing the alignments (taken from the [winnowmap docs](https://github.com/marbl/Winnowmap)):
 ```` 
   # making the k-mer table with meryl
   meryl count k=15 output merylDB asm.fa
   meryl print greater-than distinct=0.9998 merylDB > repetitive_k15.txt
   
   # alignment with winnowmap
-  winnowmap -W repetitive_k15.txt -ax [map-ont | map-pb] asm.fa reads.fq.gz | \
+  winnowmap -W repetitive_k15.txt -ax [map-ont | map-pb] -Y -L --eqx --cs -I8g <(cat pat_asm.fa mat_asm.fa) reads.fq.gz | \
     samtools view -hb > read_alignment.bam
 ````
 
 
 ### 2. Calculating Depth of Coverage
-With `samtools depth` we could calculate the the depth of coverage for each base of an assembly. The output of `samtools depth -aa` is like below. (`-aa` 
+With `samtools depth` we could calculate the the depth of coverage for each assembly base. The output of `samtools depth -aa` is like below. (`-aa` 
 option allows reporting the bases with no coverage)
 ````
 contig_1  1 0
@@ -59,108 +41,46 @@ In order to make this output more efficient we coverted it to the format below
 2 4 1
 5 6 2
 ````
-where the name of each contig appears only once before the first block of that contig and the consecutive bases with the same coverage take only one line.
+Where each contig's name appears only once before the first block of that contig and the consecutive bases with the same coverage take only one line.
 The number that comes after the name of the contig is the contig size. We added the suffix `.cov` to the files with this format.
 Here are the main commands for producing the coverage files:
 ````
-samtools depth -aa -Q 20 alignment.bam > alignment.depth
+samtools depth -aa -Q 0 alignment.bam > alignment.depth
 ./depth2cov -d alignment.depth -f asm.fa.fai -o read_alignment.cov
 ````
-Note that here the read alignments with mapping quality lower than 20 are filtered out. `-Q 20`
-`depth2cov` is a binary executable that converts the output of `samtools depth` to `.cov` format. Its source code is written in C.
+`depth2cov` is a binary executable that converts the output of `samtools depth` to `.cov` format. Its source code is written in C and is available in `docker/coverage/scripts`
 
-### 3. Assembly Alignment and Partitioning
+Since the reads aligned to the homozygous regions are expected to have low mapping qualities we don't filter reads based on their mapping qualities.
+In the figure below you can see the histograms of mapping qualities and the distributions of alignment indentities for HG00438 as an example. Three sets of alignments are shown here; the alignments to the diploid assembly and to each haploid assembly (maternal and paternal) separately. The haploid alignments are shown here just for comparison and as it was mentioned above they are not used for the current analysis.
 
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_mapq_hist.png" width="700" height="275">
 
-In order to partition an assembly into sex and non-sex or centromeric and non-centromeric regions, 
-we align the contigs of that assembly to the chm13v1.0 (+ hg38-Y) reference by winnowmap v2.0. Here are the main commands:
-````
-# making the k-mer table with meryl
-meryl count k=19 output merylDB chm13v1.0_plus_hg38Y.fa
-meryl print greater-than distinct=0.9998 merylDB > repetitive_k19.txt
+About 20% of the diploid alignments are having MAPQs lower than 20. One of the future developements will be on accurately phasing the reads with low MAPQ alignments. 
 
-# alignment with winnowmap
-winnowmap -W repetitive_k19.txt -ax asm5 chm13v1.0_plus_hg38Y.fa asm.fa | \
-  samtools view -hb > asm_alignment.bam
-````
-Note that the k-mer size for the contig alignment is 19 whereas it was 15 for long read alignment.
-After producing the bam file we convert it to the PAF format by `paftools.js` which is available [here](https://github.com/lh3/minimap2/tree/master/misc). Then we pass the paf file
-to a python script called `project_blocks.py`. It uses the cigar format in the paf file to project a set of blocks in the reference 
-onto the assembly; for this aim we should use `--mode ref2asm`. The desired reference blocks are given as a bed file. Here the bed file may point to 
-a specific region in the reference e.g. sex chromosomes. For male samples we prepared 4 distint bed files and for female samples we prepared 2. 
-The regions where those bed files are pointing to, have already been mentioned in the overview.
-Here is an example:
-````
-python3 project_blocks.py --mode 'ref2asm' --paf asm_alignment.paf --blocks ref_blocks.bed --outputProjectable projectable.bed --outputProjection asm_blocks.bed
-````
-For example `ref_blocks.bed` may point to the non-centromeric segments of the sex chromosomes so the `asm_blocks.bed` will point to the assembly regions
-mapped to those. That will be used for fitting a separate model to the coverage distribution of these regions.  
-
-### 4. Partitioning The Coverage Files
+### 3. Coverage Distribution and Fitting The Model
 
 
-After the 2nd section, for each assembly and available platform (ONT or HiFi) we will have a coverage file with the suffix `.cov`.
-After the 3rd section, for each assembly we will have a partitioning that covers almost all of the contigs.( The contigs with no alignment 
-to the reference are excluded from the analysis in the current implementation). A partitioning is represented in the form of 
-a set of bed files with no mutual overlap. Each coverage file will be partitioned into 4 (for male) or 2 (for female) smaller coverage files.
-For this aim we use a combination of `bedtools` and `awk`:
-````
-cat read_alignment.cov | \
-            awk '{if(substr($1,1,1) == ">") {contig=substr($1,2,40); len_contig=$2} else {print contig"\t"$1-1"\t"$2"\t"$3"\t"len_contig}}' | \
-            bedtools intersect -a - -b asm_blocks.bed | \
-            awk '{if(contig != $1){contig=$1; print ">"contig"\t"$5}; print $2+1"\t"$3"\t"$4}' > subset_read_alignment.cov
-````
-For each male assembly we call this command 4 times; once for each bed file. Similarly we call it 2 times for a female assembly.
-The suffix of a partitioned file indicates the regions it includes. 
-As an example here is a list of the coverage files for two assemblies after being partitioned.
-````
-HG01258 (A male sample):
-
-HG01258.maternal.ont.autosome_cntr.cov
-HG01258.maternal.ont.autosome_nonCntr.cov
-HG01258.maternal.ont.sex_cntr.cov
-HG01258.maternal.ont.sex_nonCntr.cov
-````
-
-````
-HG03540 (A female sample):
-
-HG03540.paternal.hifi.diploid_cntr.cov
-HG03540.paternal.hifi.diploid_nonCntr.cov
-````
-### 5. Coverage Distribution and Fitting The Model
-
-
-After finishing the fourth step we should have 4 and 2 coverage files for each male and female assembly respectively. The frequencies of coverages can
-be calculated w/ `cov2counts` which is a binary executable. The source code is written in C.
+The frequencies of coverages can be calculated w/ `cov2counts` which is a binary executable. The source code is written in C and is available in `docker/coverage/scripts`
 ````
 ./cov2counts -i read_alignment.cov -o read_alignment.counts
 ````
-The output file with `.counts` suffix is a 2-cloumn tab-delimited file; the first column shows a coverage and the second column shows the frequency of
-that coverage in the corresponding partition of the assembly. Using `.counts` files we can produce distribution plots easily. For example below we are 
-showing the coverage distributions for the 4 partitions of HG00438 paternal assembly.
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438.paternal.HiFi.dist.png" width="700" height="375">
+The output file with `.counts` suffix is a 2-column tab-delimited file; the first column shows coverages and the second column shows the frequencies of
+those coverages. Using `.counts` files we can produce distribution plots easily. For example below we are showing the coverage distribution for HG00438 diploid assembly.
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_dip_hifi_cov_dist.png" width="700" height="275">
 
-Here is a closer look on the lower distributions:
-
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438.paternal.HiFi.dist.zoomed.png" width="700" height="375">
-
-The differences between the 4 distributions clearly show why we did the partitioning in the previous step.
 Then we pass each `.counts` file to `fit_model_extra.py` whose job is to fit the mixture model and find the best parameters through 
 [Expectation Maximization (EM)](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm). This mixture model
 consists of 4 main components and each component represents a specific type of regions.
 
 The 4 components:
 
-1. **Error component** which is modeled by a truncated exponential distribtuion. It represents the regions with very low read support.
-2. **Haploid component** which is modeled by a gaussian distribution whose mean is constrained to be half of the diploid component's mean. It should mainly represents the haploid
-regions. We expect the false duplicated blocks to also appear in this component. The weight of this component is usually less than 0.01 in non-centromeric partitions but it becomes noticeable
-in centromeric ones. It is worth noting that according to the recent 
+1. **Error component**, which is modeled by a poisson distribution. It represents the regions with very low read support.
+2. **Duplicated component**, which is modeled by a gaussian distribution whose mean is constrained to be half of the haploid component's mean. It should mainly represents the falsely duplicated regions and the weight of this component is usually near to zero. It is worth noting that according to the recent 
 [T2T paper, The complete sequence of a human genome,](https://www.biorxiv.org/content/10.1101/2021.05.26.445798v1.abstract) there exist
  some satellite arrays (especially HSAT1) where the ONT and HiFi coverage drops systematically due to bias in sample preparation and sequencing.
- As a result this mode should contain a mix of haploid, duplicated and coverage-biased blocks, which are not easy to be distiguished through the current analysis.
-3. **Diploid component** which is modeled by a gaussian distribution. It represents blocks with the coverages that we expect for the homozygous blocks of an error-free assembly.
-4. **Collpased component** which is actually a set of components each of which follows a gaussian distribution and their means are constrained to be
+ As a result this mode should contain a mix of duplicated and coverage-biased blocks, which are not easy to be distiguished through the current analysis.
+3. **Haploid component**, which is modeled by a gaussian distribution. It represents blocks with the coverages that we expect for the blocks of an error-free assembly.
+4. **Collpased component**, which is actually a set of components each of which follows a gaussian distribution and their means are constrained to be
 multiples of the haploid component's mean.
 
 Here is the command that fits the model:
@@ -175,13 +95,13 @@ Its output is a file with `.table` suffix. It contains a TAB-delimited table wit
 |freq  |float   |The frequency of the coverage value in the first column                     |
 |fit  |float   |The frequency value fit to the model    |
 |error  |float   |The weight of the error component       |
-|haploid  |float  |The weight of the haploid component               |
-|diploid  |float|The weight of the diploid component                      |
+|duplicated  |float  |The weight of the duplicated component               |
+|haploid  |float|The weight of the haploid component                      |
 |collapsed  |float   |The weight of the collapsed component                    |
 
 Here is an example of such a table:
 ````
-#coverage	freq	fit	error	haploid	diploid	collapsed
+#coverage	freq	fit	error	duplicated	haploid	collapsed
 0	1633030	2479818.7542	0.9973	0.0009	0.0019	0.0000
 1	552306	1014768.3370	0.9890	0.0044	0.0067	0.0000
 2	311274	425804.6727	0.9564	0.0207	0.0229	0.0000
@@ -207,22 +127,22 @@ Here is an example of such a table:
 70	766435	565754.1385	0.0000	0.0000	0.1008	0.8992
 ````
 
-In the figure below we are showing the model components after being fit to the diploid centromeres. It is again for the HG00438 paternal assembly:
+In the figure below, we are showing the model components. It is again for the HG00438 diploid assembly:
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438.paternal.HiFi.diploid_cntr.png" width="700" height="375">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_fit_model.png" width="700" height="275">
 
-### 6. Extracting Blocks
+### 4. Extracting Blocks 
 
-Now we have to assign each coverage value to one of the four components (error, haploid, diploid and collapsed). To do so for each coverage value
-we pick the component with the highest weight. For example for the coverage value, 0, the error component is being picked most of the times (the red line).
+Now we have to assign each coverage value to one of the four components (error, duplicated, haploid, and collapsed). To do so, for each coverage value,
+we pick the component with the highest probability. For example for the coverage value, 0, the error component is being picked most of the times (the red line).
 In the figure below the coverage intervals are colored based on their assigned component.
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_fit_colored.png" width="700" height="375">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_fit_model_colored.png" width="700" height="275">
 
 After assigning the coverage values we then assign the bases of the corresponding assembly to the most probable component. Finally we will have 4 bed 
 files each of which points to the regions assinged to a single component.
-By passing a coverage file (suffix `.cov`) and its corresponding table file (suffix `.table`) to the binary executable `find_blocks` we can produce the 
-4 bed files mentioned above.
+By passing a coverage file (suffix `.cov`) and its corresponding table file (suffix `.table`) to the binary executable `find_blocks` we can produce those
+4 bed files.
 ````
 ./find_blocks -c read_alignment.cov -t read_alignment.table -p ${prefix}
 ````
@@ -234,13 +154,42 @@ ${prefix}.duplicated.bed
 ${prefix}.haploid.bed
 ${prefix}.collapsed.bed
 ````
+### 7. Contig-Specific Coverage Analysis
 
+In step 3 we fit a single model for the whole diploid assembly. In step 4 we used that model to partition the assembly into 4 main components. It has been noticed that the model components may change for different regions and it may affect the accuracy of the partitioning process. In order to make the coverage thresholds more sensitive to the local patterns we fit a separate model for each contig. First we split the whole-genome coverage file we produced in step 3 into multiple coverage files one for each contig.
+```
+./split_contigs_cov -c read_alignment.cov -p ${PREFIX}
+```
+It will produce a list of coverage files like below.
+```
+HG00438.diploid.hifi.HG00438#1#JAHBCB010000001.1.cov  
+HG00438.diploid.hifi.HG00438#1#JAHBCB010000002.1.cov
+HG00438.diploid.hifi.HG00438#1#JAHBCB010000003.1.cov
+...
+HG00438.diploid.hifi.HG00438#2#JAHBCA010000257.1.cov
+HG00438.diploid.hifi.HG00438#2#JAHBCA010000258.1#MT.cov
+```
+To show how the contig-specific models may be different from the whole-genome model, here is an example of a false duplication in the maternal assembly of HG01175 that couldn't be detected using the whole-genome model.
+The coverage distributions of three contigs along with the whole assembly are shown below. Two of those contigs are maternal and the other one is paternal. They are containing equivalent regions in the genome but one of the maternal contigs (`2#JAHBCE010000091.1` the red one ) is having a few mega bases of a false duplication of the paternal contig (`1#JAHBCF010000027.1` the yellow one).
+
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_dip_hifi_contig_cov_dist.png" width="700" height="275">
+
+After fitting the model the duplicated components can reveal such false duplications as you can see in the figure below. `2#JAHBCE010000105.1` does not have any duplicated component but the two others do. Since we know the maternal haplotype has a correct copy of this region in `2#JAHBCE010000105.1` we can deduce that `1#JAHBCF010000027.1` is assembled correctly and `2#JAHBCE010000091.1` is actually containing the false duplication. Without having more information it is not always easy to conclude which copy is the real one and which copy is the false one especially for segmental duplications within a single haplotype.
+
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_contig_fit_model.png" width="700" height="400">
+
+
+ 
 ### Known issues
 
+1. The alignments with low mapping quality are usually happening in the regions with low heterozygosity. The reads with such alignments have to be phased more accurately. Removing the read errors and detecting the marker snps are the main steps for finding the correct haplotype of each read, which will be explored for the next releases.
+ 
+2. Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. The coverage can be corrected by detecting the marker snps and removing the reads from the wrong halpotype or segment. This is going to be incorporated in the next releases of this analysis. Here is an example of a region with ~40X coverage but after detecting the marker snps (by variant calling) and removing the wrong alignments the coverage has decreased to ~17X which is much closer to the expected coverage (~20X).
 
-1. The haploid component may contain the regions with a deletion in only one haplotype (or we can equivalently say an insertion in the other haplotype). It may also contain the falsely duplicated regions. In order to separate these two sets of regions one solution is to do the read alignment to both haplotypes at the same time (Thanks to Heng Li for this idea). In that case we expect the main component to be haploid and if there is a homozygous block that exist in both haplotypes the read coverage should be randomly distributed between those two blocks. In another scenario if that homozygous block is falsely duplicated in both haplotypes the coverage analysis should be able to detect that. (This option is currently being explored.)
+  <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/coverage_correction.png" width="700" height="275">
 
-2. The more coverage we have the more accurate we will be in estimating the parameters of the model. So the samples that have low coverage may not provide a well-fitted coverage distribution. Here is a list of the samples with (<20X) ONT data:
+
+3. The more coverage we have the more accurate we will be in estimating the parameters of the model. So the samples that have low coverage may not provide a well-fitted coverage distribution. Here is a list of the samples with (<20X) ONT data:
 
 ````
 HG01123
@@ -249,8 +198,6 @@ HG03453
 HG02622
 HG02572
 ````
-
-3. The contigs that couldn't be mapped to the reference chm13v1.0+hg38Y are not partitioned so they are not included in this analysis. In future developements we have to find which partition those contigs are coming from.
 
 ### Data, Source Code and Workflows Availability
 
