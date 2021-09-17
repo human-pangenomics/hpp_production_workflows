@@ -143,25 +143,34 @@ class CoverageDistribution:
             eff_N = 0.0
             eff_sum = 0.0
             weight_numer = 0.0
-            for cov in spectrum:
+            for cov in list(spectrum.keys())[:10]:
                 freq = spectrum[cov]
                 prob = assignment[cov][0]
                 eff_sum += freq * prob * cov_dist.cov_adj(cov)
                 eff_N += freq * prob
                 weight_numer += prob * freq
-                          
+
+            
             # maximize likelihood for a truncated exponential
             #b = cov_dist.err_trunc_point()
             #llike = lambda lam: eff_N * log(lam) - eff_N * log(1.0 - exp(-lam * b)) - eff_sum * lam
             #rate = golden_section_search(llike, 0, b, tol / 100.0)
             #new_error_scale = 1.0 / rate
-            new_error_rate = eff_sum / eff_N
-            if new_error_rate > 5:
-                new_error_rate = 5
+            new_error_rate = 0 if eff_sum == 0 else eff_sum / eff_N
+            #print(new_error_rate)
+            #if new_error_rate > 5:
+            #    new_error_rate = 5
             # component weight is weighted proportion assigned to the error component
             new_mixture_weights.append(weight_numer / weight_denom)
+            #print(weight_numer / weight_denom)
+            for cov in list(spectrum.keys())[10:]:
+                freq = spectrum[cov]
+                prob = assignment[cov][0]
+                eff_sum += freq * prob * cov_dist.cov_adj(cov)
+                eff_N += freq * prob
+                weight_numer += prob * freq
 
-
+            
             # the haploid coverage is the weighted mean
             numer = 0.0
             denom = 0.0

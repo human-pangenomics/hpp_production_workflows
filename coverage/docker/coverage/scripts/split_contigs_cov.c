@@ -81,7 +81,6 @@ void findBlocks(char* covPath, char* prefix){
 	}
 	fprintf(fo, "%d\t%d\t%d\n", start, end, cov);
     }
-    fprintf(fo, "%d\t%d\t%d\n", start, end, cov);
     fflush(fo);
     fclose(fo);
     fclose(fp);

@@ -19,13 +19,13 @@ def plotProbTable(table, ax, title, zoomed = False, xlim_ratio=3):
     ax.plot(table["#coverage"], freq, color="black", label="actual")
     ax.plot(table["#coverage"], fit, color="blue", label="fit")
     ax.plot(table["#coverage"], table["error"] * fit, color="red", label="error")
-    ax.plot(table["#coverage"], table["extra"] * fit, color="orange", label="duplicated")
+    ax.plot(table["#coverage"], table["duplicated"] * fit, color="orange", label="duplicated")
     ax.plot(table["#coverage"], table["haploid"] * fit, color="green", label="haploid")
     ax.plot(table["#coverage"], table["collapsed"] * fit, color="purple", label="collapsed")
     max_x = np.argmax(table["haploid"] * fit) * xlim_ratio
     if zoomed:
         max_y = 0.1 + 4 * max(np.max(table["collapsed"] * fit), \
-                              np.max(table["extra"] * fit), \
+                              np.max(table["duplicated"] * fit), \
                               np.max(table["error"] * fit))
     else:
         max_y = 1.25 * np.max(freq)
@@ -41,7 +41,7 @@ def plotPairDist(table, pdf, suptitle):
     fig = plt.figure(figsize=(12,6))
     ax1 = plt.axes([0.1, 0.2, 0.35, 0.5])
     ax2 = plt.axes([0.6, 0.2, 0.35, 0.5])
-    ax3 = plt.axes([0.85, 0.85, 0.1, 0.1])
+    ax3 = plt.axes([0.85, 0.8, 0.1, 0.1])
     plotProbTable(table, ax1, "Coverage Distribution")
     plotProbTable(table, ax2, "Coverage Distribution (Zoomed in)", zoomed = True)
     plotSummaryTable(ax3, table)
@@ -64,7 +64,7 @@ def plotSummaryTable(ax, table):
     fit_total = sum(table["fit"])
     freq_total = int(sum(table["freq"]))
     error_total = sum(table["fit"] * table["error"])
-    duplicated_total = sum(table["fit"] * table["extra"])
+    duplicated_total = sum(table["fit"] * table["duplicated"])
     haploid_total = sum(table["fit"] * table["haploid"])
     collapsed_total = sum(table["fit"] * table["collapsed"])
     # Calculate fractions
