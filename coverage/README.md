@@ -45,17 +45,17 @@ Where each contig's name appears only once before the first block of that contig
 The number that comes after the name of the contig is the contig size. We added the suffix `.cov` to the files with this format.
 Here are the main commands for producing the coverage files:
 ````
-samtools depth -aa -Q 0 alignment.bam > alignment.depth
-./depth2cov -d alignment.depth -f asm.fa.fai -o read_alignment.cov
+samtools depth -aa -Q 0 read_alignment.bam > read_alignment.depth
+./depth2cov -d read_alignment.depth -f asm.fa.fai -o read_alignment.cov
 ````
 `depth2cov` is a binary executable that converts the output of `samtools depth` to `.cov` format. Its source code is written in C and is available in `docker/coverage/scripts`
 
 Since the reads aligned to the homozygous regions are expected to have low mapping qualities we don't filter reads based on their mapping qualities.
-In the figure below you can see the histograms of mapping qualities and the distributions of alignment indentities for HG00438 as an example. Three sets of alignments are shown here; the alignments to the diploid assembly and to each haploid assembly (maternal and paternal) separately. The haploid alignments are shown here just for comparison and as it was mentioned above they are not used for the current analysis.
+In the figure below you can see the histograms of mapping qualities and the distributions of alignment indentities for HG00438 as an example. Three sets of alignments are shown here; the alignments to the diploid assembly and to each haploid assembly (maternal and paternal) separately. The alignments to the haploid assemblies are shown here just for comparison and as it was mentioned above they are not used for the current analysis.
 
 <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_mapq_hist.png" width="700" height="275">
 
-About 20% of the diploid alignments are having MAPQs lower than 20. One of the future developements will be on accurately phasing the reads with low MAPQ alignments. 
+About 20% of the diploid alignments are having MAPQs lower than 20. One of the future developments will be on accurately phasing the reads with low MAPQ alignments. 
 
 ### 3. Coverage Distribution and Fitting The Model
 
@@ -74,7 +74,7 @@ consists of 4 main components and each component represents a specific type of r
 
 The 4 components:
 
-1. **Error component**, which is modeled by a poisson distribution. It represents the regions with very low read support.
+1. **Error component**, which is modeled by a poisson distribution. To avoid overfitting, this mode only uses the coverages below 10 so its mean is limited to be between 0 and 10. It represents the regions with very low read support.
 2. **Duplicated component**, which is modeled by a gaussian distribution whose mean is constrained to be half of the haploid component's mean. It should mainly represents the falsely duplicated regions and the weight of this component is usually near to zero. It is worth noting that according to the recent 
 [T2T paper, The complete sequence of a human genome,](https://www.biorxiv.org/content/10.1101/2021.05.26.445798v1.abstract) there exist
  some satellite arrays (especially HSAT1) where the ONT and HiFi coverage drops systematically due to bias in sample preparation and sequencing.
@@ -85,7 +85,7 @@ multiples of the haploid component's mean.
 
 Here is the command that fits the model:
 ````
-python3 fit_model_extra.py --counts read_alignment.counts --output read_alignment
+python3 fit_model_extra.py --counts read_alignment.counts --output read_alignment.table
 ````
 
 Its output is a file with `.table` suffix. It contains a TAB-delimited table with the 7 fields described below:
@@ -154,9 +154,9 @@ ${prefix}.duplicated.bed
 ${prefix}.haploid.bed
 ${prefix}.collapsed.bed
 ````
-### 7. Contig-Specific Coverage Analysis
+### 5. Contig-Specific Coverage Analysis
 
-In step 3 we fit a single model for the whole diploid assembly. In step 4 we used that model to partition the assembly into 4 main components. It has been noticed that the model components may change for different regions and it may affect the accuracy of the partitioning process. In order to make the coverage thresholds more sensitive to the local patterns we fit a separate model for each contig. First we split the whole-genome coverage file we produced in step 3 into multiple coverage files one for each contig.
+In step 3 we fit a single model for the whole diploid assembly. In step 4 we used that model to partition the assembly into 4 main components. It has been noticed that the model components may change for different regions and it may affect the accuracy of the partitioning process. In order to make the coverage thresholds more sensitive to the local patterns we fit a separate model for each contig. First we split the whole-genome coverage file produced in step 3 into multiple coverage files one for each contig.
 ```
 ./split_contigs_cov -c read_alignment.cov -p ${PREFIX}
 ```
@@ -178,15 +178,20 @@ After fitting the model the duplicated components can reveal such false duplicat
 
 <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_contig_fit_model.png" width="700" height="400">
 
+### 6. Combining The Bed Files
+One important observation is that for short contigs we don't have a smooth coverage distribution and it is not possible to fit the mixture model. To address this issue we have done the contig-based coverage analysis only for the contigs longer than 5Mb and for the shorter contigs we use the results of the whole-genome-based analysis described previously. So the final results for the current release is a combination of contig- and whole-genome-based coverage anslysis. (Look at the results section, the combined bed files are available in the `combined` subdirectory)
 
+In the combined bed files we have a noticeable number of blocks with very short length(a few bases or a few tens of bases). They are very prone to be falsely categorized into one of the components. To increase the specificity we have merged the blocks nearer than 100 and then removed the ones shorter than 1Kb.  (Look at the results section, the filtered bed files are available in the `filtered` subdirectory)
  
 ### Known issues
 
-1. The alignments with low mapping quality are usually happening in the regions with low heterozygosity. The reads with such alignments have to be phased more accurately. Removing the read errors and detecting the marker snps are the main steps for finding the correct haplotype of each read, which will be explored for the next releases.
+1. Alignments with low mapping quality are usually happening in the regions with low heterozygosity. The reads with such alignments have to be phased more accurately. Removing the read errors and detecting the marker snps are the main steps for finding the correct haplotype of each read, which will be explored for the next releases.
  
-2. Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. The coverage can be corrected by detecting the marker snps and removing the reads from the wrong halpotype or segment. This is going to be incorporated in the next releases of this analysis. Here is an example of a region with ~40X coverage but after detecting the marker snps (by variant calling) and removing the wrong alignments the coverage has decreased to ~17X which is much closer to the expected coverage (~20X).
+2. Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. 
 
-  <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/coverage_correction.png" width="700" height="275">
+    One approach is to correct the coverage in the correctly assembled region. The coverage can be corrected by detecting the marker snps and removing the reads from the wrong halpotype or segment. This is going to be incorporated in the next releases of this analysis. Here is an example of a region with ~40X coverage but after detecting the marker snps (by variant calling) and removing the wrong alignments the coverage has decreased to ~17X which is much closer to the expected coverage (~20X).
+
+   <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/coverage_correction.png" width="700" height="275">
 
 
 3. The more coverage we have the more accurate we will be in estimating the parameters of the model. So the samples that have low coverage may not provide a well-fitted coverage distribution. Here is a list of the samples with (<20X) ONT data:
