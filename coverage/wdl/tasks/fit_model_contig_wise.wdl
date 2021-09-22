@@ -12,6 +12,7 @@ task fitModelContigWise {
     input {
         File fai
         File countsTarGz
+        Int cov=20
         Int minContigSize=5000000
         # runtime configurations
         Int memSize=8
@@ -39,7 +40,7 @@ task fitModelContigWise {
         PREFIX=${FILENAME%.counts.tar.gz}
         
         cat ~{fai} | awk -vt=~{minContigSize} '$2>=t{print $1}' > ${PREFIX}.long_contig_names.txt
-        cat ${PREFIX}.long_contig_names.txt | xargs -I {} -n 1 -P ~{threadCount} sh -c "python3 ${FIT_MODEL_EXTRA_PY}  --counts counts/${PREFIX}.{}.counts --output tables/${PREFIX}.{}.table"
+        cat ${PREFIX}.long_contig_names.txt | xargs -I {} -n 1 -P ~{threadCount} sh -c "python3 ${FIT_MODEL_EXTRA_PY}  --cov {cov} --counts counts/${PREFIX}.{}.counts --output tables/${PREFIX}.{}.table"
         tar -cf ${PREFIX}.tables.tar tables
         gzip ${PREFIX}.tables.tar
     >>> 
