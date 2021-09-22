@@ -185,24 +185,16 @@ In the combined bed files we have a noticeable number of blocks with very short 
  
 ### Known issues
 
-1. Alignments with low mapping quality are usually happening in the regions with low heterozygosity. The reads with such alignments have to be phased more accurately. Removing the read errors and detecting the marker snps are the main steps for finding the correct haplotype of each read, which will be explored for the next releases.
+1. In some cases the duplicated component is mixed up with the haploid component. It usually happens when the coverage in the haploid component drops systematically and the contig has long stretches of false duplication. One extreme case happened in `HG002#1#JAHKSE010000028.1`. Nearly half of this contig is falsely duplicated but the current results report almost the whole contig as `duplicated`. (https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/e9ad8022-1b30-11ec-ab04-0a13c5208311--COVERAGE_ANALYSIS_Y1_GENBANK/V1/HiFi/HG002/HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.cov_dist.pdf). One other indicator of a false duplication is the accumulation of alignments with MAPQ 0. We will use produce another coverage file only for MAPQ 0 alignments and intersect it with the current results to correct them.
+
+2. Alignments with low mapping quality are usually happening in the regions with low heterozygosity. The reads with such alignments have to be phased more accurately. Removing the read errors and detecting the marker snps are the main steps for finding the correct haplotype of each read, which will be explored for the next releases.
  
-2. Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. 
+3. Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. 
 
     One approach is to correct the coverage in the correctly assembled region. The coverage can be corrected by detecting the marker snps and removing the reads from the wrong halpotype or segment. This is going to be incorporated in the next releases of this analysis. Here is an example of a region with ~40X coverage but after detecting the marker snps (by variant calling) and removing the wrong alignments the coverage has decreased to ~17X which is much closer to the expected coverage (~20X).
 
    <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/coverage_correction.png" width="700" height="275">
 
-
-3. The more coverage we have the more accurate we will be in estimating the parameters of the model. So the samples that have low coverage may not provide a well-fitted coverage distribution. Here is a list of the samples with (<20X) ONT data:
-
-````
-HG01123
-HG03579
-HG03453
-HG02622
-HG02572
-````
 
 ### Data, Source Code and Workflows Availability
 
@@ -214,7 +206,7 @@ For more details read this github page:
 
 https://github.com/human-pangenomics/HPP_Year1_Assemblies
 
-Please note that for the current results we have used the v2 (and v2.1) of the assemblies. The results will be updated for the genbank assemblies.
+We have used the Genbank version of the HPRC-Y1 assemblies.
 
 The Python scripts, C source codes and the binary files are available in
 
@@ -228,119 +220,43 @@ https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverag
 
 The results are available in 
 
-https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=submissions/91b5a5f6-ded2-11eb-886e-0a13c5208311--COVERAGE_ANALYSIS_MODEL_BASED/
+https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=submissions/e9ad8022-1b30-11ec-ab04-0a13c5208311--COVERAGE_ANALYSIS_Y1_GENBANK/
 
-The directory structure of the results for a female sample is as below: (For male samples we have the same structure except that the set of partitions are different)
-````
-.
-├── mat
-│   ├── HiFi
-│   │   ├── beds
-│   │   ├── figures
-│   │   └── tables
-│   └── Ont
-│       ├── beds
-│       ├── figures
-│       └── tables
-└── pat
-    ├── HiFi
-    │   ├── beds
-    │   ├── figures
-    │   └── tables
-    └── Ont
-        ├── beds
-        ├── figures
-        └── tables
-````
-As it is obvious for each combination of haplotype (mat or pat) and platform (Ont or HiFi) we have the structure below:
-````
-.
-├── beds
-├── figures
-└── tables
-````
-It contains 3 directories:
-
-1. `beds` contains two subdirectories:
+The most updated results are under the `V1` directory. It includes the results of the HiFi-based coverage analysis.
+The directory structure for the results of each sample is as below:
 
 ````
-.
-├── gt_1k
-│   ├── HG00438.maternal.ont.diploid_cntr.collapsed.gt_1k.bed
-│   ├── HG00438.maternal.ont.diploid_cntr.duplicated.gt_1k.bed
-│   ├── HG00438.maternal.ont.diploid_cntr.error.gt_1k.bed
-│   ├── HG00438.maternal.ont.diploid_cntr.haploid.gt_1k.bed
-│   ├── HG00438.maternal.ont.diploid_nonCntr.collapsed.gt_1k.bed
-│   ├── HG00438.maternal.ont.diploid_nonCntr.duplicated.gt_1k.bed
-│   ├── HG00438.maternal.ont.diploid_nonCntr.error.gt_1k.bed
-│   └── HG00438.maternal.ont.diploid_nonCntr.haploid.gt_1k.bed
-└── initial
-    ├── HG00438.maternal.ont.diploid_cntr.collapsed.bed
-    ├── HG00438.maternal.ont.diploid_cntr.duplicated.bed
-    ├── HG00438.maternal.ont.diploid_cntr.error.bed
-    ├── HG00438.maternal.ont.diploid_cntr.haploid.bed
-    ├── HG00438.maternal.ont.diploid_nonCntr.collapsed.bed
-    ├── HG00438.maternal.ont.diploid_nonCntr.duplicated.bed
-    ├── HG00438.maternal.ont.diploid_nonCntr.error.bed
-    └── HG00438.maternal.ont.diploid_nonCntr.haploid.bed
+HG002
+├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.cov_dist.pdf
+├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.table
+├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.tables.tar.gz
+├── combined
+├── contig_based
+├── filtered
+└── whole_genome_based
 ````
 
-In `initial` each bed file points to the blocks of a specific partition that belongs to a specifc component. So for each combination of partition (`diploid_cntr`
- and `diploid_nonCntr`) and components (`error`, `duplicated`, `haploid`, `collapsed`) we will have a separate bed file. The other subdirectory `gt_1k` contains
- the same bed files but the blocks shorter than 1k are filtered out.
+The pdf file contains the plots of the coverage distributions for the whole assembly and the contigs longer than 5Mb which has been used for the contig-based analysis. Different model components are also drawn with different colors.
 
-2. `figures` contains two subdirectories:
+The table files contain the models fit to the distributions. These models are used for finding the thresholds and categorizing the regions into one of the four components; error, duplicated, haploid and collapsed.
+
+The four subdirectories are having the categorized blocks. They are the results of different parts of the pipeline and named based on this.
+For example `combined` directory contains the combination of `contig_based` and `whole_genome_based` blocks (section 6).
+Each directory has four bed files and they are named based on the component they are pointing to.
 
 ````
-.
-├── distribution
-│   ├── HG00438.maternal.ont
-│   └── HG00438.maternal.ont.zoomed.png
-└── model
-    ├── HG00438.maternal.ont.diploid_cntr.png
-    └── HG00438.maternal.ont.diploid_nonCntr.png
+filtered/
+├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.filtered.collapsed.bed
+├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.filtered.duplicated.bed
+├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.filtered.error.bed
+└── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.filtered.haploid.bed
 ````
-`distribution` contains two plots of coverage distributions stratified and colored by partition. The first image gives a broad view of the 
-coverage distributions and the one with the suffix `.zoomed` is the same plot but zoomed on the lower distributions.
-`model` contains one plot per partition. Each plot shows the coverage distribution of a specifc partition and the fitted distribution stratified 
-and colored by the component.
 
-3. `tables` contains one `.table` file per partition:
-````
-.
-├── HG00438.maternal.ont.diploid_cntr.table
-└── HG00438.maternal.ont.diploid_nonCntr.table
-````
-We have already explained what each table file contains in section 5.
+For example the bed file that ends with `.haploid.bed` is pointing to the haploid blocks.
 
-By going to the github directory `index` you can find the index files that contain the URLs of the results:
-````
-.
-├── female
-│   ├── beds
-│   │   ├── female.diploid_cntr.gt_1k_bed.index
-│   │   ├── female.diploid_cntr.initial_bed.index
-│   │   ├── female.diploid_nonCntr.gt_1k_bed.index
-│   │   └── female.diploid_nonCntr.initial_bed.index
-│   ├── figures
-│   │   └── female.figures.index
-│   └── tables
-│       └── female.tables.index
-└── male
-    ├── beds
-    │   ├── male.autosome_cntr.gt_1k_bed.index
-    │   ├── male.autosome_cntr.initial_bed.index
-    │   ├── male.autosome_nonCntr.gt_1k_bed.index
-    │   ├── male.autosome_nonCntr.initial_bed.index
-    │   ├── male.sex_cntr.gt_1k_bed.index
-    │   ├── male.sex_cntr.initial_bed.index
-    │   ├── male.sex_nonCntr.gt_1k_bed.index
-    │   └── male.sex_nonCntr.initial_bed.index
-    ├── figures
-    │   └── male.figures.index
-    └── tables
-        └── male.tables.index
-````
+It is recommended to use the bed files in the `filtered` subdirectory.
+
 ### Acknowledgements
 
 Thanks to Jordan M Eizenga for sharing the source code of EM that fits the mixture model and his useful support for doing this analysis.
+
