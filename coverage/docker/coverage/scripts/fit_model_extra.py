@@ -7,9 +7,11 @@ import operator
 def main():
     parser = argparse.ArgumentParser(description='Fit coverage model')
     parser.add_argument('--counts', type=str, help='coverage counts file')
+    parser.add_argument('--cov', type=float, help='expected haploid coverage (Optional, will be inferred from the distribution if not used)', default=None)
     parser.add_argument('--output', type=str, help='probability table output')
     args = parser.parse_args()
     countsPath = args.counts
+    haploidCov = args.cov
     outputPath = args.output
 
     counts = defaultdict(int)
@@ -27,7 +29,7 @@ def main():
                 f.write("{:d}".format(cov) + "\t0" * 6 + "\n")
         return
     # fit the model
-    cov_model = CoverageDistribution.fit(counts, tol = 1e-4, max_iters=500)
+    cov_model = CoverageDistribution.fit(counts, tol = 1e-4, max_iters=500, start_point_cov_per_ploidy= haploidCov)
     # find the fitted distribution
     X = list(range(max(counts)+1))
     Y = [cov_model.pdf(x) for x in X]

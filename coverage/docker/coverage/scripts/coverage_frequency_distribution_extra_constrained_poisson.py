@@ -106,13 +106,13 @@ class CoverageDistribution:
     # are coverages and whose values are the number of bases that have that
     # coverage
     @staticmethod
-    def fit(spectrum, tol = 1e-6, max_iters = 10000):
+    def fit(spectrum, tol = 1e-6, max_iters = 10000, start_point_cov_per_ploidy=None):
         
         # copy the spectrum so we can modify it without breaking expectations
         spectrum = deepcopy(spectrum)
         
         # get a coarse estimate that we can use as a starting point for EM
-        cov_dist = CoverageDistribution.heuristic_fit(spectrum)
+        cov_dist = CoverageDistribution.heuristic_fit(spectrum, start_point_cov_per_ploidy)
         
         for iteration in range(max_iters):
             
@@ -255,27 +255,31 @@ class CoverageDistribution:
     # TODO: generalize this for truncated distributions at the max value?
     
     @staticmethod
-    def heuristic_fit(spectrum):
+    def heuristic_fit(spectrum, start_point_cov_per_ploidy=None):
         
         max_cov = max(spectrum)
-        
-        cov_at_max_frequency = None
-        max_frequency = -1
-        has_increased = False
-        freq_l = list(spectrum.values())
-        max_spectrum = max(freq_l[1:])
-        for cov_value in sorted(spectrum)[1:]:
-            if cov_value - 1 in spectrum:
-                if spectrum[cov_value] > spectrum[cov_value - 1]:
-                    has_increased = True
-            if spectrum[cov_value] > (0.75 * max_spectrum) and has_increased:
-                max_frequency = spectrum[cov_value]
-                cov_at_max_frequency = cov_value
-        #print(max_spectrum, cov_at_max_frequency) 
-        cov_per_ploidy = cov_at_max_frequency
+       
+        if start_point_cov_per_ploidy == None:
+            cov_at_max_frequency = None
+            max_frequency = -1
+            has_increased = False
+            freq_l = list(spectrum.values())
+            max_spectrum = max(freq_l[1:])
+            for cov_value in sorted(spectrum)[1:]:
+                if cov_value - 1 in spectrum:
+                    if spectrum[cov_value] > spectrum[cov_value - 1]:
+                        has_increased = True
+                if spectrum[cov_value] > (0.75 * max_spectrum) and has_increased:
+                    max_frequency = spectrum[cov_value]
+                    cov_at_max_frequency = cov_value
+            #print(max_spectrum, cov_at_max_frequency) 
+            cov_per_ploidy = cov_at_max_frequency
+        else:
+            cov_per_ploidy = start_point_cov_per_ploidy
+
         var_per_ploidy = cov_per_ploidy
         
-        cov_extra = cov_at_max_frequency / 2
+        cov_extra = cov_per_ploidy / 2
         var_extra = cov_extra
 
         max_ploidy = int(max_cov / cov_per_ploidy)
