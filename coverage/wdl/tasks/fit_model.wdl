@@ -9,7 +9,7 @@ workflow runFitModel{
 task fitModel {
     input {
         File counts
-        Int cov=20
+        Float cov=20.0
         # runtime configurations
         Int memSize=4
         Int threadCount=2
@@ -31,7 +31,7 @@ task fitModel {
 
         FILENAME=$(basename ~{counts})
         PREFIX=${FILENAME%.counts}
-        python3 ${FIT_MODEL_EXTRA_PY} --counts ~{counts} --output ${PREFIX}.table --cov {cov}
+        python3 ${FIT_MODEL_EXTRA_PY} --counts ~{counts} --output ${PREFIX}.table --cov ~{cov}
     >>> 
     runtime {
         docker: dockerImage
