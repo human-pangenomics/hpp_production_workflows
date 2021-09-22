@@ -254,6 +254,8 @@ filtered/
 
 For example the bed file that ends with `.haploid.bed` is pointing to the haploid blocks.
 
+It is recommended to use the bed files in the `filtered` subdirectory.
+
 ### Acknowledgements
 
 Thanks to Jordan M Eizenga for sharing the source code of EM that fits the mixture model and his useful support for doing this analysis.
