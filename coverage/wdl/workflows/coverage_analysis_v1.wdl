@@ -178,7 +178,7 @@ task dupCorrectBeds {
         # do the correction
         bedtools subtract -a combined/${PREFIX}.combined.duplicated.bed -b high_mapq.bed > dup_corrected/${PREFIX}.dup_corrected.duplicated.bed
         bedtools intersect -a combined/${PREFIX}.combined.duplicated.bed -b high_mapq.bed > dup_to_hap.bed
-        cat dup_to_hap.bed combined/${PREFIX}.haploid.bed | bedtools sort -i - | bedtools merge -i - > dup_corrected/${PREFIX}.dup_corrected.haploid.bed
+        cat dup_to_hap.bed combined/${PREFIX}.combined.haploid.bed | bedtools sort -i - | bedtools merge -i - > dup_corrected/${PREFIX}.dup_corrected.haploid.bed
         
         # just copy error and collapsed comps
         cp combined/${PREFIX}.combined.error.bed dup_corrected/${PREFIX}.dup_corrected.error.bed
