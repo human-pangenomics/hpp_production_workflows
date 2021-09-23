@@ -166,7 +166,7 @@ task dupCorrectBeds {
         FILENAME=$(basename ~{highMapqCovGz})
         PREFIX=${FILENAME%.cov.gz}
 
-        combined
+        mkdir combined
         tar --strip-components 1 -xvzf ~{combinedBedsTarGz} --directory combined
 
         zcat ~{highMapqCovGz} | \
