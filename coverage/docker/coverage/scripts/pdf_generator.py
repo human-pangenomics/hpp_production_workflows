@@ -22,7 +22,7 @@ def plotProbTable(table, ax, title, zoomed = False, xlim_ratio=3):
     ax.plot(table["#coverage"], table["duplicated"] * fit, color="orange", label="duplicated")
     ax.plot(table["#coverage"], table["haploid"] * fit, color="green", label="haploid")
     ax.plot(table["#coverage"], table["collapsed"] * fit, color="purple", label="collapsed")
-    max_x = np.argmax(table["haploid"] * fit) * xlim_ratio
+    max_x = np.argmax(table["freq"]) * xlim_ratio
     if zoomed:
         max_y = 0.1 + 4 * max(np.max(table["collapsed"] * fit), \
                               np.max(table["duplicated"] * fit), \
