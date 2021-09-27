@@ -34,7 +34,7 @@ contig_1  6 2
 ````
 In the order in which they appear, the columns are showing the contig name, the base coordinate and the coverage. 
 Each base has a separate line even if consecutive bases are having the same coverage. 
-In order to make this output more efficient we coverted it to the format below
+In order to make this output more compact we converted it to the format below
 ````
 >contig_1 6
 1 1 0
@@ -85,7 +85,7 @@ multiples of the haploid component's mean.
 
 Here is the command that fits the model:
 ````
-python3 fit_model_extra.py --counts read_alignment.counts --output read_alignment.table
+python3 fit_model_extra.py --counts read_alignment.counts --output read_alignment.table --cov ${expected_coverage}
 ````
 
 Its output is a file with `.table` suffix. It contains a TAB-delimited table with the 7 fields described below:
@@ -191,7 +191,7 @@ cat high_mapq.cov | \
             awk '{if(substr($1,1,1) == ">") {contig=substr($1,2,40)} else if($3 >= 5) {print contig"\t"$1-1"\t"$2}}' | \
             bedtools merge -i - > high_mapq.bed
 
-# do the correction
+#Do the correction
 bedtools subtract -a ${PREFIX}.combined.duplicated.bed -b high_mapq.bed > ${PREFIX}.dup_corrected.duplicated.bed
 bedtools intersect -a ${PREFIX}.combined.duplicated.bed -b high_mapq.bed > dup_to_hap.bed
 cat dup_to_hap.bed ${PREFIX}.combined.haploid.bed | bedtools sort -i - | bedtools merge -i - > ${PREFIX}.dup_corrected.haploid.bed
@@ -200,10 +200,14 @@ cat dup_to_hap.bed ${PREFIX}.combined.haploid.bed | bedtools sort -i - | bedtool
 In the final bed files we have a noticeable number of very short blocks (a few bases or a few tens of bases long). They are very prone to be falsely categorized into one of the components. To increase the specificity we have merged the blocks closer than 100 and then removed the ones shorter than 1Kb.  (Look at the results section, the filtered bed files are available in the `filtered` subdirectory). These numbers may change in the next releases to make the blocks more contiguous.
 
 ### Known issues
+1. The reason that we used contig-specific models was to capture the local patterns and avoid underfitting. For the same reason we may not detect some misassemblies for very long contigs (tens of megabases long). For example there is a false duplication in HG00438#1#JAHBCB010000015.1 (16Mb) but could not be detected w/ the current pipeline since the contig was about 80Mb long and there is a also systematic increase in the coverage of the duplicated region (HSAT-2). 
+https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/e9ad8022-1b30-11ec-ab04-0a13c5208311--COVERAGE_ANALYSIS_Y1_GENBANK/V1/HiFi/HG002/HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.cov_dist.pdf
+    
+    To fix this issue we may fix multiple models for the contigs longer than 20 Mb.
 
-1. Alignments with low mapping quality are usually happening in the regions with low heterozygosity. The reads with such alignments have to be phased more accurately. Removing (or at least modeling) the read errors and detecting the marker snps are the main steps for finding the correct haplotype of each read, which will be explored for the next releases.
+2. Alignments with low mapping quality are usually happening in the regions with low heterozygosity. The reads with such alignments have to be phased more accurately. Removing (or at least modeling) the read errors and detecting the marker snps are the main steps for finding the correct haplotype of each read, which will be explored for the next releases.
  
-2. Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. 
+3. Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. 
 
     One approach is to correct the coverage in the correctly assembled region. The coverage can be corrected by detecting the marker snps and removing the reads from the wrong halpotype or segment. This is going to be incorporated in the next releases of this analysis. Here is an example of a region with ~40X coverage but after detecting the marker snps (by variant calling) and removing the wrong alignments the coverage has decreased to ~17X which is much closer to the expected coverage (~20X).
 
