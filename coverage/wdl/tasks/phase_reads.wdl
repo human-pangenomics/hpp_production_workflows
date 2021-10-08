@@ -1,28 +1,44 @@
 version 1.0 
 
+import "merge_bams.wdl" as mergeBams_t
+
 workflow runPhaseReads{
     input {
         File inputBam
         File diploidAssemblyFastaGz
+        String sampleName
+        String sampleSuffix
     }
     call sortByName{
          input:
              bamFile = inputBam
     }
-    call phaseReads{
+    call splitByName{
          input:
-             bamFile = sortByName.outputBam,
-             diploidAssemblyFastaGz = diploidAssemblyFastaGz
+             bamFile = sortByName.outputBam
     }
-    call sortByContig{
-         input:
-             bamFile = phaseReads.outputBam
+    scatter (splitBam in splitByName.splitBams) { 
+        call phaseReads{
+            input:
+                bamFile = splitBam,
+                diploidAssemblyFastaGz = diploidAssemblyFastaGz
+        }
+        call sortByContig{
+            input:
+                bamFile = phaseReads.outputBam
+        }
+    }
+    call mergeBams_t.merge as mergeBams{
+        input:
+            sampleName = sampleName,
+            sampleSuffix = sampleSuffix,
+            sortedBamFiles = sortByContig.outputBam
     }
     output{
-        File outputBam = sortByContig.outputBam
-        File outputBai = sortByContig.outputBai
-        File errLog = phaseReads.errLog
-        File outLog = phaseReads.outLog
+        File outputBam = mergeBams.mergedBam
+        File outputBai = mergeBams.mergedBai
+        Array[File] errLogs = phaseReads.errLog
+        Array[File] outLogs = phaseReads.outLog
     }
 }
 
@@ -31,9 +47,9 @@ task phaseReads {
         File bamFile
         File diploidAssemblyFastaGz
         # runtime configurations
-        Int memSize=16
-        Int threadCount=8
-        Int diskSize=500
+        Int memSize=4
+        Int threadCount=2
+        Int diskSize=128
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=2
         String zones="us-west2-a"
@@ -74,13 +90,57 @@ task phaseReads {
     }
 }
 
+task splitByName {
+    input {
+        File bamFile
+        Int NReadsPerBam = 500000
+        # runtime configurations
+        Int memSize=4
+        Int threadCount=2
+        Int diskSize=512
+        String dockerImage="quay.io/masri2019/hpp_coverage:latest"
+        Int preemptible=2
+        String zones="us-west2-a"
+    }
+    command <<<
+        # Set the exit code of a pipeline to that of the rightmost command
+        # to exit with a non-zero status, or zero if all commands of the pipeline exit
+        set -o pipefail
+        # cause a bash script to exit immediately when a command fails
+        set -e
+        # cause the bash shell to treat unset variables as an error and exit immediately
+        set -u
+        # echo each line of the script to stdout so we can see what is happening
+        # to turn off echo do 'set +o xtrace'
+        set -o xtrace
+
+        BAM_FILENAME=$(basename ~{bamFile})
+        BAM_PREFIX=${BAM_FILENAME%.bam}
+
+        mkdir output
+        ${SPLIT_BAM_BY_READNAME_BIN} -i ~{bamFile} -o output -n ~{NReadsPerBam}
+    >>>
+    runtime {
+        docker: dockerImage
+        memory: memSize + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSize + " SSD"
+        preemptible : preemptible
+        zones : zones
+    }
+    output {
+        Array[File] splitBams = glob("output/*.bam")
+    }
+}
+
+
 task sortByName {
     input {
         File bamFile
         # runtime configurations
         Int memSize=16
         Int threadCount=8
-        Int diskSize=500
+        Int diskSize=512
         String dockerImage="quay.io/masri2019/hpp_base:latest"
         Int preemptible=2
         String zones="us-west2-a"
@@ -120,9 +180,9 @@ task sortByContig {
     input {
         File bamFile
         # runtime configurations
-        Int memSize=16
-        Int threadCount=8
-        Int diskSize=500
+        Int memSize=8
+        Int threadCount=4
+        Int diskSize=128
         String dockerImage="quay.io/masri2019/hpp_base:latest"
         Int preemptible=2
         String zones="us-west2-a"
@@ -143,7 +203,7 @@ task sortByContig {
         BAM_PREFIX=${BAM_FILENAME%.bam}
 
         mkdir output
-        samtools sort -@8 -b ~{bamFile} > output/${BAM_PREFIX}.bam
+        samtools sort -@~{threadCount} -b ~{bamFile} > output/${BAM_PREFIX}.bam
         samtools index output/${BAM_PREFIX}.bam
     >>>
     runtime {
