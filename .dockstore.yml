@@ -198,3 +198,6 @@ workflows:
    -  name: CoverageAnalysisV1
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/workflows/coverage_analysis_v1.wdl
+   -  name: PhaseReads
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/phase_reads.wdl
