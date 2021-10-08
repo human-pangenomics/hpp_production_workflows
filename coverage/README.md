@@ -34,7 +34,7 @@ contig_1  6 2
 ````
 In the order in which they appear, the columns are showing the contig name, the base coordinate and the coverage. 
 Each base has a separate line even if consecutive bases are having the same coverage. 
-In order to make this output more efficient we coverted it to the format below
+In order to make this output more compact we converted it to the format below
 ````
 >contig_1 6
 1 1 0
@@ -85,7 +85,7 @@ multiples of the haploid component's mean.
 
 Here is the command that fits the model:
 ````
-python3 fit_model_extra.py --counts read_alignment.counts --output read_alignment.table
+python3 fit_model_extra.py --counts read_alignment.counts --output read_alignment.table --cov ${expected_coverage}
 ````
 
 Its output is a file with `.table` suffix. It contains a TAB-delimited table with the 7 fields described below:
@@ -181,13 +181,31 @@ After fitting the model the duplicated components can reveal such false duplicat
 ### 6. Combining The Bed Files
 One important observation is that for short contigs we don't have a smooth coverage distribution and it is not possible to fit the mixture model. To address this issue we have done the contig-based coverage analysis only for the contigs longer than 5Mb and for the shorter contigs we use the results of the whole-genome-based analysis described previously. So the final results for the current release is a combination of contig- and whole-genome-based coverage anslysis. (Look at the results section, the combined bed files are available in the `combined` subdirectory)
 
-In the combined bed files we have a noticeable number of blocks with very short length(a few bases or a few tens of bases). They are very prone to be falsely categorized into one of the components. To increase the specificity we have merged the blocks nearer than 100 and then removed the ones shorter than 1Kb.  (Look at the results section, the filtered bed files are available in the `filtered` subdirectory)
- 
+
+### 7. Correcting The Bed Files Pointing to The Duplicated Regions
+In some cases the duplicated component is mixed up with the haploid one. It usually happens when the coverage in the haploid component drops systematically and the contig has long stretches of false duplication. One extreme case happened in `HG002#1#JAHKSE010000028.1`. Nearly half of this contig is falsely duplicated but the current results report almost the whole contig as `duplicated`. (https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/e9ad8022-1b30-11ec-ab04-0a13c5208311--COVERAGE_ANALYSIS_Y1_GENBANK/V1/HiFi/HG002/HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.cov_dist.pdf). One other indicator of a false duplication is the accumulation of alignments with low MAPQ. We have produced another coverage file only for MAPQ > 20 alignments and intersect it with the current results to correct them. Whenever we see a region flagged as duplicated but it also has more than 5 high quality alignments we flag that region as haploid instead. (Look at the results section, the dup corrected bed files are available in the `dup_corrected` subdirectory)
+
+````
+#Get blocks with more than 5 high quality alignments
+cat high_mapq.cov | \
+            awk '{if(substr($1,1,1) == ">") {contig=substr($1,2,40)} else if($3 >= 5) {print contig"\t"$1-1"\t"$2}}' | \
+            bedtools merge -i - > high_mapq.bed
+
+#Do the correction
+bedtools subtract -a ${PREFIX}.combined.duplicated.bed -b high_mapq.bed > ${PREFIX}.dup_corrected.duplicated.bed
+bedtools intersect -a ${PREFIX}.combined.duplicated.bed -b high_mapq.bed > dup_to_hap.bed
+cat dup_to_hap.bed ${PREFIX}.combined.haploid.bed | bedtools sort -i - | bedtools merge -i - > ${PREFIX}.dup_corrected.haploid.bed
+````
+
+In the final bed files we have a noticeable number of very short blocks (a few bases or a few tens of bases long). They are very prone to be falsely categorized into one of the components. To increase the specificity we have merged the blocks closer than 100 and then removed the ones shorter than 1Kb.  (Look at the results section, the filtered bed files are available in the `filtered` subdirectory). These numbers may change in the next releases to make the blocks more contiguous.
+
 ### Known issues
+1. The reason that we used contig-specific models was to capture the local patterns and avoid underfitting. For the same reason we may not detect some misassemblies for very long contigs (tens of megabases long). For example there is a false duplication (~16Mb long) in `HG00438#1#JAHBCB010000015.1` but could not be detected w/ the current pipeline since the contig was about 80Mb long and there is a also systematic increase in the coverage of the duplicated region (HSAT-2). 
+https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/e9ad8022-1b30-11ec-ab04-0a13c5208311--COVERAGE_ANALYSIS_Y1_GENBANK/V1/HiFi/HG002/HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.cov_dist.pdf
+    
+    To fix this issue we may fit multiple models for the contigs longer than 20 Mb.
 
-1. In some cases the duplicated component is mixed up with the haploid component. It usually happens when the coverage in the haploid component drops systematically and the contig has long stretches of false duplication. One extreme case happened in `HG002#1#JAHKSE010000028.1`. Nearly half of this contig is falsely duplicated but the current results report almost the whole contig as `duplicated`. (https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/e9ad8022-1b30-11ec-ab04-0a13c5208311--COVERAGE_ANALYSIS_Y1_GENBANK/V1/HiFi/HG002/HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.cov_dist.pdf). One other indicator of a false duplication is the accumulation of alignments with MAPQ 0. We will use produce another coverage file only for MAPQ 0 alignments and intersect it with the current results to correct them.
-
-2. Alignments with low mapping quality are usually happening in the regions with low heterozygosity. The reads with such alignments have to be phased more accurately. Removing the read errors and detecting the marker snps are the main steps for finding the correct haplotype of each read, which will be explored for the next releases.
+2. Alignments with low mapping quality are usually happening in the regions with low heterozygosity. The reads with such alignments have to be phased more accurately. Removing (or at least modeling) the read errors and detecting the marker snps are the main steps for finding the correct haplotype of each read, which will be explored for the next releases.
  
 3. Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. 
 
@@ -233,6 +251,7 @@ HG002
 ├── combined
 ├── contig_based
 ├── filtered
+├── dup_corrected
 └── whole_genome_based
 ````
 
@@ -241,7 +260,7 @@ The pdf file contains the plots of the coverage distributions for the whole asse
 The table files contain the models fit to the distributions. These models are used for finding the thresholds and categorizing the regions into one of the four components; error, duplicated, haploid and collapsed.
 
 The four subdirectories are having the categorized blocks. They are the results of different parts of the pipeline and named based on this.
-For example `combined` directory contains the combination of `contig_based` and `whole_genome_based` blocks (section 6).
+For example `combined` directory contains the combination of `contig_based` and `whole_genome_based` blocks (section 6) and `dup_corrected` contains the corrections explained in section 7.
 Each directory has four bed files and they are named based on the component they are pointing to.
 
 ````
@@ -259,4 +278,5 @@ It is recommended to use the bed files in the `filtered` subdirectory.
 ### Acknowledgements
 
 Thanks to Jordan M Eizenga for sharing the source code of EM that fits the mixture model and his useful support for doing this analysis.
+
 
