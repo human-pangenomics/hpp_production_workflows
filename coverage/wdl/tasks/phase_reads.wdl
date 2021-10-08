@@ -161,7 +161,7 @@ task sortByName {
         BAM_PREFIX=${BAM_FILENAME%.bam}
        
         mkdir output
-        samtools sort -n -@8 -b ~{bamFile} > output/${BAM_PREFIX}.bam
+        samtools sort -n -@8 ~{bamFile} > output/${BAM_PREFIX}.bam
     >>> 
     runtime {
         docker: dockerImage
@@ -203,7 +203,7 @@ task sortByContig {
         BAM_PREFIX=${BAM_FILENAME%.bam}
 
         mkdir output
-        samtools sort -@~{threadCount} -b ~{bamFile} > output/${BAM_PREFIX}.bam
+        samtools sort -@~{threadCount} ~{bamFile} > output/${BAM_PREFIX}.bam
         samtools index output/${BAM_PREFIX}.bam
     >>>
     runtime {
