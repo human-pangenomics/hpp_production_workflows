@@ -73,7 +73,7 @@ task phaseReads {
         samtools faidx asm.fa
 
         mkdir output
-        ${PHASE_READS_BIN} -i ~{bamFile} -f asm.fa -o output/${BAM_PREFIX}.phased.bam 2> err.log > out.log
+        ${PHASE_READS_BIN} -q 1 -d 1e-5 -e 0.1 -b 10 -i ~{bamFile} -f asm.fa -o output/${BAM_PREFIX}.phased.bam 2> err.log > out.log
     >>>
     runtime {
         docker: dockerImage
