@@ -11,6 +11,7 @@ task bam2paf{
         File bamFile
         Int minMAPQ
         String primaryOnly = "no"
+        String extraOptions = ""
         # runtime configurations
         Int memSize=16
         Int threadCount=4
@@ -34,9 +35,9 @@ task bam2paf{
         FILENAME=$(basename ~{bamFile})
         if [[ ~{primaryOnly} = "no" ]]
         then
-            k8 ${PAFTOOLS_PATH} sam2paf <(samtools view -h -q ~{minMAPQ} ~{bamFile}) > ${FILENAME%.*}.paf
+            k8 ${PAFTOOLS_PATH} sam2paf <(samtools view -h -q ~{minMAPQ} ~{extraOptions} ~{bamFile}) > ${FILENAME%.*}.paf
         else
-            k8 ${PAFTOOLS_PATH} sam2paf <(samtools view -h -q ~{minMAPQ} -F256 -F4 ~{bamFile}) > ${FILENAME%.*}.paf
+            k8 ${PAFTOOLS_PATH} sam2paf <(samtools view -h -q ~{minMAPQ} ~{extraOptions} -F256 -F4 ~{bamFile}) > ${FILENAME%.*}.paf
         fi
     >>>
     runtime {
