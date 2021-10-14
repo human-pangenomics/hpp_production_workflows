@@ -35,8 +35,8 @@ task getPhasedReadIds{
 
         mkdir output
         samtools view -F4 -F256 ~{bamFile} | awk '{print $1"\t"$3}' > read_ids_contig.txt 
-        cat read_ids_contig.txt | awk -e '$2 ~ /.*#1#.*/ {print $1}' | sort -u > hap1.txt
-        cat read_ids_contig.txt | awk -e '$2 ~ /.*#2#.*/ {print $1}' | sort -u > hap2.txt
+        cat read_ids_contig.txt | awk '$2 ~ /.*#1#.*/ {print $1}' | sort -u > hap1.txt
+        cat read_ids_contig.txt | awk '$2 ~ /.*#2#.*/ {print $1}' | sort -u > hap2.txt
         comm -23 hap1.txt hap2.txt > output/${PREFIX}.hap1_read_ids.txt
         comm -13 hap1.txt hap2.txt > output/${PREFIX}.hap2_read_ids.txt
         comm -12 hap1.txt hap2.txt > output/${PREFIX}.ambiguous_read_ids.txt
