@@ -201,3 +201,6 @@ workflows:
    -  name: PhaseReads
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/phase_reads.wdl
+   -  name: GetPhasedReadIds
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/get_phased_read_ids.wdl
