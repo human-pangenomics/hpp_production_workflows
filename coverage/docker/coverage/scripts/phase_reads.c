@@ -14,11 +14,7 @@
 #define DEBUG
 
 #ifdef DEBUG
-void DEBUG_PRINT(const char *, ...);
-#else
-static inline void DEBUG_PRINT(const char *fmt, ...) {};
-#endif
-
+//void DEBUG_PRINT(const char *, ...);
 void DEBUG_PRINT(const char *fmt, ...)
 {
   va_list ap;
@@ -26,6 +22,11 @@ void DEBUG_PRINT(const char *fmt, ...)
   vfprintf(stderr, fmt, ap);
   va_end(ap);
 }
+
+#else
+static inline void DEBUG_PRINT(const char *fmt, ...) {};
+#endif
+
 
 /*! @typedef
  @abstract Structure for a marker information
@@ -123,6 +124,8 @@ typedef struct {
 ptCigarIt* ptCigarIt_construct(bam1_t* b){
 	ptCigarIt* cigar_it = (ptCigarIt*) malloc(sizeof(ptCigarIt));
 	cigar_it->cigar = bam_get_cigar(b);
+	cigar_it->len = 0;
+	cigar_it->op = -1;
 	cigar_it->is_rev = bam_is_rev(b);
 	cigar_it->n = b->core.n_cigar;
 	cigar_it->idx = -1;
@@ -272,7 +275,38 @@ ptMarker* ptMarker_construct_match(ptAlignment** alignments, int32_t alignment_i
 	return match;
 }
 
-stList* filter_markers(stList* markers, ptAlignment** alignments, int alignments_len){
+
+stList* filter_lowq_markers(stList* markers, int threshold){
+	int markers_len = stList_length(markers);
+        stList* keep_markers = stList_construct3(0, free);
+	ptMarker* pre_marker =NULL;
+	ptMarker* marker;
+	bool keep_flag = true;
+	int idx_s = 0;
+	for(int j=0; j < markers_len; j++){
+		marker = stList_get(markers, j);
+		if (pre_marker && marker->read_pos_f != pre_marker->read_pos_f){
+			if (keep_flag){
+				for(int k=idx_s; k<j; k++){
+					// copy all markers with the same read_pos_f and add them
+					stList_append(keep_markers, ptMarker_copy(stList_get(markers, k)));
+				}
+			}
+			idx_s = j;
+			keep_flag = true;
+		}
+		if(marker->base_q < threshold) keep_flag=false;
+		pre_marker = marker;
+	}
+	if (keep_flag){
+		for(int k=idx_s; k<markers_len; k++){
+			stList_append(keep_markers, ptMarker_copy(stList_get(markers, k)));
+                }
+        }
+	return keep_markers;
+}
+
+stList* filter_ins_markers(stList* markers, ptAlignment** alignments, int alignments_len){
 	int markers_len = stList_length(markers);
 	bool* markers_keep_flags = (bool*) malloc(markers_len * sizeof(bool));
 	for(int i=0; i< markers_len; i++) markers_keep_flags[i] =true;
@@ -290,7 +324,7 @@ stList* filter_markers(stList* markers, ptAlignment** alignments, int alignments
 			//check if marker is located within the cigar operation
 			while(marker &&
 			      (cigar_it->rds_f <= marker->read_pos_f) && 
-			      (cigar_it->rds_f >= marker->read_pos_f)){
+			      (cigar_it->rde_f >= marker->read_pos_f)){
 				//check if the marker is located within an insertion
 				if(cigar_it->op == BAM_CINS ||
 				   cigar_it->op == BAM_CSOFT_CLIP ||
@@ -363,12 +397,11 @@ void calc_likelihood(stList* markers, ptAlignment** alignments){
 		}
 		else{
 			alignments[marker->alignment_idx]->qv -= marker->base_q ;
-			//alignments[mismatch->alignment_idx]->likelihood -= 4.77 ;
 		}
 	}
 }
 
-int get_best_record(ptAlignment** alignments, int alignments_len, int min_qv, int prim_margin){
+int get_best_record(ptAlignment** alignments, int alignments_len, double min_qv, double prim_margin){
 	assert(alignments_len > 0);
 	if (alignments_len == 1) return 0;
 	double max_qv = -DBL_MAX;
@@ -443,7 +476,7 @@ void set_confident_blocks(ptAlignment** alignments, int alignments_len, int thre
 }
 
 
-void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* alignment, int alignment_idx, stList* markers){
+void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* alignment, int alignment_idx, stList* markers, double conf_d, double conf_e, double conf_bw){
 
 	uint8_t* tseq; // translated seq A=>0,C=>1,G=>2,T=>3,other=>4
 	uint8_t* tref; // translated ref
@@ -451,7 +484,7 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 	uint8_t* block_qual;
 	int* state;
 	uint8_t* q; // Probability of incorrect alignment from probaln_glocal()
-	probaln_par_t conf = { 0.001, 0.1, 10 };
+	probaln_par_t conf = { conf_d, conf_e, conf_bw };
 	char* ref;
 	char* reg;
 	bam1_t* b = alignment->record;
@@ -468,7 +501,7 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 	for(int i=0; i < stList_length(blocks); i++){
 		block = stList_get(blocks, i);
 		DEBUG_PRINT("\t\t\t### block#%d: seq[%d:%d] ref[%s:%d-%d]\n", i, block->sqs, block->sqe, contig_name, block->rfs, block->rfe);
-		while((cigar_it->sqs < block->sqs) || (cigar_it->sqe < block->sqs)){
+		while((cigar_it->sqs < block->sqs) || (cigar_it->rfs < block->rfs)){
 			if(ptCigarIt_next(cigar_it) == 0) break;
 		}// end of while cigar_it->seq_start should be now equal to block->seq_start
 		assert(cigar_it->sqs == block->sqs);
@@ -524,6 +557,8 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 			while(cigar_it->sqe <= block->sqe && cigar_it->rfe <= block->rfe){
 				x = cigar_it->rfs - block->rfs;
 				y = cigar_it->sqs - block->sqs;
+				//DEBUG_PRINT("rf:%d\t%d\n", cigar_it->rfe, block->rfe);
+				//DEBUG_PRINT("sq:%d\t%d\n", cigar_it->sqe, block->sqe);
 				if (cigar_it->op == BAM_CMATCH || 
 			    	    cigar_it->op == BAM_CEQUAL || 
 			            cigar_it->op == BAM_CDIFF) {
@@ -553,13 +588,14 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 void calc_update_baq_all(const faidx_t* fai, 
 		        ptAlignment** alignments, int alignments_len, 
 			stList* markers, 
-			const sam_hdr_t *h){
+			const sam_hdr_t *h,
+			double conf_d, double conf_e, double conf_b){
 	const char* contig_name;
 	int tid;
 	for(int i=0; i < alignments_len; i++){
 		tid = alignments[i]->record->core.tid;
 		contig_name = sam_hdr_tid2name(h, tid);
-		calc_local_baq(fai, contig_name, alignments[i], i, markers);
+		calc_local_baq(fai, contig_name, alignments[i], i, markers, conf_d, conf_e, conf_b);
 	}
 	ptMarker* marker;
 	uint8_t* q;
@@ -571,14 +607,24 @@ void calc_update_baq_all(const faidx_t* fai,
 	}
 }
 
+bool contain_supp(ptAlignment** alignments, int alignments_len){
+	for(int i=0;i < alignments_len; i++){
+		if (alignments[i]->record->core.flag & BAM_FSUPPLEMENTARY) return 1;
+	}
+	return 0;
+}
 int main(int argc, char *argv[]){
 	int c;
+	bool baq_flag=false;
+	double conf_d;
+	double conf_e;
+	double conf_b;
 	char* inputPath;
 	char* outputPath;
 	char* fastaPath;
    	char *program;
    	(program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-   	while (~(c=getopt(argc, argv, "i:f:o:h"))) {
+   	while (~(c=getopt(argc, argv, "i:f:o:q:d:e:b:h"))) {
 		switch (c) {
                         case 'i':
                                 inputPath = optarg;
@@ -589,6 +635,18 @@ int main(int argc, char *argv[]){
 			case 'f':
 				fastaPath = optarg;
 				break;
+			case 'q':
+				baq_flag = true;
+				break;
+			case 'd':
+                                conf_d = atof(optarg);
+                                break;
+			case 'e':
+                                conf_e = atof(optarg);
+                                break;
+			case 'b':
+                                conf_b = atof(optarg);
+                                break;
                         default:
                                 if (c != 'h') fprintf(stderr, "[E::%s] undefined option %c\n", __func__, c);
 			help:
@@ -597,6 +655,10 @@ int main(int argc, char *argv[]){
                                 fprintf(stderr, "         -i         input bam file\n");
 				fprintf(stderr, "         -f         input fasta file\n");
                                 fprintf(stderr, "         -o         output bam file\n");
+				fprintf(stderr, "         -q         optional (use BAQ as base quality)\n");
+				fprintf(stderr, "         -d         gap prob\n");
+				fprintf(stderr, "         -e         gap extension\n");
+				fprintf(stderr, "         -b         dp bandwidth\n");
                                 return 1;
 		}
 	}
@@ -614,12 +676,14 @@ int main(int argc, char *argv[]){
         uint8_t* quality;
 	ptMarker* marker;
 	stList* markers = stList_construct3(0, free);
-	stList* confident_markers = NULL;
+	stList* no_ins_markers = NULL;
+	stList* highq_markers = NULL;
 	int alignments_len=0;
 	int32_t read_pos;
 	ptAlignment** alignments = (ptAlignment**) malloc(100 * sizeof(ptAlignment*)); //Assuming that no more than 100 alignments we have per read
 	int bytes_read;
 	const char* contig_name;
+	bool supp_flag = false;
 	while(true) {
 		bytes_read = sam_read1(fp, sam_hdr, b);
 		if (bytes_read > - 1){
@@ -637,44 +701,71 @@ int main(int argc, char *argv[]){
 				DEBUG_PRINT("\t# Set confident blocks");
 				set_confident_blocks(alignments, alignments_len, 2);
 				DEBUG_PRINT("\t$ length of markers: %ld\n\t# Start filtering markers\n", stList_length(markers));
-				confident_markers = filter_markers(markers, alignments, alignments_len);
-				DEBUG_PRINT("\t$ length of confident markers: %ld\n", stList_length(confident_markers));
-				if(stList_length(confident_markers) > 0){
+				no_ins_markers = filter_ins_markers(markers, alignments, alignments_len);
+				DEBUG_PRINT("\t$ length of confident markers: %ld\n", stList_length(no_ins_markers));
+				if(stList_length(no_ins_markers) > 0){
 					DEBUG_PRINT("\t# There are more than 0 markers So calc baq and update quality\n");
-					sort_and_fill_markers(confident_markers, alignments, alignments_len);
+					sort_and_fill_markers(no_ins_markers, alignments, alignments_len);
 					/*for(int t =0 ; t<stList_length(confident_markers); t++) {
                                                 ptMarker* m = stList_get(confident_markers, t);
                                                 DEBUG_PRINT("MARKER@%d\t%d\t%d\t%d\t%d\t%d\n", t, m->alignment_idx, m->base_idx, m->read_pos_f, m->base_q, m->is_match);
                                         }*/
 
-					calc_update_baq_all(fai, 
-						            alignments, alignments_len,
-						            confident_markers, sam_hdr);
+					if(baq_flag){
+						calc_update_baq_all(fai, 
+						                    alignments, alignments_len,
+						                    no_ins_markers, sam_hdr,
+								    conf_d, conf_e, conf_b);
+					}
+					highq_markers = filter_lowq_markers(no_ins_markers, 20);
+					DEBUG_PRINT("@MARKERS:\n");
+					for(int t =0 ; t<stList_length(highq_markers); t++) {
+                                                ptMarker* m = stList_get(highq_markers, t);
+                                                DEBUG_PRINT("MARKER@%d\t%d\t%d\t%d\t%d\t%d\n", t, m->alignment_idx, m->base_idx, m->read_pos_f, m->base_q, m->is_match);
+                                        }
 					//DEBUG_PRINT("\t# calc likelihood\n");
-					calc_likelihood(confident_markers, alignments);
+					calc_likelihood(highq_markers, alignments);
+					stList_destruct(highq_markers);
+                                	highq_markers = NULL;
 				}
-				stList_destruct(confident_markers);
-                                confident_markers = NULL;
+				stList_destruct(no_ins_markers);
+                                no_ins_markers = NULL;
 			}
-			// get the best alignment and write
-			int best_idx = get_best_record(alignments, alignments_len, -100, 50);
-			bam1_t* best = alignments[best_idx]->record;
-			if ((best->core.flag & BAM_FSECONDARY)){
-				printf("$ RECORDS AND QVs for %s:\n", read_name);
-				for(int i=0; i<alignments_len; i++){
-					if ((alignments[i]->record->core.flag & BAM_FSECONDARY) == 0) printf("*\t");
-					else if (i == best_idx) printf("@\t");
-					else printf("!\t");
-					contig_name = sam_hdr_tid2name(sam_hdr, alignments[i]->record->core.tid);
-					printf("%.2f\t%s\t%ld\n", alignments[i]->qv, contig_name, alignments[i]->record->core.pos);
+			if (alignments_len > 0){ // maybe the previous alignment was unmapped
+				// get the best alignment and write
+				int best_idx = get_best_record(alignments, alignments_len, -100.0, 20.0);
+				bam1_t* best = alignments[best_idx]->record;
+				// write all chimeric alignments without any change
+				if(contain_supp(alignments, alignments_len)){
+					for(int i=0; i<alignments_len; i++){
+						if (sam_write1(fo, sam_hdr, alignments[i]->record) == -1) {
+                                                	fprintf(stderr, "Couldn't write %s\n", read_name);
+                                             	}
+					}
 				}
-				printf("\n");
-				// make it primary
-				best->core.flag &= ~BAM_FSECONDARY;
-			}
-			DEBUG_PRINT("\t#Writing!\n");
-			if (sam_write1(fo, sam_hdr, best) == -1) {
-				fprintf(stderr, "Couldn't write %s\n", read_name);
+				else if ((best->core.flag & BAM_FSECONDARY)){
+					//make it primary
+					printf("$ RECORDS AND QVs for %s:\n", read_name);
+					for(int i=0; i<alignments_len; i++){
+						if ((alignments[i]->record->core.flag & BAM_FSECONDARY) == 0){
+							printf("*\t");
+							alignments[i]->record->core.flag |= BAM_FSECONDARY;
+							if (sam_write1(fo, sam_hdr, alignments[i]->record) == -1) {
+                                        			fprintf(stderr, "Couldn't write %s\n", read_name);
+                  					}
+						}
+						else if (i == best_idx) printf("@\t");
+						else printf("!\t");
+						contig_name = sam_hdr_tid2name(sam_hdr, alignments[i]->record->core.tid);
+						printf("%.2f\t%s\t%ld\n", alignments[i]->qv, contig_name, alignments[i]->record->core.pos);
+
+					}
+					printf("\n");
+					best->core.flag &= ~BAM_FSECONDARY;
+                                        if (sam_write1(fo, sam_hdr, best) == -1) {
+                                                fprintf(stderr, "Couldn't write %s\n", read_name);
+                                        }
+				}
 			}
 			stList_destruct(markers);
 			markers = stList_construct3(0, free);
@@ -687,7 +778,7 @@ int main(int argc, char *argv[]){
 			strcpy(read_name, read_name_new);
 		}
 		if (bytes_read <= -1) break; // file is finished so break
-		if(b->core.flag & BAM_FUNMAP) continue;
+		if(b->core.flag & BAM_FUNMAP) continue; // unmapped
 		alignments[alignments_len] = ptAlignment_construct(b, 0.0);
 		ptCigarIt* cigar_it = ptCigarIt_construct(b);
 		quality = bam_get_qual(b);
