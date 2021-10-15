@@ -34,11 +34,22 @@ workflow runPhaseReads{
             sampleSuffix = sampleSuffix,
             sortedBamFiles = sortByContig.outputBam
     }
+    call concatLogs as concatErrLogs{
+        input:
+            logs = phaseReads.errLog,
+            filename = "${sampleName}.${sampleSuffix}.phasing_err"
+    }
+    call concatLogs as concatOutLogs{
+        input:
+            logs = phaseReads.outLog,
+            filename = "${sampleName}.${sampleSuffix}.phasing_out"
+    }
+
     output{
         File outputBam = mergeBams.mergedBam
         File outputBai = mergeBams.mergedBai
-        Array[File] errLogs = phaseReads.errLog
-        Array[File] outLogs = phaseReads.outLog
+        File errLog = concatErrLogs.log
+        File outLog = concatOutLogs.log
     }
 }
 
@@ -90,6 +101,47 @@ task phaseReads {
         File outLog = "out.log"
     }
 }
+
+task concatLogs {
+    input {
+        Array[File] logs
+        String filename
+        # runtime configurations
+        Int memSize=2
+        Int threadCount=1
+        Int diskSize=16
+        String dockerImage="quay.io/masri2019/hpp_coverage:latest"
+        Int preemptible=2
+        String zones="us-west2-a"
+    }
+    command <<<
+        # Set the exit code of a pipeline to that of the rightmost command
+        # to exit with a non-zero status, or zero if all commands of the pipeline exit
+        set -o pipefail
+        # cause a bash script to exit immediately when a command fails
+        set -e
+        # cause the bash shell to treat unset variables as an error and exit immediately
+        set -u
+        # echo each line of the script to stdout so we can see what is happening
+        # to turn off echo do 'set +o xtrace'
+        set -o xtrace
+
+        mkdir output
+        cat ~{sep=" " logs} > output/~{filename}.txt
+    >>>
+    runtime {
+        docker: dockerImage
+        memory: memSize + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSize + " SSD"
+        preemptible : preemptible
+        zones : zones
+    }
+    output {
+        File log = glob("output/*.txt")
+    }
+}
+
 
 task splitByName {
     input {
