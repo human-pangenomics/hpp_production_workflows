@@ -735,8 +735,8 @@ int main(int argc, char *argv[]){
 				// get the best alignment and write
 				int best_idx = get_best_record(alignments, alignments_len, -100.0, 20.0);
 				bam1_t* best = alignments[best_idx]->record;
-				// write all chimeric alignments without any change
-				if(contain_supp(alignments, alignments_len)){
+				// write all alignments without any change if they are either chimeric or best alignment is primary
+				if(contain_supp(alignments, alignments_len) || (best->core.flag & BAM_FSECONDARY) == 0){
 					for(int i=0; i<alignments_len; i++){
 						if (sam_write1(fo, sam_hdr, alignments[i]->record) == -1) {
                                                 	fprintf(stderr, "Couldn't write %s\n", read_name);
@@ -744,27 +744,26 @@ int main(int argc, char *argv[]){
 					}
 				}
 				else if ((best->core.flag & BAM_FSECONDARY)){
-					//make it primary
 					printf("$ RECORDS AND QVs for %s:\n", read_name);
 					for(int i=0; i<alignments_len; i++){
+						// change primary to secondary
 						if ((alignments[i]->record->core.flag & BAM_FSECONDARY) == 0){
 							printf("*\t");
 							alignments[i]->record->core.flag |= BAM_FSECONDARY;
-							if (sam_write1(fo, sam_hdr, alignments[i]->record) == -1) {
-                                        			fprintf(stderr, "Couldn't write %s\n", read_name);
-                  					}
 						}
-						else if (i == best_idx) printf("@\t");
+						//change secondary to primary for the best alignment
+						else if (i == best_idx){
+							printf("@\t");
+							alignments[i]->record->core.flag &= ~BAM_FSECONDARY;
+						}
 						else printf("!\t");
+						if (sam_write1(fo, sam_hdr, alignments[i]->record) == -1) {
+                                                    fprintf(stderr, "Couldn't write %s\n", read_name);
+                                                }
 						contig_name = sam_hdr_tid2name(sam_hdr, alignments[i]->record->core.tid);
 						printf("%.2f\t%s\t%ld\n", alignments[i]->qv, contig_name, alignments[i]->record->core.pos);
-
 					}
 					printf("\n");
-					best->core.flag &= ~BAM_FSECONDARY;
-                                        if (sam_write1(fo, sam_hdr, best) == -1) {
-                                                fprintf(stderr, "Couldn't write %s\n", read_name);
-                                        }
 				}
 			}
 			stList_destruct(markers);
