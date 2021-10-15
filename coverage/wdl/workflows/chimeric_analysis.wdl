@@ -83,7 +83,8 @@ task getFlankingBed {
                                           s2 = $9 - m; e2 = $9 + m; \
                                           if(s1 < 0){s1 = 0}; if(s2 < 0){s2 = 0}; \
                                           if(e1 > $7){e1 = $7}; if(e2 > $7){e2 = $7}; \
-                                          print $6"\t"s1"\t"e1; print $6"\t"s2"\t"e2}' > output/${PREFIX}.bed
+                                          print $6"\t"s1"\t"e1; print $6"\t"s2"\t"e2}' | \
+                      bedtools sort -i - | bedtools merge -i - > output/${PREFIX}.bed
 
     >>> 
     runtime {
