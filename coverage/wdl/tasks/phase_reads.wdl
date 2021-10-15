@@ -138,7 +138,7 @@ task concatLogs {
         zones : zones
     }
     output {
-        File log = glob("output/*.txt")
+        File log = glob("output/*.txt")[0]
     }
 }
 
