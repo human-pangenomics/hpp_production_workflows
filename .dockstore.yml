@@ -204,3 +204,6 @@ workflows:
    -  name: GetPhasedReadIds
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/get_phased_read_ids.wdl
+   -  name: ChimericAnalysis
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/workflows/chimeric_analysis.wdl
