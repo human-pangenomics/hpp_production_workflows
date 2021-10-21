@@ -57,7 +57,7 @@ task phaseReads {
     input {
         File bamFile
         File diploidAssemblyFastaGz
-        String options = "-q 1 -d 1e-5 -e 0.1 -b 10"
+        String options = "-q 1 -c 1 -t 2 -d 1e-5 -e 0.1 -b 10"
         # runtime configurations
         Int memSize=4
         Int threadCount=2

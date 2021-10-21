@@ -27,6 +27,14 @@ void DEBUG_PRINT(const char *fmt, ...)
 static inline void DEBUG_PRINT(const char *fmt, ...) {};
 #endif
 
+int max(int a, int b){
+        return a > b ? a : b;
+}
+
+int min(int a, int b){
+        return a < b ? a : b;
+}
+
 
 /*! @typedef
  @abstract Structure for a marker information
@@ -93,15 +101,31 @@ typedef struct {
 	int rfe; // ref end
 	int sqs; // seq start
 	int sqe; // seq end
+	int rds_f;
+	int rde_f;
 }ptBlock;
 
-ptBlock* ptBlock_construct(int rfs, int rfe, int sqs, int sqe){
+ptBlock* ptBlock_construct(int rfs, int rfe, int sqs, int sqe, int rds_f, int rde_f){
 	ptBlock* block = malloc(sizeof(ptBlock));
 	block->rfs = rfs;
 	block->rfe = rfe;
 	block->sqs = sqs;
 	block->sqe = sqe;
+	block->rds_f = rds_f;
+	block->rde_f = rde_f;
 	return block;
+}
+
+int ptBlock_cmp_rds_f(const void *a, const void *b){
+        ptBlock* b1 = (ptBlock*) a;
+        ptBlock* b2 = (ptBlock*) b;
+        return b1->rds_f - b2->rds_f;
+}
+
+int ptBlock_cmp_sqs(const void *a, const void *b){
+        ptBlock* b1 = (ptBlock*) a;
+        ptBlock* b2 = (ptBlock*) b;
+        return b1->sqs - b2->sqs;
 }
 
 typedef struct {
@@ -243,6 +267,7 @@ int ptMarker_cmp(const void *a, const void *b){
 		return m1->read_pos_f - m2->read_pos_f;
 	}
 }
+
 
 ptMarker* ptMarker_construct_match(ptAlignment** alignments, int32_t alignment_idx, int32_t read_pos_f){
 	bam1_t* record = alignments[alignment_idx]->record;
@@ -427,6 +452,7 @@ stList* find_confident_blocks(bam1_t* b, int threshold){
 	ptCigarIt* cigar_it = ptCigarIt_construct(b);
 	int conf_sqs = 0; // the seq start of the confident block
 	int conf_rfs = b->core.pos; // the ref start of the confident block
+	int conf_rd_f = bam_is_rev(b) ? cigar_it->rde_f : cigar_it->rds_f;
 	ptBlock* block = NULL;
 	while(ptCigarIt_next(cigar_it)){
 		switch(cigar_it->op) {
@@ -435,39 +461,97 @@ stList* find_confident_blocks(bam1_t* b, int threshold){
                         	if(cigar_it->len > threshold && 
 				   conf_sqs < cigar_it->sqs &&
 				   conf_rfs < cigar_it->rfs){
-					block = ptBlock_construct(conf_rfs, cigar_it->rfs - 1,
-								  conf_sqs, cigar_it->sqs - 1);
+					if (bam_is_rev(b)) {
+						block = ptBlock_construct(conf_rfs, cigar_it->rfs - 1,
+								          conf_sqs, cigar_it->sqs - 1,
+									  cigar_it->rde_f + 1, conf_rd_f);
+					}
+					else {
+						block = ptBlock_construct(conf_rfs, cigar_it->rfs - 1,
+								          conf_sqs, cigar_it->sqs - 1,
+									  conf_rd_f, cigar_it->rds_f - 1);
+					}
 					stList_append(conf_blocks, block);
 				}
 				if(cigar_it->len > threshold){
 					conf_sqs = cigar_it->sqe + 1;
                                 	conf_rfs = cigar_it->rfe + 1;
+					conf_rd_f = bam_is_rev(b) ? cigar_it->rds_f - 1 : cigar_it->rde_f + 1;
 				}
                         	break;
                 	case BAM_CSOFT_CLIP:
 			case BAM_CHARD_CLIP:
                         	if(conf_sqs < cigar_it->sqs &&
 				   conf_rfs < cigar_it->rfs){
-                                        block = ptBlock_construct(conf_rfs, cigar_it->rfs - 1,
-                                                                  conf_sqs, cigar_it->sqs - 1);
+					if (bam_is_rev(b)) {
+                                        	block = ptBlock_construct(conf_rfs, cigar_it->rfs - 1,
+                                                                  	  conf_sqs, cigar_it->sqs - 1,
+									  cigar_it->rde_f + 1, conf_rd_f);
+					}
+					else {
+						block = ptBlock_construct(conf_rfs, cigar_it->rfs - 1,
+                                                                          conf_sqs, cigar_it->sqs - 1,
+                                                                          conf_rd_f, cigar_it->rds_f - 1);
+					}
 					stList_append(conf_blocks, block);
 				}
                                 conf_sqs = cigar_it->sqe + 1;
                                 conf_rfs = cigar_it->rfe + 1;
+				conf_rd_f = bam_is_rev(b) ? cigar_it->rds_f - 1 : cigar_it->rde_f + 1;
                         	break;
         	}
 
 	}
 	// when the last block is not terminated with SOFT or HARD clipping
 	if(conf_sqs <= cigar_it->sqe){
-		//printf("LAST (%d-th) BLOCK: %d\t%d\n", stList_length(confident_blocks) - 1, confident_seq_start, cigar_it->seq_end);
-		block = ptBlock_construct(conf_rfs, cigar_it->rfe,
-                                          conf_sqs, cigar_it->sqe);
+		if (bam_is_rev(b)) {
+			block = ptBlock_construct(conf_rfs, cigar_it->rfe,
+                                                  conf_sqs, cigar_it->sqe,
+						  cigar_it->rds_f, conf_rd_f);
+		}
+		else {
+			block = ptBlock_construct(conf_rfs, cigar_it->rfe,
+                                                  conf_sqs, cigar_it->sqe,
+						  conf_rd_f, cigar_it->rde_f);
+		}
 		stList_append(conf_blocks, block);
 	}
 	return conf_blocks;
 }
 
+//blocks should be sorted by rds_f and no overlaps between the blocks within each set
+stList* intersect(stList* blocks1, stList* blocks2){
+	stList* blocks_intersect = stList_construct3(0, free);
+	if (stList_length(blocks1) == 0 || stList_length(blocks2) == 0) return blocks_intersect;
+	ptBlock* b1;
+	ptBlock* b2;
+	ptBlock* b;
+	int j = 0; 
+	b2 = stList_get(blocks2, j);
+	for (int i = 0; i < stList_length(blocks1); i++){
+		b1 = stList_get(blocks1, i);
+                while (b2 && b2->rde_f < b1->rds_f) {
+			j++;
+                        b2 = j == stList_length(blocks2) ? NULL : stList_get(blocks2, j);
+                }
+                while (b2 && b2->rds_f < b1->rde_f){
+			b = ptBlock_construct(-1, 
+					      -1, 
+					      -1, 
+					      -1, 
+					      max(b1->rds_f, b2->rds_f), 
+					      min(b1->rde_f, b2->rde_f));
+                        stList_append(blocks_intersect, b);
+                        if (b2->rde_f <= b1->rde_f) {
+                                j++;
+                        	b2 = j == stList_length(blocks2) ? NULL : stList_get(blocks2, j);
+                        }
+                        else break;
+                }
+        }
+	
+	return blocks_intersect;
+}
 
 void set_confident_blocks(ptAlignment** alignments, int alignments_len, int threshold){
 	for(int i=0; i < alignments_len; i++){
@@ -475,6 +559,134 @@ void set_confident_blocks(ptAlignment** alignments, int alignments_len, int thre
 	}
 }
 
+
+void correct_conf_blocks(ptAlignment** alignments, int alignments_len, int threshold){
+	assert(alignments_len > 0);
+	stList_sort(alignments[0]->conf_blocks, ptBlock_cmp_rds_f);
+        stList* blocks = stList_copy(alignments[0]->conf_blocks, NULL);
+	ptBlock* block;
+        stList* blocks_new;
+        for(int i=1; i < alignments_len; i++){
+		stList_sort(alignments[i]->conf_blocks, ptBlock_cmp_rds_f);
+                blocks_new = intersect(blocks, alignments[i]->conf_blocks);
+                stList_destruct(blocks);
+                blocks = blocks_new;
+        }
+	stList* corrected_conf_blocks;
+	// for each alignment project the consensus confident blocks to the ref and seq coordinates
+        for(int i=0; i < alignments_len; i++){
+		bam1_t* b = alignments[i]->record;
+		int j = bam_is_rev(b) ? stList_length(blocks) - 1 : 0;
+		corrected_conf_blocks = stList_construct3(0, free);
+        	ptCigarIt* cigar_it = ptCigarIt_construct(alignments[i]->record);
+        	int block_rds_f, block_rde_f, cigar_rds_f, cigar_rde_f, rfs, rfe, sqs, sqe;
+		bool del_flag = false;
+        	block = stList_get(blocks, j);
+		// reverse each block interval to make it work with the projecting algorithm below
+		if (bam_is_rev(b)){
+			block_rds_f = -1 * block->rde_f;
+                        block_rde_f = -1 * block->rds_f;
+                }
+                else {
+                        block_rds_f = block->rds_f;
+                	block_rde_f = block->rde_f;
+               	}
+		//iterate over cigar operations from left to right (w.r.t reference)
+        	while(ptCigarIt_next(cigar_it)){
+			// reverse each cigar operation interval to make it work with the projecting algorithm below
+			if (bam_is_rev(b)){
+				cigar_rds_f = -1 * cigar_it->rde_f;
+				cigar_rde_f = -1 * cigar_it->rds_f;
+			}
+			else {
+				cigar_rds_f = cigar_it->rds_f;
+                                cigar_rde_f = cigar_it->rde_f;
+			}
+			// match/ mismatch/ insertion
+			// for M and I the main algorithm is the same except
+			// some minor parts that are corrected by 
+			// the conditional statement "cigar_it->op == BAM_CINS ? : "
+			if(cigar_it->op == BAM_CMATCH ||
+			   cigar_it->op == BAM_CEQUAL ||
+			   cigar_it->op == BAM_CDIFF ||
+			   cigar_it->op == BAM_CINS) {
+				while(block && block_rde_f <= cigar_rde_f){
+					// update start locations of the projected coordinates
+					if(cigar_rds_f <= block_rds_f && !(del_flag && cigar_rds_f == block_rds_f)){
+						rfs = cigar_it->op == BAM_CINS ? cigar_it->rfs : cigar_it->rfs + (block_rds_f - cigar_rds_f);
+						sqs = cigar_it->sqs + (block_rds_f - cigar_rds_f);
+					}
+					// update end locations of the projected coordinates
+					rfe = cigar_it->op == BAM_CINS ? cigar_it->rfe : cigar_it->rfs + (block_rde_f - cigar_rds_f);
+					sqe = cigar_it->sqs + (block_rde_f - cigar_rds_f);
+					// add block
+					stList_append(corrected_conf_blocks, ptBlock_construct(rfs, 
+									                       rfe, 
+									                       sqs, 
+											       sqe,
+											       block->rds_f,
+											       block->rde_f));
+					// update block index; j
+					if (bam_is_rev(b) && j > 0){
+                                		j--;
+                                                block = stList_get(blocks, j);
+                                                block_rds_f = -1 * block->rde_f;
+                                                block_rde_f = -1 * block->rds_f;
+                        		}
+					else if (!bam_is_rev(b) && j < stList_length(blocks) - 1) {
+						j++;
+                                		block = stList_get(blocks, j);
+                                		block_rds_f = block->rds_f;
+                                		block_rde_f = block->rde_f;
+                        		}
+					else if (j == 0 || j == stList_length(blocks) - 1){
+						block = NULL;
+					}
+				}
+				if(block == NULL) break;// break the cigar iteration
+				// !(del_flag && cigar_rds_f == block_rds_f) means that,
+				// del_flag and cigar_rds_f == block_rds_f cannot be true at the same time
+				// if both were true it means that there is a deletion (shorter than threshold)
+				// on the edge of the block (This is a rare event can happen when there is a deletion
+				// right after an insertion)
+				if(cigar_rds_f <= block_rds_f && 
+				   block_rds_f <= cigar_rde_f && 
+				   !(del_flag && cigar_rds_f == block_rds_f)) {
+					rfs = cigar_it->op == BAM_CINS ? cigar_it->rfs : cigar_it->rfs + (block_rds_f - cigar_rds_f);
+                                        sqs = cigar_it->sqs + (block_rds_f - cigar_rds_f);
+				}
+				del_flag = false;
+			}
+			//deletion
+			else if (cigar_it->op == BAM_CDEL){
+				int prev_j = bam_is_rev(b) ? j + 1 : j - 1;
+				ptBlock* prev_block =  (0 <= prev_j && prev_j <= stList_length(blocks) - 1) ? stList_get(blocks, prev_j) : NULL;
+				// if this is a short deletion where the previous block ended right before it
+				// ref end coordinate has to be corrected 
+				if (prev_block && cigar_it->len <= threshold){
+					if ((bam_is_rev(b) && prev_block->rds_f == cigar_it->rds_f) ||
+					    (!bam_is_rev(b) && prev_block->rde_f == cigar_it->rde_f)){
+						prev_block->rfe = cigar_it->rfe;
+					}
+				}
+				// if this is a short deletion where the current block starts right after it
+				// ref start coordinate should be updated
+				if (block && block_rds_f == cigar_rds_f && cigar_it->len <= threshold){
+                                        del_flag = true;
+                                        rfs = cigar_it->rfs;
+					sqs = cigar_it->sqs;
+                                }
+			}
+			// assume that the blocks do not overlap with BAM_CSOFT and BAM_CHARD 
+		}
+		// delete previous blocks
+		stList_destruct(alignments[i]->conf_blocks);
+		//sort by seq (or ref) start coordinates
+		stList_sort(corrected_conf_blocks, ptBlock_cmp_sqs);
+		// update confident blocks for each alignment object
+		alignments[i]->conf_blocks = corrected_conf_blocks;
+	}
+}
 
 void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* alignment, int alignment_idx, stList* markers, double conf_d, double conf_e, double conf_bw){
 
@@ -501,11 +713,11 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 	for(int i=0; i < stList_length(blocks); i++){
 		block = stList_get(blocks, i);
 		DEBUG_PRINT("\t\t\t### block#%d: seq[%d:%d] ref[%s:%d-%d]\n", i, block->sqs, block->sqe, contig_name, block->rfs, block->rfe);
-		while((cigar_it->sqs < block->sqs) || (cigar_it->rfs < block->rfs)){
+		while((cigar_it->sqe < block->sqs) || (cigar_it->rfe < block->rfs)){
 			if(ptCigarIt_next(cigar_it) == 0) break;
-		}// end of while cigar_it->seq_start should be now equal to block->seq_start
-		assert(cigar_it->sqs == block->sqs);
-		assert(cigar_it->rfs == block->rfs);
+		}// end of while cigar_it->seq_start should be now less than or equal to block->seq_start
+		//assert(cigar_it->sqs <= block->sqs);
+		//assert(cigar_it->rfs <= block->rfs);
 		while(marker &&
                       ((block->sqs > marker->base_idx) ||
 		        (marker->alignment_idx != alignment_idx))){
@@ -554,21 +766,27 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 			memcpy(bq, block_qual, seq_len);
 			int x;
 			int y;
-			while(cigar_it->sqe <= block->sqe && cigar_it->rfe <= block->rfe){
+			while(cigar_it->sqs <= block->sqe || cigar_it->rfs <= block->rfe){
 				x = cigar_it->rfs - block->rfs;
+				x = x < 0 ? 0 : x;
 				y = cigar_it->sqs - block->sqs;
+				y = y < 0 ? 0 : y;
 				//DEBUG_PRINT("rf:%d\t%d\n", cigar_it->rfe, block->rfe);
 				//DEBUG_PRINT("sq:%d\t%d\n", cigar_it->sqe, block->sqe);
 				if (cigar_it->op == BAM_CMATCH || 
 			    	    cigar_it->op == BAM_CEQUAL || 
 			            cigar_it->op == BAM_CDIFF) {
-					for (int t = y; t < (y + cigar_it->len); t++) {
+					int len = min(cigar_it->len, min(cigar_it->sqe, block->sqe) - max(cigar_it->sqs, block->sqs));
+					for (int t = y; t < (y + len); t++) {
 						assert(t < seq_len);
                         			if (((state[t]&3) != 0) || (state[t]>>2 != x + (t - y))) bq[t] = 0;
 						else bq[t] = bq[t] < q[t] ? bq[t] : q[t];
                     			}
 				}
-				if(ptCigarIt_next(cigar_it) == 0) break;
+				if(cigar_it->sqe <= block->sqe || cigar_it->rfe <= block->rfe){
+					if(ptCigarIt_next(cigar_it) == 0) break;
+				}
+				else break;
 			}
 		
 			for(int k=0; k < seq_len; k++) qual[block->sqs + k] = bq[k] < 94 ? bq[k] : 93;
@@ -616,6 +834,8 @@ bool contain_supp(ptAlignment** alignments, int alignments_len){
 int main(int argc, char *argv[]){
 	int c;
 	bool baq_flag=false;
+	bool consensus=false;
+	int threshold=2;
 	double conf_d;
 	double conf_e;
 	double conf_b;
@@ -624,7 +844,7 @@ int main(int argc, char *argv[]){
 	char* fastaPath;
    	char *program;
    	(program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-   	while (~(c=getopt(argc, argv, "i:f:o:q:d:e:b:h"))) {
+   	while (~(c=getopt(argc, argv, "i:f:o:q:d:e:b:c:t:h"))) {
 		switch (c) {
                         case 'i':
                                 inputPath = optarg;
@@ -647,6 +867,12 @@ int main(int argc, char *argv[]){
 			case 'b':
                                 conf_b = atof(optarg);
                                 break;
+			case 'c':
+                                consensus = true;
+                                break;
+			case 't':
+				threshold = atoi(optarg);
+				break;
                         default:
                                 if (c != 'h') fprintf(stderr, "[E::%s] undefined option %c\n", __func__, c);
 			help:
@@ -659,6 +885,8 @@ int main(int argc, char *argv[]){
 				fprintf(stderr, "         -d         gap prob\n");
 				fprintf(stderr, "         -e         gap extension\n");
 				fprintf(stderr, "         -b         dp bandwidth\n");
+				fprintf(stderr, "         -c         use consensus confident blocks\n");
+				fprintf(stderr, "         -t         indel size threshold for confident blocks\n");
                                 return 1;
 		}
 	}
@@ -696,10 +924,11 @@ int main(int argc, char *argv[]){
 		if ((strcmp(read_name_new, read_name) != 0) || (bytes_read <= -1)){
 			// If we have at least one marker and at least two alignments
 			// then we can decide which one is the best alignment
-			if ((stList_length(markers) > 0) && (alignments_len > 1)){
+			if ((stList_length(markers) > 0) && (alignments_len > 1) && !contain_supp(alignments, alignments_len)){
 				DEBUG_PRINT("@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\n", read_name, alignments_len, alignments[0]->record->core.l_qseq);
 				DEBUG_PRINT("\t# Set confident blocks");
 				set_confident_blocks(alignments, alignments_len, 2);
+				if (consensus) correct_conf_blocks(alignments, alignments_len, 2);
 				DEBUG_PRINT("\t$ length of markers: %ld\n\t# Start filtering markers\n", stList_length(markers));
 				no_ins_markers = filter_ins_markers(markers, alignments, alignments_len);
 				DEBUG_PRINT("\t$ length of confident markers: %ld\n", stList_length(no_ins_markers));
@@ -804,7 +1033,6 @@ int main(int argc, char *argv[]){
 		}
 		alignments_len += 1;
 	}
-	printf("Done!\n");
 	// free memory
 	fai_destroy(fai);
 	sam_close(fp);
