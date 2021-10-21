@@ -560,7 +560,7 @@ void set_confident_blocks(ptAlignment** alignments, int alignments_len, int thre
 }
 
 
-void correct_conf_blocks(ptAlignment** alignments, int alignments_len, int threshold){
+int correct_conf_blocks(ptAlignment** alignments, int alignments_len, int threshold){
 	assert(alignments_len > 0);
 	stList_sort(alignments[0]->conf_blocks, ptBlock_cmp_rds_f);
         stList* blocks = stList_copy(alignments[0]->conf_blocks, NULL);
@@ -572,6 +572,14 @@ void correct_conf_blocks(ptAlignment** alignments, int alignments_len, int thres
                 stList_destruct(blocks);
                 blocks = blocks_new;
         }
+	if(stList_length(blocks) == 0){
+		DEBUG_PRINT("\t\t\t### No Consensus Blocks!\n");
+		for(int i=0; i < alignments_len; i++){
+			stList_destruct(alignments[i]->conf_blocks);
+			alignments[i]->conf_blocks = stList_construct3(0, free);
+		}
+		return 0;
+	}
 	stList* corrected_conf_blocks;
 	// for each alignment project the consensus confident blocks to the ref and seq coordinates
         for(int i=0; i < alignments_len; i++){
@@ -686,6 +694,7 @@ void correct_conf_blocks(ptAlignment** alignments, int alignments_len, int thres
 		// update confident blocks for each alignment object
 		alignments[i]->conf_blocks = corrected_conf_blocks;
 	}
+	return stList_length(blocks);
 }
 
 void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* alignment, int alignment_idx, stList* markers, double conf_d, double conf_e, double conf_bw){
@@ -911,7 +920,7 @@ int main(int argc, char *argv[]){
 	ptAlignment** alignments = (ptAlignment**) malloc(100 * sizeof(ptAlignment*)); //Assuming that no more than 100 alignments we have per read
 	int bytes_read;
 	const char* contig_name;
-	bool supp_flag = false;
+	bool conf_blocks_length;
 	while(true) {
 		bytes_read = sam_read1(fp, sam_hdr, b);
 		if (bytes_read > - 1){
@@ -926,13 +935,15 @@ int main(int argc, char *argv[]){
 			// then we can decide which one is the best alignment
 			if ((stList_length(markers) > 0) && (alignments_len > 1) && !contain_supp(alignments, alignments_len)){
 				DEBUG_PRINT("@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\n", read_name, alignments_len, alignments[0]->record->core.l_qseq);
-				DEBUG_PRINT("\t# Set confident blocks");
-				set_confident_blocks(alignments, alignments_len, 2);
-				if (consensus) correct_conf_blocks(alignments, alignments_len, 2);
-				DEBUG_PRINT("\t$ length of markers: %ld\n\t# Start filtering markers\n", stList_length(markers));
-				no_ins_markers = filter_ins_markers(markers, alignments, alignments_len);
-				DEBUG_PRINT("\t$ length of confident markers: %ld\n", stList_length(no_ins_markers));
-				if(stList_length(no_ins_markers) > 0){
+				DEBUG_PRINT("\t# Set confident blocks\n");
+				set_confident_blocks(alignments, alignments_len, threshold);
+				if (consensus) conf_blocks_length = correct_conf_blocks(alignments, alignments_len, threshold);
+				if (conf_blocks_length > 0){
+					DEBUG_PRINT("\t$ length of markers: %ld\n\t# Start filtering markers\n", stList_length(markers));
+					no_ins_markers = filter_ins_markers(markers, alignments, alignments_len);
+					DEBUG_PRINT("\t$ length of confident markers: %ld\n", stList_length(no_ins_markers));
+				}
+				if(no_ins_markers && stList_length(no_ins_markers) > 0){
 					DEBUG_PRINT("\t# There are more than 0 markers So calc baq and update quality\n");
 					sort_and_fill_markers(no_ins_markers, alignments, alignments_len);
 					/*for(int t =0 ; t<stList_length(confident_markers); t++) {
