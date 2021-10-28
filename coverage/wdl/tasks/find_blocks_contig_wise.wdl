@@ -12,7 +12,8 @@ task findBlocksContigWise {
     input {
         File contigCovsTarGz
         File contigProbTablesTarGz
-        File contigNames
+        Int minContigSize=5000000
+        File windowsText
         String suffix="contig_based"
         # runtime configurations
         Int memSize=8
@@ -42,7 +43,7 @@ task findBlocksContigWise {
         tar --strip-components 1 -xvzf ~{contigProbTablesTarGz} --directory tables
         
         mkdir tmp
-        cat ~{contigNames} | xargs -I {} -n 1 -P ~{threadCount} sh -c "${FIND_BLOCKS_BIN} -c covs/${PREFIX}.{}.cov -t tables/${PREFIX}.{}.table -p tmp/${PREFIX}.{}"
+        cat ~{windowsText} | awk '~{minContigSize} <= $3' | xargs -n3 -P ~{threadCount} sh -c "${FIND_BLOCKS_BIN} -c covs/${PREFIX}.$0_$1_$2.cov -t tables/${PREFIX}.$0_$1_$2.table -p tmp/${PREFIX}.$0_$1_$2"
         mkdir ~{suffix}
         cat tmp/*.error.bed | bedtools sort -i - | bedtools merge -i - > ~{suffix}/${PREFIX}.~{suffix}.error.bed
         cat tmp/*.duplicated.bed | bedtools sort -i - | bedtools merge -i - > ~{suffix}/${PREFIX}.~{suffix}.duplicated.bed

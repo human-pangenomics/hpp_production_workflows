@@ -20,7 +20,7 @@ workflow runCoverageAnalysisV1{
     }
     call fit_model_t.fitModel {
         input:
-            counts = cov2counts.counts 
+            counts = cov2counts.counts
     }
     call find_blocks_t.findBlocks {
         input:
@@ -29,18 +29,20 @@ workflow runCoverageAnalysisV1{
     }
     call cov2counts_contig_wise_t.cov2countsContigWise {
         input:
-            coverageGz = coverageGz
+            coverageGz = coverageGz,
+            windowSize = 15000000,
+            fai = fai
     }
     call fit_model_contig_wise_t.fitModelContigWise {
         input:
-            fai = fai,
+            windowsText = cov2countsContigWise.windowsText,
             countsTarGz = cov2countsContigWise.contigCountsTarGz 
     }
     call find_blocks_contig_wise_t.findBlocksContigWise {
         input:
             contigCovsTarGz = cov2countsContigWise.contigCovsTarGz,
             contigProbTablesTarGz = fitModelContigWise.contigProbTablesTarGz,
-            contigNames = fitModelContigWise.longContigNamesText 
+            windowsText = cov2countsContigWise.windowsText
     }
     call pdf_generator_t.pdfGenerator {
         input:
@@ -49,7 +51,7 @@ workflow runCoverageAnalysisV1{
     }
     call combineBeds {
         input:
-            contigNamesText = fitModelContigWise.longContigNamesText,
+            windowsText = cov2countsContigWise.windowsText,
             genomeBedsTarGz = findBlocks.bedsTarGz,
             contigBedsTarGz = findBlocksContigWise.contigBedsTarGz
     }
@@ -80,7 +82,8 @@ workflow runCoverageAnalysisV1{
 
 task combineBeds {
     input {
-        File contigNamesText
+        File windowsText
+        Int minContigSize=5000000
         File genomeBedsTarGz
         File contigBedsTarGz
         # runtime configurations
@@ -109,12 +112,13 @@ task combineBeds {
         FILENAME=~{contigBedsTarGz}
         PREFIX=$(basename ${FILENAME%.*.*.tar.gz})
         
+        cat ~{windowsText} | awk '~{minContigSize} <= $3{print $1}' > contigNames.txt
         mkdir genome_based_excluded combined
         for c in error duplicated haploid collapsed
         do
             if [ -s "genome_based/${PREFIX}.whole_genome_based.${c}.bed" ]
             then
-                grep -F -v -f ~{contigNamesText} genome_based/${PREFIX}.whole_genome_based.${c}.bed > genome_based_excluded/${PREFIX}.whole_genome_based.${c}.bed
+                grep -F -v -f contigNames.txt genome_based/${PREFIX}.whole_genome_based.${c}.bed > genome_based_excluded/${PREFIX}.whole_genome_based.${c}.bed
             else
                 echo "" > genome_based_excluded/${PREFIX}.whole_genome_based.${c}.bed
             fi

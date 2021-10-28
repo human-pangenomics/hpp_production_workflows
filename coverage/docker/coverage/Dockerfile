@@ -28,6 +28,7 @@ ENV ASSIGN_GAPS_PY=/home/scripts/assign_gaps.py
 ENV FIT_MODEL_EXTRA_PY=/home/scripts/fit_model_extra.py
 ENV FIND_BLOCKS_BIN=/home/scripts/bin/find_blocks_from_table
 ENV SPLIT_CONTIGS_COV_BIN=/home/scripts/bin/split_contigs_cov 
+ENV SPLIT_CONTIGS_COV_V2_BIN=/home/scripts/bin/split_contigs_cov_v2
 ENV PDF_GENERATOR_PY=/home/scripts/pdf_generator.py
 ENV SPLIT_BAM_BY_READNAME_BIN=/home/scripts/bin/split_bam_by_readname
 ENV PHASE_READS_BIN=/home/scripts/bin/phase_reads

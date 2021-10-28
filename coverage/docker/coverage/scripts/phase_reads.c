@@ -306,26 +306,38 @@ stList* filter_lowq_markers(stList* markers, int threshold){
         stList* keep_markers = stList_construct3(0, free);
 	ptMarker* pre_marker =NULL;
 	ptMarker* marker;
-	bool keep_flag = true;
+	bool keep_flag = false;
 	int idx_s = 0;
+	int min_q = 100;
+	ptMarker* marker_copy;
 	for(int j=0; j < markers_len; j++){
 		marker = stList_get(markers, j);
 		if (pre_marker && marker->read_pos_f != pre_marker->read_pos_f){
-			if (keep_flag){
+			if (min_q > threshold){
 				for(int k=idx_s; k<j; k++){
 					// copy all markers with the same read_pos_f and add them
-					stList_append(keep_markers, ptMarker_copy(stList_get(markers, k)));
+					marker_copy = ptMarker_copy(stList_get(markers, k));
+					marker_copy->base_q = min_q;
+					stList_append(keep_markers, marker_copy);
 				}
 			}
 			idx_s = j;
-			keep_flag = true;
+			//keep_flag = false;
+			min_q = 100;
 		}
-		if(marker->base_q < threshold) keep_flag=false;
+		if (min_q > marker->base_q) min_q = marker->base_q;
+		/*
+		if(marker->base_q > threshold) {
+			keep_flag |= true;
+			DEBUG_PRINT("q = %d ( > %d) marker->read_pos_f = %d\n", marker->base_q, threshold, marker->read_pos_f);
+		}*/
 		pre_marker = marker;
 	}
-	if (keep_flag){
+	if (min_q > threshold){
 		for(int k=idx_s; k<markers_len; k++){
-			stList_append(keep_markers, ptMarker_copy(stList_get(markers, k)));
+			marker_copy = ptMarker_copy(stList_get(markers, k));
+                        marker_copy->base_q = min_q;
+                        stList_append(keep_markers, marker_copy);
                 }
         }
 	return keep_markers;
@@ -719,6 +731,7 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 	ptBlock* block;
 	int ref_len; int seq_len;
 	DEBUG_PRINT("\t\t\t### Number of Blocks: %ld\n", stList_length(blocks));
+	int block_margin = 50;
 	for(int i=0; i < stList_length(blocks); i++){
 		block = stList_get(blocks, i);
 		DEBUG_PRINT("\t\t\t### block#%d: seq[%d:%d] ref[%s:%d-%d]\n", i, block->sqs, block->sqe, contig_name, block->rfs, block->rfe);
@@ -734,13 +747,15 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
                         marker = ((j < markers_len) && (j >= 0)) ? stList_get(markers, j) : NULL;
 		}// end of while the marker is now the first one located within the current block (or after)
 		if(marker &&
-                   (block->sqe >= marker->base_idx)){
+                   (block->sqe >= marker->base_idx + block_margin) &&
+		   (block->sqs <= marker->base_idx - block_margin)){
 			seq_len = block->sqe - block->sqs + 1;
 			ref_len = block->rfe - block->rfs + 1;
 			DEBUG_PRINT("\t\t\t### seq_len:%d\tref_len:%d\n", seq_len, ref_len);
 			if (seq_len < 5 || ref_len < 5) continue; // skip small blocks
 			//allocate read sequence
 			tseq = (uint8_t*) malloc(seq_len);
+
 			for(int k=0; k < seq_len; k++)
 				tseq[k] = seq_nt16_int[bam_seqi(seq, block->sqs + k)];
 			//allocate reference sequenc
@@ -756,7 +771,7 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 			//allocate the quality of this confident block
 			block_qual = (uint8_t*) malloc(seq_len);
                         for(int k=0; k < seq_len; k++)
-				block_qual[k] = qual[block->sqs + k];
+				block_qual[k] = 40;//qual[block->sqs + k] < 40 ? qual[block->sqs + k] : 40;
 			//allocate neccessary arrays for HMM BAQ
 			state = (int*) malloc((block->sqe - block->sqs + 1) * sizeof(int));
 			q = (uint8_t*) malloc(block->sqe - block->sqs + 1);
@@ -766,7 +781,6 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 					   block_qual, &conf, state, q) == INT_MIN) {
             			fprintf(stderr, "probaln_glocal ERROR\n");
 				fprintf(stderr, "%s:%d-%d", contig_name, block->rfs + 1 , block->rfe + 1);
-
 			}
 			//DEBUG_PRINT("local BAQ Finished:))\n");
 			// the state and q are now updated if there is any marker located within the block
@@ -785,11 +799,12 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 				if (cigar_it->op == BAM_CMATCH || 
 			    	    cigar_it->op == BAM_CEQUAL || 
 			            cigar_it->op == BAM_CDIFF) {
-					int len = min(cigar_it->len, min(cigar_it->sqe, block->sqe) - max(cigar_it->sqs, block->sqs));
+					int len = min(cigar_it->len, min(cigar_it->sqe, block->sqe) - max(cigar_it->sqs, block->sqs) + 1);
+					//DEBUG_PRINT("\t\t\t#len:%d\tstart:%d\tend:%d\n", len, y, y +len -1);
 					for (int t = y; t < (y + len); t++) {
 						assert(t < seq_len);
                         			if (((state[t]&3) != 0) || (state[t]>>2 != x + (t - y))) bq[t] = 0;
-						else bq[t] = bq[t] < q[t] ? bq[t] : q[t];
+						else bq[t] = qual[block->sqs + t] < q[t] ? qual[block->sqs + t] : q[t];
                     			}
 				}
 				if(cigar_it->sqe <= block->sqe || cigar_it->rfe <= block->rfe){
@@ -797,9 +812,7 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 				}
 				else break;
 			}
-		
 			for(int k=0; k < seq_len; k++) qual[block->sqs + k] = bq[k] < 94 ? bq[k] : 93;
-			
 			free(tseq);
 			free(tref);
 			free(state);
@@ -808,6 +821,14 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 			free(block_qual);
 			free(ref);
 			free(reg);
+		}
+		else { // for the markers close to the borders of the confident blocks
+			while (marker &&
+                      	       marker->base_idx <= block->sqe){
+				if (marker->alignment_idx == alignment_idx) qual[marker->base_idx] = 0;
+                        	j += bam_is_rev(alignment->record) ? -1 : 1;
+                        	marker = ((j < markers_len) && (j >= 0)) ? stList_get(markers, j) : NULL;
+                	}
 		}
 	}
 }
@@ -938,7 +959,7 @@ int main(int argc, char *argv[]){
 				DEBUG_PRINT("\t# Set confident blocks\n");
 				set_confident_blocks(alignments, alignments_len, threshold);
 				if (consensus) conf_blocks_length = correct_conf_blocks(alignments, alignments_len, threshold);
-				if (conf_blocks_length > 0){
+				if (conf_blocks_length > 0 || consensus == false){
 					DEBUG_PRINT("\t$ length of markers: %ld\n\t# Start filtering markers\n", stList_length(markers));
 					no_ins_markers = filter_ins_markers(markers, alignments, alignments_len);
 					DEBUG_PRINT("\t$ length of confident markers: %ld\n", stList_length(no_ins_markers));
@@ -950,7 +971,11 @@ int main(int argc, char *argv[]){
                                                 ptMarker* m = stList_get(confident_markers, t);
                                                 DEBUG_PRINT("MARKER@%d\t%d\t%d\t%d\t%d\t%d\n", t, m->alignment_idx, m->base_idx, m->read_pos_f, m->base_q, m->is_match);
                                         }*/
-
+					DEBUG_PRINT("@MARKERS: (After filtering markers within insertions)\n");
+                                        for(int t =0 ; t<stList_length(no_ins_markers); t++) {
+                                                ptMarker* m = stList_get(no_ins_markers, t);
+                                                DEBUG_PRINT("MARKER@%d\t%d\t%d\t%d\t%d\t%d\n", t, m->alignment_idx, m->base_idx, m->read_pos_f, m->base_q, m->is_match);
+                                        }
 					if(baq_flag){
 						calc_update_baq_all(fai, 
 						                    alignments, alignments_len,
@@ -958,7 +983,7 @@ int main(int argc, char *argv[]){
 								    conf_d, conf_e, conf_b);
 					}
 					highq_markers = filter_lowq_markers(no_ins_markers, 20);
-					DEBUG_PRINT("@MARKERS:\n");
+					DEBUG_PRINT("@MARKERS: (After filtering low q)\n");
 					for(int t =0 ; t<stList_length(highq_markers); t++) {
                                                 ptMarker* m = stList_get(highq_markers, t);
                                                 DEBUG_PRINT("MARKER@%d\t%d\t%d\t%d\t%d\t%d\n", t, m->alignment_idx, m->base_idx, m->read_pos_f, m->base_q, m->is_match);

@@ -104,19 +104,20 @@ def main():
     from os.path import isfile, join
     tableFiles = [join(tablesDir, f) for f in listdir(tablesDir)]
     tableFiles= sorted(tableFiles, key = lambda x:(x.split("#")[1], x.split("#")[2]))
-    contigname = "##"
+    windowname = "##"
     # Make a title page for paternal contigs
     plotTitlePage("Paternal Contigs", pdf)
     for p in tableFiles:
         table = pd.read_csv(p, sep="\t")
         filename = os.path.basename(p)
         # Extract contig name from file name
-        contigname_new = filename[(len(prefix) + 1):-len(".table")]
+        windowname_new = filename[(len(prefix) + 1):-len(".table")]
         # Make a title page for maternal contigs
-        if contigname.split("#")[1] == '1' and contigname_new.split("#")[1] == '2':
+        if windowname.split("#")[1] == '1' and windowname_new.split("#")[1] == '2':
             plotTitlePage("Maternal Contigs", pdf)
-        contigname = contigname_new
-        plotPairDist(table, pdf, "{}\n{}".format(prefix, contigname))
+        windowname = windowname_new
+        attrbs = windowname.strip().split("_")
+        plotPairDist(table, pdf, "{}\n{}\n{}-{}".format(prefix, attrbs[0], attrbs[1], attrbs[2]))
     pdf.close()
 
 if __name__ == "__main__":
