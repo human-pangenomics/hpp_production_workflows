@@ -39,7 +39,7 @@ task fitModelContigWise {
         FILENAME="$(basename ~{countsTarGz})"
         PREFIX=${FILENAME%.counts.tar.gz}
         
-        cat ~{windowsText} | awk '~{minContigSize} <= $3' | xargs -n 3 -P ~{threadCount} sh -c "python3 ${FIT_MODEL_EXTRA_PY}  --cov ~{cov} --counts counts/${PREFIX}.$0_$1_$2.counts --output tables/${PREFIX}.$0_$1_$2.table"
+        cat ~{windowsText} | awk '~{minContigSize} <= $3' | xargs -n 3 -P ~{threadCount} sh -c 'python3 ${FIT_MODEL_EXTRA_PY}  --cov ~{cov} --counts counts/${PREFIX}.$0_$1_$2.counts --output tables/${PREFIX}.$0_$1_$2.table'
         tar -cf ${PREFIX}.tables.tar tables
         gzip ${PREFIX}.tables.tar
     >>> 
