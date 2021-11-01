@@ -145,8 +145,8 @@ void splitCov(char* covPath, char* prefix, stList* segments){
 				fflush(fo);
                         	fclose(fo);
 				sprintf(outputPath, "%s.%s_%d_%d.cov", prefix, sg->contigName, sg->start, sg->end);
-				fprintf(fo, ">%s %d\n", sg->contigName, sg->contigLength);
                         	fo = fopen(outputPath, "w");
+				if ((strcmp(sg->contigName, contig) == 0)) fprintf(fo, ">%s %d\n", contig, contigLength);
 			}
 			else {
 			       	sg = NULL;
