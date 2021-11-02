@@ -30,7 +30,6 @@ workflow runCoverageAnalysisV1{
     call cov2counts_contig_wise_t.cov2countsContigWise {
         input:
             coverageGz = coverageGz,
-            windowSize = 15000000,
             fai = fai
     }
     call fit_model_contig_wise_t.fitModelContigWise {
