@@ -1,7 +1,7 @@
 version 1.0
 
-import "bam2paf.wdl" as bam2paf_t
-import "project_blocks.wdl" as projectBlocks_t
+import "../tasks/bam2paf.wdl" as bam2paf_t
+import "../tasks/project_blocks.wdl" as projectBlocks_t
 
 workflow runProjectBlocksComps {
     input {
