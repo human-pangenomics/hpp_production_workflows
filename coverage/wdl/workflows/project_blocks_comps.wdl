@@ -6,12 +6,19 @@ import "../tasks/project_blocks.wdl" as projectBlocks_t
 workflow runProjectBlocksComps {
     input {
         String assemblyFastaGz
-        File asm2refBam
+        File asm2refBamMat
+        File asm2refBamPat
         File bedsTarGz
     }
-    call bam2paf_t.bam2paf {
+    call bam2paf_t.bam2paf as matPaf {
        input:
-           bamFile = asm2refBam,
+           bamFile = asm2refBamMat,
+           minMAPQ = 0,
+           primaryOnly = "yes"
+    }
+    call bam2paf_t.bam2paf as patPaf {
+       input:
+           bamFile = asm2refBamPat,
            minMAPQ = 0,
            primaryOnly = "yes"
     }
@@ -27,7 +34,7 @@ workflow runProjectBlocksComps {
         call projectBlocks_t.project as projectPat {
             input:
                 blocksBed = getHapBed.patBed,
-                asm2refPaf = bam2paf.pafFile,
+                asm2refPaf = patPaf.pafFile,
                 sampleName = basename("${getHapBed.patBed}", ".bed"),
                 suffix = "chm13_projected",
                 mode="asm2ref"
@@ -35,7 +42,7 @@ workflow runProjectBlocksComps {
         call projectBlocks_t.project as projectMat {
             input:
                 blocksBed = getHapBed.matBed,
-                asm2refPaf = bam2paf.pafFile,
+                asm2refPaf = matPaf.pafFile,
                 sampleName = basename("${getHapBed.matBed}", ".bed"),
                 suffix = "chm13_projected",
                 mode="asm2ref"
