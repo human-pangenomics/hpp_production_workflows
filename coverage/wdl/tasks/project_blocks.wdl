@@ -54,10 +54,16 @@ task project {
         # echo each line of the script to stdout so we can see what is happening
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
+        
+        if [ -z ~{suffix} ]; then
+            OUTPUT_FILENAME=~{sampleName}.bed
+        else
+            OUTPUT_FILENAME=~{sampleName}.~{suffix}.bed
+        fi
 
-        python3 ${PROJECT_BLOCKS_PY} --mode ~{mode} --paf ~{asm2refPaf} --blocks ~{blocksBed} --outputProjectable projectable.bed --outputProjection ~{sampleName}.~{suffix}.bed
+        python3 ${PROJECT_BLOCKS_PY} --mode ~{mode} --paf ~{asm2refPaf} --blocks ~{blocksBed} --outputProjectable projectable.bed --outputProjection ${OUTPUT_FILENAME}
         mkdir output
-        bedtools sort -i ~{sampleName}.~{suffix}.bed | bedtools merge -i - > output/~{sampleName}.~{suffix}.bed
+        bedtools sort -i ${OUTPUT_FILENAME} | bedtools merge -i - > output/${OUTPUT_FILENAME}
 
     >>>
     runtime {

@@ -207,3 +207,6 @@ workflows:
    -  name: ChimericAnalysis
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/workflows/chimeric_analysis.wdl
+   -  name: ProjectBlocksComps
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/workflows/project_blocks_comps.wdl
