@@ -118,7 +118,6 @@ def findProjections(mode, cigarList, forwardBlocks,
         blocks = forwardBlocks
         nextOpStartContig = contigStart
     else:
-        #print(forwardBlocks)
         blocks = reverseBlocks(forwardBlocks, contigLength)
         nextOpStartContig = contigLength - contigEnd + 1
     # find the first block not completely clipped and set the blockIdx accordingly
@@ -277,7 +276,7 @@ def main():
             chromStart = int(attrbs[7]) + 1 # 1-based
             chromEnd = int(attrbs[8])
             # The cigar string starts after "cg:Z:"
-            cigarString =  line.strip().split("cg:Z:")[1]
+            cigarString = line.strip().split()[16][5:]
             cigarList = getCigarList(cigarString)
             #print(orientation,chromStart,chromEnd,cigarString)
             # rBlocks contains the projections and 
