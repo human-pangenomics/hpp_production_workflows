@@ -210,3 +210,6 @@ workflows:
    -  name: ProjectBlocksComps
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/workflows/project_blocks_comps.wdl
+   -  name: MergeColorBeds
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/merge_color_beds.wdl
