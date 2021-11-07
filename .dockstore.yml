@@ -213,3 +213,6 @@ workflows:
    -  name: MergeColorBeds
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/merge_color_beds.wdl
+   -  name: GenerateWig
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/generate_wig.wdl

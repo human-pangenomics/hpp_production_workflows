@@ -4,11 +4,21 @@ MAINTAINER Mobin Asri, masri@ucsc.edu
 RUN mkdir -p /home/apps
 RUN pip3 install scipy pandas matplotlib
 RUN apt-get update
-RUN apt-get install -y autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev
+RUN apt-get install -y autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev wget unzip
 
+#install Java
+RUN cd /home && \
+    wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.tar.gz && \
+    tar -xvzf jdk-17_linux-x64_bin.tar.gz
+ENV PATH=$PATH:/home/jdk-17.0.1/bin
+
+#intstall IGV
+RUN cd /home && \
+    wget https://data.broadinstitute.org/igv/projects/downloads/2.11/IGV_2.11.3.zip &&\
+    unzip IGV_2.11.3.zip
+ENV PATH=$PATH:/home/IGV_2.11.3
 
 #install hstlib  C API
-
 RUN wget https://github.com/samtools/htslib/releases/download/1.13/htslib-1.13.tar.bz2 && \
     tar -xvjf htslib-1.13.tar.bz2 && \
     cd htslib-1.13 && \
@@ -16,7 +26,8 @@ RUN wget https://github.com/samtools/htslib/releases/download/1.13/htslib-1.13.t
     ./configure && \
     make && \
     make install
-ENV LD_LIBRARY_PATH=LD_LIBRARY_PATH:/usr/local/lib
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
 
 COPY ./scripts /home/scripts
 ENV DEPTH2COV_BIN=/home/scripts/bin/depth2cov
