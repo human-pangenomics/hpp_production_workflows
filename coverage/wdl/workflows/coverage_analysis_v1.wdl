@@ -7,12 +7,35 @@ import "../tasks/fit_model_contig_wise.wdl" as fit_model_contig_wise_t
 import "../tasks/find_blocks.wdl" as find_blocks_t
 import "../tasks/find_blocks_contig_wise.wdl" as find_blocks_contig_wise_t
 import "../tasks/pdf_generator.wdl" as pdf_generator_t
+import "../tasks/bedtools.wdl" as bedtools_t
+import "../tasks/fit_model_bed.wdl" as fit_model_bed_t
 
 workflow runCoverageAnalysisV1{
     input {
+        File matHsat1Bed
+        File patHsat1Bed
+        File matHsat2Bed
+        File patHsat2Bed
+        File matHsat3Bed
+        File patHsat3Bed
         File coverageGz
         File highMapqCoverageGz
         File fai
+        Float covFloat
+    }
+    #Hsats
+    scatter (bedAndFactor in zip([matHsat1Bed, patHsat1Bed, matHsat2Bed, patHsat2Bed, matHsat3Bed, patHsat3Bed], [0.66, 0.66, 1.5, 1.5, 1.5, 1.5])){ 
+        call fit_model_bed_t.runFitModelBed as hsatModels {
+            input:
+                bed = bedAndFactor.left,
+                suffix = basename("${bedAndFactor.left}", ".bed"),
+                coverageGz = coverageGz,
+                covFloat = covFloat * bedAndFactor.right
+         }
+    }
+    call mergeHsatBeds {
+        input:
+            bedsTarGzArray = hsatModels.bedsTarGz
     }
     call cov2counts_t.cov2counts {
         input:
@@ -48,17 +71,26 @@ workflow runCoverageAnalysisV1{
             contigProbTablesTarGz = fitModelContigWise.contigProbTablesTarGz,
             genomeProbTable = fitModel.probabilityTable
     }
-    call combineBeds {
+    call combineBeds as combineContigBased{
         input:
-            windowsText = cov2countsContigWise.windowsText,
-            genomeBedsTarGz = findBlocks.bedsTarGz,
-            contigBedsTarGz = findBlocksContigWise.contigBedsTarGz
+            outputPrefix = "contig_combined",
+            firstPrefix = "whole_genome_based",
+            secondPrefix = "contig_based",
+            firstBedsTarGz = findBlocks.bedsTarGz,
+            secondBedsTarGz = findBlocksContigWise.contigBedsTarGz
     }
-    
+    call combineBeds as combineHsatBased{
+       input:
+            outputPrefix = "combined",
+            firstPrefix = "contig_combined",
+            secondPrefix = "hsat_based",
+            firstBedsTarGz = combineContigBased.combinedBedsTarGz,
+            secondBedsTarGz = mergeHsatBeds.bedsTarGz
+    }    
     call dupCorrectBeds {
         input:
             highMapqCovGz = highMapqCoverageGz,
-            combinedBedsTarGz = combineBeds.combinedBedsTarGz
+            combinedBedsTarGz = combineHsatBased.combinedBedsTarGz
     }
     call filterBeds {
         input:
@@ -73,21 +105,23 @@ workflow runCoverageAnalysisV1{
         File contigProbTablesTarGz = fitModelContigWise.contigProbTablesTarGz
         File contigBedsTarGz = findBlocksContigWise.contigBedsTarGz
         File pdf = pdfGenerator.pdf
-        File combinedBedsTarGz = combineBeds.combinedBedsTarGz
+        File combinedBedsTarGz = combineContigBased.combinedBedsTarGz
         File dupCorrectedBedsTarGz = dupCorrectBeds.dupCorrectedBedsTarGz
         File filteredBedsTarGz = filterBeds.filteredBedsTarGz
+        File hsatBedsTarGz =  combineHsatBased.combinedBedsTarGz
     }
 }
 
 task combineBeds {
     input {
-        File windowsText
-        Int minContigSize=5000000
-        File genomeBedsTarGz
-        File contigBedsTarGz
+        File firstBedsTarGz
+        File secondBedsTarGz
+        String firstPrefix
+        String secondPrefix
+        String outputPrefix = "combined"
         # runtime configurations
-        Int memSize=16
-        Int threadCount=8
+        Int memSize=8
+        Int threadCount=4
         Int diskSize=128
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=2
@@ -104,28 +138,23 @@ task combineBeds {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
         
-        mkdir genome_based contig_based
-        tar --strip-components 1 -xvzf ~{genomeBedsTarGz} --directory genome_based
-        tar --strip-components 1 -xvzf ~{contigBedsTarGz} --directory contig_based
+        mkdir first second
+        tar --strip-components 1 -xvzf ~{firstBedsTarGz} --directory first
+        tar --strip-components 1 -xvzf ~{secondBedsTarGz} --directory second
                 
-        FILENAME=~{contigBedsTarGz}
+        FILENAME=~{firstBedsTarGz}
         PREFIX=$(basename ${FILENAME%.*.*.tar.gz})
         
-        cat ~{windowsText} | awk '~{minContigSize} <= $3{print $1}' > contigNames.txt
-        mkdir genome_based_excluded combined
+        cat ~{secondPrefix}/*.bed | bedtools sort -i - | bedtools merge -i - > second_all.bed 
+        mkdir first_subtract_second ~{outputPrefix}
         for c in error duplicated haploid collapsed
         do
-            if [ -s "genome_based/${PREFIX}.whole_genome_based.${c}.bed" ]
-            then
-                grep -F -v -f contigNames.txt genome_based/${PREFIX}.whole_genome_based.${c}.bed > genome_based_excluded/${PREFIX}.whole_genome_based.${c}.bed
-            else
-                echo "" > genome_based_excluded/${PREFIX}.whole_genome_based.${c}.bed
-            fi
-            cat genome_based_excluded/*.${c}.bed contig_based/*.${c}.bed | bedtools sort -i - | bedtools merge -i - > combined/${PREFIX}.combined.${c}.bed
+            bedtools subtract -a first/${PREFIX}.~{firstPrefix}.${c}.bed -b second_all.bed > first_subtract_second/${PREFIX}.${c}.bed
+            cat first_minus_second/*.${c}.bed second/*.${c}.bed | bedtools sort -i - | bedtools merge -i - > ~{outputPrefix}/${PREFIX}.~{outputPrefix}.${c}.bed
         done
 
-        tar -cf ${PREFIX}.beds.combined.tar combined
-        gzip ${PREFIX}.beds.combined.tar
+        tar -cf ${PREFIX}.beds.~{outputPrefix}.tar ~{outputPrefix}
+        gzip ${PREFIX}.beds.~{outputPrefix}.tar
 
     >>> 
     runtime {
@@ -136,7 +165,7 @@ task combineBeds {
         preemptible : preemptible
     }
     output {
-        File combinedBedsTarGz = glob("*.beds.combined.tar.gz")[0]
+        File combinedBedsTarGz = glob("*.beds.${outputPrefix}.tar.gz")[0]
     }
 }
 
@@ -210,9 +239,9 @@ task filterBeds {
         Int mergeLength=100
         Int minBlockLength=1000
         # runtime configurations
-        Int memSize=16
-        Int threadCount=8
-        Int diskSize=128
+        Int memSize=8
+        Int threadCount=4
+        Int diskSize=32
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=2
     }
@@ -259,3 +288,55 @@ task filterBeds {
     }
 }
 
+
+task mergeHsatBeds {
+    input {
+        Array[File] bedsTarGzArray
+        # runtime configurations
+        Int memSize=4
+        Int threadCount=2
+        Int diskSize=32
+        String dockerImage="quay.io/masri2019/hpp_coverage:latest"
+        Int preemptible=2
+    }
+    command <<<
+        # Set the exit code of a pipeline to that of the rightmost command
+        # to exit with a non-zero status, or zero if all commands of the pipeline exit
+        set -o pipefail
+        # cause a bash script to exit immediately when a command fails
+        set -e
+        # cause the bash shell to treat unset variables as an error and exit immediately
+        set -u
+        # echo each line of the script to stdout so we can see what is happening
+        # to turn off echo do 'set +o xtrace'
+        set -o xtrace
+
+         
+        FILENAMES=(~{sep=" " bedsTarGzArray})
+        FILENAME=${FILENAMES[0]}
+        PREFIX=$(basename ${FILENAME%.*.*.tar.gz})
+
+        mkdir hsat_unmerged hsat_based
+        for s in ~{sep=" " bedsTarGzArray}; do
+            tar --strip-components 1 -xvzf $s --directory hsat_unmerged
+        done
+ 
+        for comp in error haploid duplicated collapsed; do
+            cat hsat_unmerged/*.${comp}.bed | bedtools sort -i - | bedtools merge -i - > hsat_based/$PREFIX.hsat_based.${comp}.bed
+        done
+         
+        tar -cf ${PREFIX}.beds.hsat_based.tar hsat_based
+        gzip ${PREFIX}.beds.hsat_based.tar
+    >>>
+
+    runtime {
+        docker: dockerImage
+        memory: memSize + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSize + " SSD"
+        preemptible : preemptible
+    }
+    output {
+        File bedsTarGz = glob("*.beds.hsat_based.tar.gz")[0]
+    }
+}
