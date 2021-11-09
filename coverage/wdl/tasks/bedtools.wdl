@@ -153,7 +153,7 @@ task merge {
         preemptible : preemptible
     }
     output {
-        File unionBed =  glob("output/*.bed")[0]
+        File mergedBed =  glob("output/*.bed")[0]
     }
 }
 

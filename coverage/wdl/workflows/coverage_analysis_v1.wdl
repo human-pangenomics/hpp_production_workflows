@@ -23,14 +23,19 @@ workflow runCoverageAnalysisV1{
         File fai
         Float covFloat
     }
-    #Hsats
-    scatter (bedAndFactor in zip([matHsat1Bed, patHsat1Bed, matHsat2Bed, patHsat2Bed, matHsat3Bed, patHsat3Bed], [0.66, 0.66, 1.5, 1.5, 1.5, 1.5])){ 
-        call fit_model_bed_t.runFitModelBed as hsatModels {
+    scatter (bedAndFactor in zip([matHsat1Bed, patHsat1Bed, matHsat2Bed, patHsat2Bed, matHsat3Bed, patHsat3Bed], [(0.66, "mat_hsat1"), (0.66, "pat_hsat1"), (1.5, "mat_hsat2"), (1.5, "pat_hsat2"), (1.5, "mat_hsat3"), (1.5, "pat_hsat3")])){
+        call bedtools_t.merge {
             input:
                 bed = bedAndFactor.left,
-                suffix = basename("${bedAndFactor.left}", ".bed"),
+                margin = 50000,
+                outputPrefix = basename("${bedAndFactor.left}", ".bed")
+        } 
+        call fit_model_bed_t.runFitModelBed as hsatModels {
+            input:
+                bed = merge.mergedBed,
+                suffix = bedAndFactor.right.right,
                 coverageGz = coverageGz,
-                covFloat = covFloat * bedAndFactor.right
+                covFloat = covFloat * bedAndFactor.right.left
          }
     }
     call mergeHsatBeds {
