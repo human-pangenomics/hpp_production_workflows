@@ -143,7 +143,7 @@ task merge {
         set -o xtrace
 
         mkdir output
-        bedtools sort -i ~{bed} | bedtools merge -d {margin} -i - > output/~{outputPrefix}.bed
+        bedtools sort -i ~{bed} | bedtools merge -d ~{margin} -i - > output/~{outputPrefix}.bed
     >>>
     runtime {
         docker: dockerImage
