@@ -23,7 +23,7 @@ workflow runCoverageAnalysisV1{
         File fai
         Float covFloat
     }
-    scatter (bedAndFactor in zip([matHsat1Bed, patHsat1Bed, matHsat2Bed, patHsat2Bed, matHsat3Bed, patHsat3Bed], [(0.66, "mat_hsat1"), (0.66, "pat_hsat1"), (1.5, "mat_hsat2"), (1.5, "pat_hsat2"), (1.5, "mat_hsat3"), (1.5, "pat_hsat3")])){
+    scatter (bedAndFactor in zip([matHsat1Bed, patHsat1Bed, matHsat2Bed, patHsat2Bed, matHsat3Bed, patHsat3Bed], [(0.75, "mat_hsat1"), (0.75, "pat_hsat1"), (1.25, "mat_hsat2"), (1.25, "pat_hsat2"), (1.25, "mat_hsat3"), (1.25, "pat_hsat3")])){
         call bedtools_t.merge {
             input:
                 bed = bedAndFactor.left,
