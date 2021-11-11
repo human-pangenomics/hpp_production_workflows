@@ -38,7 +38,7 @@ task subsetCoverage {
         zcat ~{coverageGz} | \
             awk '{if(substr($1,1,1) == ">") {contig=substr($1,2,40); len_contig=$2} else {print contig"\t"$1-1"\t"$2"\t"$3"\t"len_contig}}' | \
             bedtools intersect -a - -b ~{blocksBed} | \
-            awk '{if(contig != $1){contig=$1; print ">"contig"\t"$5}; print $2+1"\t"$3"\t"$4}' | pigz -p4 > ${PREFIX}.~{suffix}.cov.gz
+            awk '{if(contig != $1){contig=$1; print ">"contig" "$5}; print $2+1"\t"$3"\t"$4}' | pigz -p4 > ${PREFIX}.~{suffix}.cov.gz
     >>>
     runtime {
         docker: dockerImage
