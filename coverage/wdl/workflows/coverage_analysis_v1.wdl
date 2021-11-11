@@ -151,10 +151,10 @@ task combineBeds {
         PREFIX=$(basename ${FILENAME%.*.*.tar.gz})
         
         cat second/*.bed | bedtools sort -i - | bedtools merge -i - > second_all.bed 
-        mkdir first_subtract_second ~{outputPrefix}
+        mkdir first_minus_second ~{outputPrefix}
         for c in error duplicated haploid collapsed
         do
-            bedtools subtract -a first/${PREFIX}.~{firstPrefix}.${c}.bed -b second_all.bed > first_subtract_second/${PREFIX}.${c}.bed
+            bedtools subtract -a first/${PREFIX}.~{firstPrefix}.${c}.bed -b second_all.bed > first_minus_second/${PREFIX}.${c}.bed
             cat first_minus_second/*.${c}.bed second/*.${c}.bed | bedtools sort -i - | bedtools merge -i - > ~{outputPrefix}/${PREFIX}.~{outputPrefix}.${c}.bed
         done
 
