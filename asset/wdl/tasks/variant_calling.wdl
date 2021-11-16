@@ -28,7 +28,7 @@ workflow VariantCalling{
                 bam = part.left,
                 bed = part.right,
                 ploidy = ploidy,
-                minMApQ = minMAPQ
+                minMAPQ = minMAPQ
         }
     }
     call mergeVcf{
