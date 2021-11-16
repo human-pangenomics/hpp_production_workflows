@@ -24,10 +24,14 @@ workflow VariantCalling{
             threadCount = numberOfCallerNodes
     }
     scatter (part in zip(splitBamContigWise.splitBams, splitBamContigWise.splitBeds)) {
+        call increaseMapq{
+            input:
+                bam = part.left
+        }
         call callDeepVariant{
             input:
                 assemblyFastaGz = assemblyFastaGz,
-                bam = part.left,
+                bam = increaseMapq.outputBam,
                 bed = part.right,
                 includeSecondary = includeSecondary,
                 includeSupplementary = includeSupplementary
@@ -104,6 +108,50 @@ task splitBamContigWise{
     }
 }
 
+
+task increaseMapq{
+    input{
+        File bam
+        Int threshold=20
+        Int memSize=4
+        Int threadCount=2
+        Int diskSize=64
+        String dockerImage="quay.io/masri2019/hpp_coverage:latest"
+        Int preemptible=2
+        String zones="us-west2-a"
+    }
+    command <<<
+        # Set the exit code of a pipeline to that of the rightmost command
+        # to exit with a non-zero status, or zero if all commands of the pipeline exit
+        set -o pipefail
+        # cause a bash script to exit immediately when a command fails
+        set -e
+        # cause the bash shell to treat unset variables as an error and exit immediately
+        set -u
+        # echo each line of the script to stdout so we can see what is happening
+        # to turn off echo do 'set +o xtrace'
+        set -o xtrace
+
+        ## hard link the bam and bai files to the working directory
+        BAM_NAME=$(basename ~{bam})
+        BAM_PREFIX=${BAM_NAME%%.bam}
+
+        mkdir output
+        ${INCREASE_MAPQ_BIN} -i ~{bam} -o output/${BAM_PREFIX}.increased_mapq.bam -t ~{threshold}
+    >>>
+    runtime {
+        docker: dockerImage
+        memory: memSize + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSize + " SSD"
+        preemptible : preemptible
+        zones: zones
+    }
+    output {
+        File outputBam = glob("output/*.bam")[0]
+    }
+}
+
 task callDeepVariant{
     input{
         File bam
@@ -115,7 +163,7 @@ task callDeepVariant{
         # runtime configurations
         Int memSize=32
         Int threadCount=16
-        Int diskSize=256
+        Int diskSize=64
         String dockerImage="google/deepvariant:latest"
         Int preemptible=2
         String zones="us-west2-a"
