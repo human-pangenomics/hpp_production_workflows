@@ -740,12 +740,15 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 		}// end of while cigar_it->seq_start should be now less than or equal to block->seq_start
 		//assert(cigar_it->sqs <= block->sqs);
 		//assert(cigar_it->rfs <= block->rfs);
+		//printf("$%d-%d : %d\n", block->sqs, block->sqe, marker->base_idx);
 		while(marker &&
-                      ((block->sqs > marker->base_idx) ||
+                      ((marker->base_idx < block->sqs + block_margin) ||
 		        (marker->alignment_idx != alignment_idx))){
 			j += bam_is_rev(alignment->record) ? -1 : 1;
                         marker = ((j < markers_len) && (j >= 0)) ? stList_get(markers, j) : NULL;
 		}// end of while the marker is now the first one located within the current block (or after)
+		/*if(marker == NULL) printf("NULL\n");
+		else printf("%d-%d : %d\n", block->sqs, block->sqe, marker->base_idx);*/
 		if(marker &&
                    (block->sqe >= marker->base_idx + block_margin) &&
 		   (block->sqs <= marker->base_idx - block_margin)){
@@ -775,13 +778,17 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 			//allocate neccessary arrays for HMM BAQ
 			state = (int*) malloc((block->sqe - block->sqs + 1) * sizeof(int));
 			q = (uint8_t*) malloc(block->sqe - block->sqs + 1);
-			//DEBUG_PRINT("Starting local BAQ :))\n");	
-			if (probaln_glocal(tref, block->rfe - block->rfs + 1, 
-					   tseq, block->sqe - block->sqs + 1,
+			//DEBUG_PRINT("Starting local BAQ :))\n");
+			conf.bw = abs(ref_len - seq_len) > conf_bw ? abs(ref_len - seq_len) + conf_bw : conf_bw;
+			if (probaln_glocal(tref, ref_len, 
+					   tseq, seq_len,
 					   block_qual, &conf, state, q) == INT_MIN) {
             			fprintf(stderr, "probaln_glocal ERROR\n");
 				fprintf(stderr, "%s:%d-%d", contig_name, block->rfs + 1 , block->rfe + 1);
 			}
+			/*printf("##%d\n",alignment_idx);
+			for(int k=0; k < seq_len; k++)
+                                printf("%d\t%d\t%c\n", block->sqs + k, q[k], q[k] < 20 ? '*' : ' ');*/
 			//DEBUG_PRINT("local BAQ Finished:))\n");
 			// the state and q are now updated if there is any marker located within the block
 			//apply BAQ to the quality array
