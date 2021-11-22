@@ -23,17 +23,17 @@ workflow runPhaseReads{
                 bamFile = splitBam,
                 diploidAssemblyFastaGz = diploidAssemblyFastaGz
         }
-        call sortByContig{
-            input:
-                bamFile = phaseReads.outputBam
-        }
+        #call sortByContig{
+        #    input:
+        #        bamFile = phaseReads.outputBam
+        #}
     }
-    call mergeBams_t.merge as mergeBams{
-        input:
-            sampleName = sampleName,
-            sampleSuffix = sampleSuffix,
-            sortedBamFiles = sortByContig.outputBam
-    }
+    #call mergeBams_t.merge as mergeBams{
+    #    input:
+    #        sampleName = sampleName,
+    #        sampleSuffix = sampleSuffix,
+    #        sortedBamFiles = sortByContig.outputBam
+    #}
     call concatLogs as concatErrLogs{
         input:
             logs = phaseReads.errLog,
@@ -46,8 +46,8 @@ workflow runPhaseReads{
     }
 
     output{
-        File outputBam = mergeBams.mergedBam
-        File outputBai = mergeBams.mergedBai
+        #File outputBam = mergeBams.mergedBam
+        #File outputBai = mergeBams.mergedBai
         File errLog = concatErrLogs.log
         File outLog = concatOutLogs.log
     }
@@ -146,7 +146,7 @@ task concatLogs {
 task splitByName {
     input {
         File bamFile
-        Int NReadsPerBam = 500000
+        Int NReadsPerBam = 200000
         # runtime configurations
         Int memSize=4
         Int threadCount=2
@@ -190,10 +190,11 @@ task splitByName {
 task sortByName {
     input {
         File bamFile
+        String excludeSingleAlignment="yes"
         # runtime configurations
         Int memSize=16
         Int threadCount=8
-        Int diskSize=512
+        Int diskSize=1024
         String dockerImage="quay.io/masri2019/hpp_base:latest"
         Int preemptible=2
         String zones="us-west2-a"
@@ -214,7 +215,14 @@ task sortByName {
         BAM_PREFIX=${BAM_FILENAME%.bam}
        
         mkdir output
-        samtools sort -n -@8 ~{bamFile} > output/${BAM_PREFIX}.bam
+        if [ ~{excludeSingleAlignment} == "yes" ]; then
+            samtools view ~{bamFile} | cut -f1 | sort | uniq -c > readnames.txt
+            cat readnames.txt | awk '$1 > 1' | cut -f2 > selected_readnames.txt
+            ${EXTRACT_READS_BIN} -i ~{bamFile} -o output/${BAM_PREFIX}.bam -r selected_readnames.txt
+        else
+            ln ~{bamFile} output/${BAM_PREFIX}.bam
+        fi
+        samtools sort -n -@8 output/${BAM_PREFIX}.bam > output/${BAM_PREFIX}.sorted_by_qname.bam
     >>> 
     runtime {
         docker: dockerImage
@@ -225,7 +233,7 @@ task sortByName {
         zones : zones
     }
     output {
-        File outputBam = glob("output/*.bam")[0]
+        File outputBam = glob("output/*.sorted_by_qname.bam")[0]
     }
 }
 

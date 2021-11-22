@@ -93,7 +93,38 @@ typedef struct {
         bam1_t* record; 
 	double qv; // The probability of being the correct alignment in log scale (-10*log10(P))
 	stList* conf_blocks; // confident blocks
+	stList* flank_blocks; // flanking blocks (blocks that exclude the regions far from markers they are useful for faster BAQ calculation)
+	int rfs; // start coordinate on reference (0-based inclusive)
+	int rfe; // end coordinate on reference (0-based inclusive)
+	int rds_f; // start coordinate on read's forward strand (0-based inclusive)
+	int rde_f; // end coordinate on read's forward strand (0-based inclusive)
 }ptAlignment;
+
+ptAlignment* ptAlignment_construct(bam1_t* record, double qv){
+        ptAlignment* alignment = (ptAlignment*) malloc(sizeof(ptAlignment));
+        bam1_t* record_cpy = bam_init1();
+        assert(bam_copy1(record_cpy, record) != NULL);
+        alignment->record = record_cpy;
+        alignment->qv = qv;
+        alignment->conf_blocks = NULL;
+	alignment->rfs = -1;
+	alignment->rfe = -1;
+	alignment->rds_f = -1;
+	alignment->rde_f = -1;
+        return alignment;
+}
+
+void ptAlignment_destruct(ptAlignment* alignment){
+        if (alignment->record){
+                bam_destroy1(alignment->record);
+                alignment->record = NULL;
+        }
+        if (alignment->conf_blocks){
+                stList_destruct(alignment->conf_blocks);
+                alignment->conf_blocks = NULL;
+        }
+        free(alignment);
+}
 
 
 typedef struct {
@@ -226,28 +257,6 @@ int ptCigarIt_next(ptCigarIt* cigar_it){
 	return cigar_it->len;
 }
 
-ptAlignment* ptAlignment_construct(bam1_t* record, double qv){
-	ptAlignment* alignment = (ptAlignment*) malloc(sizeof(ptAlignment));
-	bam1_t* record_cpy = bam_init1();
-	assert(bam_copy1(record_cpy, record) != NULL);
-	alignment->record = record_cpy;
-	alignment->qv = qv;
-	alignment->conf_blocks = NULL;
-	return alignment;
-}
-
-void ptAlignment_destruct(ptAlignment* alignment){
-	if (alignment->record){
-		bam_destroy1(alignment->record);
-        	alignment->record = NULL;
-	}
-	if (alignment->conf_blocks){
-		stList_destruct(alignment->conf_blocks);
-		alignment->conf_blocks = NULL;
-	}
-	free(alignment);
-}
-
 
 /// Compare two ptMarker structures
 /**
@@ -373,7 +382,7 @@ stList* filter_ins_markers(stList* markers, ptAlignment** alignments, int alignm
 			}	
 		}//end of iteration over cigar ops
 	}// end of iteration over alignments
-	// make a list for saving remaining markers
+	// make a list for saving the remaining markers
 	stList* keep_markers = stList_construct3(0, free);
 	for(j=0; j < markers_len; j++){
 		if(markers_keep_flags[j]){
@@ -459,7 +468,8 @@ int get_best_record(ptAlignment** alignments, int alignments_len, double min_qv,
 	else return max_idx;
 }
 
-stList* find_confident_blocks(bam1_t* b, int threshold){
+stList* find_confident_blocks(ptAlignment* alignment, int threshold){
+	bam1_t* b = alignment->record;
 	stList* conf_blocks = stList_construct3(0, free);
 	ptCigarIt* cigar_it = ptCigarIt_construct(b);
 	int conf_sqs = 0; // the seq start of the confident block
@@ -531,7 +541,13 @@ stList* find_confident_blocks(bam1_t* b, int threshold){
 	return conf_blocks;
 }
 
-//blocks should be sorted by rds_f and no overlaps between the blocks within each set
+/// Get the intersection of the two given blocks
+/**
+   @param blocks1     1st set of blocks
+   @param blocks2     2nd set of blocks
+   @return      A stList of intersected blocks
+   @note        blocks should be sorted by rds_f and no overlaps should exist between the blocks within each set
+ */
 stList* intersect(stList* blocks1, stList* blocks2){
 	stList* blocks_intersect = stList_construct3(0, free);
 	if (stList_length(blocks1) == 0 || stList_length(blocks2) == 0) return blocks_intersect;
@@ -542,10 +558,16 @@ stList* intersect(stList* blocks1, stList* blocks2){
 	b2 = stList_get(blocks2, j);
 	for (int i = 0; i < stList_length(blocks1); i++){
 		b1 = stList_get(blocks1, i);
+		// Find the first block (b2) in the 2nd set which end point is after 
+		// the start point of the current block (b1) in the 1st set
                 while (b2 && b2->rde_f < b1->rds_f) {
 			j++;
                         b2 = j == stList_length(blocks2) ? NULL : stList_get(blocks2, j);
                 }
+		// Because of the previous loop, b2's end point is now after b1's
+		// start point. If b2's start point is also before the b1's end point
+		// it means there exist an overlap so we save that overlap in 
+		// blocks_intersect and go to the next block (update b2)
                 while (b2 && b2->rds_f < b1->rde_f){
 			b = ptBlock_construct(-1, 
 					      -1, 
@@ -561,26 +583,109 @@ stList* intersect(stList* blocks1, stList* blocks2){
                         else break;
                 }
         }
-	
 	return blocks_intersect;
 }
 
+
+/// Given a list of alignments for a single read 
+/// find the confident blocks within each alignment 
+/// and update the corresponding attribute (alignment->conf_blocks)
+/**
+   @param alignments     An array of ptAlignment structure
+   @param alignments_len     Length of alignments array
+   @param threshold	The indels strictly longer than this manually determined 
+   			threshold will cut the confident blocks
+ */
 void set_confident_blocks(ptAlignment** alignments, int alignments_len, int threshold){
 	for(int i=0; i < alignments_len; i++){
-		alignments[i]->conf_blocks = find_confident_blocks(alignments[i]->record, threshold);
+		alignments[i]->conf_blocks = find_confident_blocks(alignments[i], threshold);
 	}
 }
 
+// @note: the markers should be sorted by read_pos_f
+stList* find_flanking_blocks(ptAlignment* alignment, stList* markers, int margin){
+	bam1_t* b = alignment->record;
+        stList* flank_blocks = stList_construct3(0, free);
+        ptCigarIt* cigar_it = ptCigarIt_construct(b);
+	// get the first merker for initializing start and end
+	int i = 0;
+	ptMarker* marker = stList_get(markers, i);
+	int start = max(alignment->rds_f, marker->read_pos_f - margin);
+	int end = min(alignment->rde_f, marker->read_pos_f + margin);
+	i++;
+	int curr_start;
+	int curr_end;
+	ptBlock* block = NULL;
+        while(i < stList_length(markers)){
+		marker = stList_get(markers, i);
+		curr_start = max(alignment->rds_f, marker->read_pos_f - margin);
+		curr_end =  min(alignment->rde_f, marker->read_pos_f + margin);
+		if(curr_start < end) {
+			end = curr_end;
+		}
+		else {
+			// add the previous flanking block
+			block = ptBlock_construct(-1, -1,
+                                                  -1, -1,
+                                                  start, end);
+                        stList_append(flank_blocks, block);
+			//update start and end for the next flanking block
+			start = curr_start;
+			end = curr_end;
+		}
+		i++;
+	}
+	// add the last flanking block
+	block = ptBlock_construct(-1, -1,
+                                  -1, -1,
+                                  start, end);
+        stList_append(flank_blocks, block);
+	return flank_blocks;
+}
 
+/// Given a list of alignments for a single read
+/// find the flanking blocks within each alignment
+/// and update the corresponding attribute (alignment->flank_blocks)
+/**
+   @param alignments     An array of ptAlignment structure
+   @param alignments_len     Length of alignments array
+   @param margin     For each marker we will append a flanking block that spans
+   		     a window of length 2 * margin with the marker in its center
+ */
+void set_flanking_blocks(ptAlignment** alignments, int alignments_len, stList* markers, int margin){
+        for(int i=0; i < alignments_len; i++){
+                alignments[i]->flank_blocks = find_flanking_blocks(alignments[i], markers, margin);
+        }
+}
+
+
+/// Given a list of alignments for a single read, 
+/// find the consensus confident blocks using all previously 
+/// found confident blocks. In other words it takes the 
+/// intersection of all sets of confident blocks (one set per alignment).
+/**
+   @param alignments     An array of ptAlignment structure
+   @param alignments_len     Length of alignments array
+   @param threshold     The indels strictly longer than this manually determined
+                        threshold will cut the confident blocks
+ */
 int correct_conf_blocks(ptAlignment** alignments, int alignments_len, int threshold){
 	assert(alignments_len > 0);
 	stList_sort(alignments[0]->conf_blocks, ptBlock_cmp_rds_f);
         stList* blocks = stList_copy(alignments[0]->conf_blocks, NULL);
 	ptBlock* block;
         stList* blocks_new;
+	//intersect confident blocks
         for(int i=1; i < alignments_len; i++){
 		stList_sort(alignments[i]->conf_blocks, ptBlock_cmp_rds_f);
                 blocks_new = intersect(blocks, alignments[i]->conf_blocks);
+                stList_destruct(blocks);
+                blocks = blocks_new;
+        }
+	//intersect flanking blocks
+	for(int i=0; i < alignments_len; i++){
+                stList_sort(alignments[i]->flank_blocks, ptBlock_cmp_rds_f);
+                blocks_new = intersect(blocks, alignments[i]->flank_blocks);
                 stList_destruct(blocks);
                 blocks = blocks_new;
         }
@@ -593,7 +698,9 @@ int correct_conf_blocks(ptAlignment** alignments, int alignments_len, int thresh
 		return 0;
 	}
 	stList* corrected_conf_blocks;
-	// for each alignment project the consensus confident blocks to the ref and seq coordinates
+	// For each alignment project the consensus confident blocks to the ref and seq coordinates
+	// The main function of the loop below is to fill the attributes rfs, rfe, sqs, and sqe for each block
+	// based on the previously calculated rds_f and rde_f
         for(int i=0; i < alignments_len; i++){
 		bam1_t* b = alignments[i]->record;
 		int j = bam_is_rev(b) ? stList_length(blocks) - 1 : 0;
@@ -630,6 +737,8 @@ int correct_conf_blocks(ptAlignment** alignments, int alignments_len, int thresh
 			   cigar_it->op == BAM_CEQUAL ||
 			   cigar_it->op == BAM_CDIFF ||
 			   cigar_it->op == BAM_CINS) {
+				//The loop below iterate the blocks overlap with the current cigar operation
+				//There may exist multiple blocks within the current op
 				while(block && block_rde_f <= cigar_rde_f){
 					// update start locations of the projected coordinates
 					if(cigar_rds_f <= block_rds_f && !(del_flag && cigar_rds_f == block_rds_f)){
@@ -663,12 +772,12 @@ int correct_conf_blocks(ptAlignment** alignments, int alignments_len, int thresh
 						block = NULL;
 					}
 				}
-				if(block == NULL) break;// break the cigar iteration
+				if(block == NULL) break;// no more block remaining so break the cigar iteration
 				// !(del_flag && cigar_rds_f == block_rds_f) means that,
 				// del_flag and cigar_rds_f == block_rds_f cannot be true at the same time
 				// if both were true it means that there is a deletion (shorter than threshold)
 				// on the edge of the block (This is a rare event can happen when there is a deletion
-				// right after an insertion)
+				// right before an insertion)
 				if(cigar_rds_f <= block_rds_f && 
 				   block_rds_f <= cigar_rde_f && 
 				   !(del_flag && cigar_rds_f == block_rds_f)) {
@@ -730,11 +839,11 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 	ptCigarIt* cigar_it = ptCigarIt_construct(b);
 	ptBlock* block;
 	int ref_len; int seq_len;
-	DEBUG_PRINT("\t\t\t### Number of Blocks: %ld\n", stList_length(blocks));
-	int block_margin = 50;
+	DEBUG_PRINT("\t\t\t## Number of Blocks: %ld\n", stList_length(blocks));
+	int block_margin = 10;
 	for(int i=0; i < stList_length(blocks); i++){
 		block = stList_get(blocks, i);
-		DEBUG_PRINT("\t\t\t### block#%d: seq[%d:%d] ref[%s:%d-%d]\n", i, block->sqs, block->sqe, contig_name, block->rfs, block->rfe);
+		DEBUG_PRINT("\t\t\t###     block#%d: seq[%d:%d] ref[%s:%d-%d]\n", i, block->sqs, block->sqe, contig_name, block->rfs, block->rfe);
 		while((cigar_it->sqe < block->sqs) || (cigar_it->rfe < block->rfs)){
 			if(ptCigarIt_next(cigar_it) == 0) break;
 		}// end of while cigar_it->seq_start should be now less than or equal to block->seq_start
@@ -754,7 +863,7 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 		   (block->sqs <= marker->base_idx - block_margin)){
 			seq_len = block->sqe - block->sqs + 1;
 			ref_len = block->rfe - block->rfs + 1;
-			DEBUG_PRINT("\t\t\t### seq_len:%d\tref_len:%d\n", seq_len, ref_len);
+			DEBUG_PRINT("\t\t\t###     seq_len:%d\tref_len:%d\n", seq_len, ref_len);
 			if (seq_len < 5 || ref_len < 5) continue; // skip small blocks
 			//allocate read sequence
 			tseq = (uint8_t*) malloc(seq_len);
@@ -779,7 +888,7 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 			state = (int*) malloc((block->sqe - block->sqs + 1) * sizeof(int));
 			q = (uint8_t*) malloc(block->sqe - block->sqs + 1);
 			//DEBUG_PRINT("Starting local BAQ :))\n");
-			conf.bw = abs(ref_len - seq_len) > conf_bw ? abs(ref_len - seq_len) + conf_bw : conf_bw;
+			conf.bw = abs(ref_len - seq_len) + conf_bw;
 			if (probaln_glocal(tref, ref_len, 
 					   tseq, seq_len,
 					   block_qual, &conf, state, q) == INT_MIN) {
@@ -872,7 +981,7 @@ int main(int argc, char *argv[]){
 	int c;
 	bool baq_flag=false;
 	bool consensus=false;
-	int threshold=2;
+	int threshold=10;
 	double conf_d;
 	double conf_e;
 	double conf_b;
@@ -963,42 +1072,39 @@ int main(int argc, char *argv[]){
 			// then we can decide which one is the best alignment
 			if ((stList_length(markers) > 0) && (alignments_len > 1) && !contain_supp(alignments, alignments_len)){
 				DEBUG_PRINT("@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\n", read_name, alignments_len, alignments[0]->record->core.l_qseq);
-				DEBUG_PRINT("\t# Set confident blocks\n");
-				set_confident_blocks(alignments, alignments_len, threshold);
-				if (consensus) conf_blocks_length = correct_conf_blocks(alignments, alignments_len, threshold);
-				if (conf_blocks_length > 0 || consensus == false){
-					DEBUG_PRINT("\t$ length of markers: %ld\n\t# Start filtering markers\n", stList_length(markers));
-					no_ins_markers = filter_ins_markers(markers, alignments, alignments_len);
-					DEBUG_PRINT("\t$ length of confident markers: %ld\n", stList_length(no_ins_markers));
-				}
+				DEBUG_PRINT("\t$ number of markers: %ld\n\t# Start filtering markers\n", stList_length(markers));
+				no_ins_markers = filter_ins_markers(markers, alignments, alignments_len);
+				DEBUG_PRINT("\t$ number of confident markers: %ld\n", stList_length(no_ins_markers));
 				if(no_ins_markers && stList_length(no_ins_markers) > 0){
-					DEBUG_PRINT("\t# There are more than 0 markers So calc baq and update quality\n");
 					sort_and_fill_markers(no_ins_markers, alignments, alignments_len);
-					/*for(int t =0 ; t<stList_length(confident_markers); t++) {
-                                                ptMarker* m = stList_get(confident_markers, t);
-                                                DEBUG_PRINT("MARKER@%d\t%d\t%d\t%d\t%d\t%d\n", t, m->alignment_idx, m->base_idx, m->read_pos_f, m->base_q, m->is_match);
-                                        }*/
 					DEBUG_PRINT("@MARKERS: (After filtering markers within insertions)\n");
-                                        for(int t =0 ; t<stList_length(no_ins_markers); t++) {
+					for(int t =0 ; t<stList_length(no_ins_markers); t++) {
                                                 ptMarker* m = stList_get(no_ins_markers, t);
                                                 DEBUG_PRINT("MARKER@%d\t%d\t%d\t%d\t%d\t%d\n", t, m->alignment_idx, m->base_idx, m->read_pos_f, m->base_q, m->is_match);
                                         }
-					if(baq_flag){
-						calc_update_baq_all(fai, 
-						                    alignments, alignments_len,
-						                    no_ins_markers, sam_hdr,
+					DEBUG_PRINT("\t# Set confident & flanking blocks\n");
+					set_confident_blocks(alignments, alignments_len, threshold);
+					set_flanking_blocks(alignments, alignments_len, no_ins_markers, 500);
+					if (consensus) conf_blocks_length = correct_conf_blocks(alignments, alignments_len, threshold);
+					if (conf_blocks_length > 0 || consensus == false){
+						if(baq_flag){
+							DEBUG_PRINT("\t# There are more than 0 markers and confident blocks are not empty \n\t# So calc baq and update quality\n");
+							calc_update_baq_all(fai, 
+									    alignments, alignments_len,
+									    no_ins_markers, sam_hdr,
 								    conf_d, conf_e, conf_b);
+						}
+						highq_markers = filter_lowq_markers(no_ins_markers, 20);
+						DEBUG_PRINT("@MARKERS: (After filtering low q)\n");
+						for(int t =0 ; t<stList_length(highq_markers); t++) {
+							ptMarker* m = stList_get(highq_markers, t);
+							DEBUG_PRINT("MARKER@%d\t%d\t%d\t%d\t%d\t%d\n", t, m->alignment_idx, m->base_idx, m->read_pos_f, m->base_q, m->is_match);
+						}
+						DEBUG_PRINT("\t# calc likelihood\n");
+						calc_likelihood(highq_markers, alignments);
+						stList_destruct(highq_markers);
+                                		highq_markers = NULL;
 					}
-					highq_markers = filter_lowq_markers(no_ins_markers, 20);
-					DEBUG_PRINT("@MARKERS: (After filtering low q)\n");
-					for(int t =0 ; t<stList_length(highq_markers); t++) {
-                                                ptMarker* m = stList_get(highq_markers, t);
-                                                DEBUG_PRINT("MARKER@%d\t%d\t%d\t%d\t%d\t%d\n", t, m->alignment_idx, m->base_idx, m->read_pos_f, m->base_q, m->is_match);
-                                        }
-					//DEBUG_PRINT("\t# calc likelihood\n");
-					calc_likelihood(highq_markers, alignments);
-					stList_destruct(highq_markers);
-                                	highq_markers = NULL;
 				}
 				stList_destruct(no_ins_markers);
                                 no_ins_markers = NULL;
@@ -1016,7 +1122,7 @@ int main(int argc, char *argv[]){
 					}
 				}
 				else if ((best->core.flag & BAM_FSECONDARY)){
-					printf("$ RECORDS AND QVs for %s:\n", read_name);
+					printf("$ RECORDS AND QVs for %s :\n", read_name);
 					for(int i=0; i<alignments_len; i++){
 						// change primary to secondary
 						if ((alignments[i]->record->core.flag & BAM_FSECONDARY) == 0){
@@ -1072,6 +1178,48 @@ int main(int argc, char *argv[]){
 					}
 					stList_append(markers, marker);
 				}
+			}
+			//set the start coordinates of the alignment
+			if (alignments[alignments_len]->rfs == -1 &&
+			    (cigar_it->op == BAM_CMATCH ||
+                             cigar_it->op == BAM_CEQUAL ||
+                             cigar_it->op == BAM_CDIFF)) {
+				alignments[alignments_len]->rfs = cigar_it->rfs;
+				if(bam_is_rev(b)){
+					alignments[alignments_len]->rde_f = cigar_it->rde_f;
+				}
+				else{ 
+					alignments[alignments_len]->rds_f = cigar_it->rds_f;
+				}
+			}
+			//set the end coordinates of the alignment
+                        //if the alignment ends with hard or soft clipping
+			//alignments[alignments_len]->rfs != -1 is to make sure we have reached
+			//the end of the alignment
+			if (alignments[alignments_len]->rfe == -1 &&
+			    alignments[alignments_len]->rfs != -1 &&
+                            (cigar_it->op == BAM_CHARD_CLIP ||
+                             cigar_it->op == BAM_CSOFT_CLIP )) {
+                                alignments[alignments_len]->rfe = cigar_it->rfe;
+				if(bam_is_rev(b)){
+					alignments[alignments_len]->rds_f = cigar_it->rde_f + 1;
+				}else{
+					alignments[alignments_len]->rde_f = cigar_it->rds_f - 1;
+				}
+                        }
+		}
+		//set the start coordinates of the alignment
+                //if the alignment ends with mis/matches
+                if (alignments[alignments_len]->rfe == -1 &&
+		    (cigar_it->op == BAM_CMATCH ||
+                     cigar_it->op == BAM_CEQUAL ||
+                     cigar_it->op == BAM_CDIFF)) {
+			alignments[alignments_len]->rfe = cigar_it->rfe;
+			if(bam_is_rev(b)){
+				alignments[alignments_len]->rds_f = cigar_it->rds_f;
+			}
+			else{
+                		alignments[alignments_len]->rde_f = cigar_it->rde_f;
 			}
 		}
 		alignments_len += 1;
