@@ -46,8 +46,6 @@ workflow runPhaseReads{
     }
 
     output{
-        #File outputBam = mergeBams.mergedBam
-        #File outputBai = mergeBams.mergedBai
         File errLog = concatErrLogs.log
         File outLog = concatOutLogs.log
     }
@@ -57,7 +55,7 @@ task phaseReads {
     input {
         File bamFile
         File diploidAssemblyFastaGz
-        String options = "-q 1 -c 1 -t 2 -d 1e-4 -e 0.1 -b 20"
+        String options = "-q 1 -c 1 -t10 -d1e-4 -e0.1 -b20 -m20 -s40"
         # runtime configurations
         Int memSize=4
         Int threadCount=2
@@ -85,7 +83,7 @@ task phaseReads {
         samtools faidx asm.fa
 
         mkdir output
-        ${PHASE_READS_BIN} ~{options} -i ~{bamFile} -f asm.fa -o output/${BAM_PREFIX}.phased.bam 2> err.log > out.log
+        ${PHASE_READS_BIN} ~{options} -i ~{bamFile} -f asm.fa 2> err.log > out.log
     >>>
     runtime {
         docker: dockerImage
@@ -96,7 +94,6 @@ task phaseReads {
         zones : zones
     }
     output {
-        File outputBam = glob("output/*.phased.bam")[0]
         File errLog = "err.log"
         File outLog = "out.log"
     }
