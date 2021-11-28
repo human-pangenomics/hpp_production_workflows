@@ -216,3 +216,6 @@ workflows:
    -  name: GenerateWig
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/generate_wig.wdl
+   -  name: AdjustMapQ
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/adjust_mapq.wdl
