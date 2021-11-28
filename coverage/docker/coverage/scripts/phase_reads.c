@@ -1247,11 +1247,11 @@ int main(int argc, char *argv[]){
                                 fprintf(stderr, "Options:\n");
                                 fprintf(stderr, "         -i         Input bam file\n");
 				fprintf(stderr, "         -f         Input fasta file\n");
-				fprintf(stderr, "         -q         Calculate BAQ [Default: true]\n");
+				fprintf(stderr, "         -q         Calculate BAQ [Default: false]\n");
 				fprintf(stderr, "         -d         Gap prob [Default: 1e-4, (for ONT use 1e-2)]\n");
 				fprintf(stderr, "         -e         Gap extension [Default: 0.1]\n");
 				fprintf(stderr, "         -b         DP bandwidth [Default: 20]\n");
-				fprintf(stderr, "         -c         Use consensus confident blocks [Default: true]\n");
+				fprintf(stderr, "         -c         Use consensus confident blocks [Default: false]\n");
 				fprintf(stderr, "         -t         Indel size threshold for confident blocks [Default: 10 (for ONT use 20)]\n");
 				fprintf(stderr, "         -s         Before calculating BAQ set all base qualities to this number [Default: 40 (for ONT use 20)]\n");
 				fprintf(stderr, "         -m         Minimum base quality (or BAQ if -q is set) to be considered as a marker  [Default: 20 (for ONT use 10)]\n");
@@ -1272,7 +1272,7 @@ int main(int argc, char *argv[]){
 	stList* markers = stList_construct3(0, free);
 	int alignments_len=0;
 	int32_t read_pos;
-	ptAlignment** alignments = (ptAlignment**) malloc(400 * sizeof(ptAlignment*)); //Assuming that no more than 400 alignments we have per read
+	ptAlignment* alignments[1000];
 	int bytes_read;
 	const char* contig_name;
 	bool conf_blocks_length;
@@ -1290,7 +1290,7 @@ int main(int argc, char *argv[]){
 			// then we can decide which one is the best alignment
 			if ((stList_length(markers) > 0) && (alignments_len > 1) && !contain_supp(alignments, alignments_len)){
 
-				DEBUG_PRINT("@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\n", read_name, alignments_len, alignments[0]->record->core.l_qseq);
+DEBUG_PRINT("@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\n", read_name, alignments_len, alignments[0]->record->core.l_qseq);
 				//DEBUG_PRINT("Initial markers:\n");
 				//print_markers(markers);
 				remove_all_mismatch_markers(&markers, alignments_len);
@@ -1331,7 +1331,6 @@ int main(int argc, char *argv[]){
 			}
 			if (alignments_len > 0){ // maybe the previous alignment was unmapped
 				// get the best alignment
-				DEBUG_PRINT("\t# find the best alignment\n");
 				int best_idx = get_best_record(alignments, alignments_len, -50.0, min_q);
 				bam1_t* best = alignments[best_idx]->record;
 				// write all alignments without any change if they are either chimeric or best alignment is primary
@@ -1354,22 +1353,24 @@ int main(int argc, char *argv[]){
 					}
 					printf("\n");
 				}
+				stList_destruct(markers);
+				markers = stList_construct3(0, free);
+				for(int i = 0; i < alignments_len; i++){
+					ptAlignment_destruct(alignments[i]);
+                			alignments[i] = NULL;
+        			}
+				// initialize for new alignments
+				alignments_len = 0;
 			}
-			stList_destruct(markers);
-			markers = stList_construct3(0, free);
-			for(int i = 0; i < alignments_len; i++){
-				ptAlignment_destruct(alignments[i]);
-                		alignments[i] = NULL;
-        		}
-			// initialize for new alignments
-			alignments_len = 0;
 			strcpy(read_name, read_name_new);
 		}
 		if (bytes_read <= -1) break; // file is finished so break
 		if(b->core.flag & BAM_FUNMAP) continue; // unmapped
+		fprintf(stderr, "\t# construct alignment\n");
 		alignments[alignments_len] = ptAlignment_construct(b, 0.0);
 		ptCigarIt* cigar_it = ptCigarIt_construct(b, true);
 		quality = bam_get_qual(b);
+		fprintf(stderr, "\t# iterate over cigars to find markers\n");
 		while(ptCigarIt_next(cigar_it)){
 			if (cigar_it->op == BAM_CDIFF) {
 				for(int j=0; j < cigar_it->len; j++){
@@ -1440,10 +1441,11 @@ int main(int argc, char *argv[]){
 		ptCigarIt_destruct(cigar_it);
 	}
 	// free memory
+	stList_destruct(markers);
 	fai_destroy(fai);
+	sam_hdr_destroy(sam_hdr);
 	sam_close(fp);
 	bam_destroy1(b);
-        sam_hdr_destroy(sam_hdr);
 }
 
 //main();
