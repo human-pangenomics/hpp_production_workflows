@@ -106,7 +106,7 @@ task concatLogs {
         # runtime configurations
         Int memSize=2
         Int threadCount=1
-        Int diskSize=16
+        Int diskSize=32
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=2
         String zones="us-west2-a"
