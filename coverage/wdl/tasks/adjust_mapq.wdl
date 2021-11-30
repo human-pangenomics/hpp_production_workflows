@@ -242,12 +242,11 @@ task extractReads {
 
         FILENAME=$(basename -- "~{readFile}")
         PREFIX="${FILENAME%.*}"
-        SUFFIX="${FILENAME##*.}"
 
         mkdir output
-        # -G 0 is because we may have only the secondary alignment of a read
+        # -F 0x000 is because we may have only the secondary alignment of a read
         # avoid writing a read multiple times (that's what the awk statemen does) because we may have both sec/pri alignments of a single read
-        samtools fastq -G 0 -@~{threadCount} ~{readFile} | awk '(substr($1,1,1) == "@"){a[$1] += 1; read=$1}(a[read] == 1){print $0}'> output/${PREFIX}.fq
+        samtools fastq -F 0x000 -@~{threadCount} ~{readFile} | awk '(substr($1,1,1) == "@"){a[$1] += 1; read=$1}(a[read] == 1){print $0}'> output/${PREFIX}.fq
 
         OUTPUTSIZE=`du -s -BG output/ | sed 's/G.*//'`
         if [[ "0" == $OUTPUTSIZE ]] ; then
