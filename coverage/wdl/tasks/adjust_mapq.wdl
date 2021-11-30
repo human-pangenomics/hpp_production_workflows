@@ -222,7 +222,7 @@ task extractReads {
         Int memSizeGB = 4
         Int threadCount = 8
         Int diskSizeGB = 128
-        String dockerImage = "tpesout/hpp_base:latest"
+        String dockerImage = "quay.io/masri2019/hpp_base:latest"
     }
 
 
@@ -237,8 +237,7 @@ task extractReads {
         # echo each line of the script to stdout so we can see what is happening
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
-        # load samtools
-        export PATH=$PATH:/root/bin/samtools_1.9/
+        
 
         FILENAME=$(basename -- "~{readFile}")
         PREFIX="${FILENAME%.*}"
