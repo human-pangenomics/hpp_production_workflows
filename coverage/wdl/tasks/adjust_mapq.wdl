@@ -1,7 +1,7 @@
 version 1.0 
 
-import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
-import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
+#import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
+#import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
 import "read_set_splitter.wdl" as readSetSplitter_t
 import "long_read_aligner.wdl" as longReadAligner_t
 
@@ -27,7 +27,7 @@ workflow runAdjustMapq{
             bam = getLowMapq.lowMapqBam
     }
 
-    call extractReads_t.extractReads as extractReadsPat {
+    call extractReads as extractReadsPat {
         input:
             readFile=phaseBam.patBam,
             memSizeGB=4,
@@ -54,7 +54,7 @@ workflow runAdjustMapq{
                  zones = "us-west2-a"
         }
     }
-    call extractReads_t.extractReads as extractReadsMat {
+    call extractReads as extractReadsMat {
         input:
             readFile=phaseBam.matBam,
             memSizeGB=4,
@@ -211,6 +211,66 @@ task getMapqTable {
     }
     output {
         File mapqTable = glob("output/*.mapq_table.txt")[0]
+    }
+}
+
+
+task extractReads {
+    input {
+        File readFile
+        File? referenceFasta
+        Int memSizeGB = 4
+        Int threadCount = 8
+        Int diskSizeGB = 128
+        String dockerImage = "tpesout/hpp_base:latest"
+    }
+
+
+    command <<<
+        # Set the exit code of a pipeline to that of the rightmost command
+        # to exit with a non-zero status, or zero if all commands of the pipeline exit
+        set -o pipefail
+        # cause a bash script to exit immediately when a command fails
+        set -e
+        # cause the bash shell to treat unset variables as an error and exit immediately
+        set -u
+        # echo each line of the script to stdout so we can see what is happening
+        # to turn off echo do 'set +o xtrace'
+        set -o xtrace
+        # load samtools
+        export PATH=$PATH:/root/bin/samtools_1.9/
+
+        FILENAME=$(basename -- "~{readFile}")
+        PREFIX="${FILENAME%.*}"
+        SUFFIX="${FILENAME##*.}"
+
+        mkdir output
+        # -G 0 is because we may have only the secondary alignment of a read
+        # avoid writing a read multiple times (that's what the awk statemen does) because we may have both sec/pri alignments of a single read
+        samtools fastq -G 0 -@~{threadCount} ~{readFile} | awk '(substr($1,1,1) == "@"){a[$1] += 1; read=$1}(a[read] == 1){print $0}'> output/${PREFIX}.fq
+
+        OUTPUTSIZE=`du -s -BG output/ | sed 's/G.*//'`
+        if [[ "0" == $OUTPUTSIZE ]] ; then
+            OUTPUTSIZE=`du -s -BG ~{readFile} | sed 's/G.*//'`
+        fi
+        echo $OUTPUTSIZE >outputsize
+    >>>
+
+    output {
+        File extractedRead = flatten([glob("output/*"), [readFile]])[0]
+        Int fileSizeGB = read_int("outputsize")
+    }
+
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: dockerImage
+        preemptible: 1
+    }
+
+    parameter_meta {
+        readFile: {description: "Reads file in BAM"}
     }
 }
 
