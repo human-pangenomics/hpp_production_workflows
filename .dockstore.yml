@@ -219,3 +219,6 @@ workflows:
    -  name: AdjustMapQ
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/adjust_mapq.wdl
+   -  name: CorrectBam
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/correct_bam.wdl

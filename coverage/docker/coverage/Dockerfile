@@ -43,6 +43,10 @@ ENV SPLIT_CONTIGS_COV_V2_BIN=/home/scripts/bin/split_contigs_cov_v2
 ENV PDF_GENERATOR_PY=/home/scripts/pdf_generator.py
 ENV SPLIT_BAM_BY_READNAME_BIN=/home/scripts/bin/split_bam_by_readname
 ENV PHASE_READS_BIN=/home/scripts/bin/phase_reads
+ENV CORRECT_BAM_BIN=/home/scripts/bin/correct_bam
+ENV EXTRACT_READS_BIN=/home/scripts/bin/extract_reads
+ENV INCREASE_MAPQ_BIN=/home/scripts/bin/increase_mapq
+
 
 ## UCSC convention is to work in /data
 RUN mkdir -p /data
