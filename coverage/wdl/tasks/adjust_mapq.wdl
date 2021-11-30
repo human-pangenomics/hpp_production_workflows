@@ -32,8 +32,7 @@ workflow runAdjustMapq{
             readFile=phaseBam.patBam,
             memSizeGB=4,
             threadCount=4,
-            diskSizeGB=512,
-            dockerImage="tpesout/hpp_base:latest"
+            diskSizeGB=512
     }
     call readSetSplitter_t.readSetSplitter as readSetSplitterPat {
         input:
@@ -59,8 +58,7 @@ workflow runAdjustMapq{
             readFile=phaseBam.matBam,
             memSizeGB=4,
             threadCount=4,
-            diskSizeGB=512,
-            dockerImage="tpesout/hpp_base:latest"
+            diskSizeGB=512
     }
     call readSetSplitter_t.readSetSplitter as readSetSplitterMat {
         input:
