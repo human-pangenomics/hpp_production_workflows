@@ -15,7 +15,7 @@ task filterAltReads {
         Int memSize=4
         Int threadCount=2
         Int diskSize=512
-        String dockerImage="quay.io/masri2019/hpp_bcftools:latest"
+        String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=2
     }
     command <<<
