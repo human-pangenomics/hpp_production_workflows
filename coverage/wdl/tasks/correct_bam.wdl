@@ -2,6 +2,9 @@ version 1.0
 
 workflow runCorrectBam{
     call correctBam
+    output {
+        File correctedBam = correctBam.correctedBam
+    }
 }
 
 task correctBam {
