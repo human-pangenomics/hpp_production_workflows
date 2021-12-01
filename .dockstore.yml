@@ -222,3 +222,6 @@ workflows:
    -  name: CorrectBam
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/correct_bam.wdl
+   -  name: FilterAltReads
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/filter_alt_reads.wdl
