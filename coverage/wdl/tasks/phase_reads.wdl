@@ -6,6 +6,7 @@ workflow runPhaseReads{
     input {
         File inputBam
         File diploidAssemblyFastaGz
+        Boolean debugMode = true
         String sampleName
         String sampleSuffix
     }
@@ -21,19 +22,10 @@ workflow runPhaseReads{
         call phaseReads{
             input:
                 bamFile = splitBam,
-                diploidAssemblyFastaGz = diploidAssemblyFastaGz
+                diploidAssemblyFastaGz = diploidAssemblyFastaGz,
+                debugMode = debugMode
         }
-        #call sortByContig{
-        #    input:
-        #        bamFile = phaseReads.outputBam
-        #}
     }
-    #call mergeBams_t.merge as mergeBams{
-    #    input:
-    #        sampleName = sampleName,
-    #        sampleSuffix = sampleSuffix,
-    #        sortedBamFiles = sortByContig.outputBam
-    #}
     call concatLogs as concatErrLogs{
         input:
             logs = phaseReads.errLog,
@@ -55,7 +47,8 @@ task phaseReads {
     input {
         File bamFile
         File diploidAssemblyFastaGz
-        String options = "-q 1 -c 1 -t10 -d1e-4 -e0.1 -b20 -m20 -s40"
+        String options = "-q -c -t10 -d1e-4 -e0.1 -b20 -m20 -s40"
+        Boolean debugMode
         # runtime configurations
         Int memSize=4
         Int threadCount=2
@@ -83,7 +76,8 @@ task phaseReads {
         samtools faidx asm.fa
 
         mkdir output
-        ${PHASE_READS_BIN} ~{options} -i ~{bamFile} -f asm.fa 2> err.log > out.log
+        COMMAND=${true=${PHASE_READS_DEBUG_BIN} false=${PHASE_READS_BIN} debugMode}
+        ${COMMAND} ~{options} -i ~{bamFile} -f asm.fa 2> err.log > out.log
     >>>
     runtime {
         docker: dockerImage

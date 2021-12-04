@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <math.h>
 #include <float.h>
+#include "cigar_it.h"
 
 #define ARRAY_SIZE(arr) (sizeof((arr)) / sizeof((arr)[0]))
 #define CS_PATTERN "(:([0-9]+))|(([+-\\*])([a-z]+))" 
@@ -166,223 +167,6 @@ int ptBlock_cmp_sqs(const void *a, const void *b){
         ptBlock* b1 = (ptBlock*) a;
         ptBlock* b2 = (ptBlock*) b;
         return b1->sqs - b2->sqs;
-}
-
-typedef struct {
-	// the constant attributes
-        uint32_t* cigar;
-	int n; // number of operations
-	bool is_rev;
-	// the attributes below may change in each iteration
-	uint8_t op; // current cigar operation
-	int len; // length of the current operation
-        int idx;
-	// cs tag attributes
-	bool use_cs;
-	char* cs;
-	int offset_cs;
-	regex_t preg_cs;
-	//location attributes
-        int rds_f; // read start forward
-	int rde_f; // read end forward
-	int sqs; // seq start
-	int sqe; // seq end
-	int rfs; // ref start
-	int rfe; // ref end
-}ptCigarIt;
-
-
-void ptCigarIt_destruct(ptCigarIt* cigar_it){
-	regfree(&cigar_it->preg_cs);
-	free(cigar_it);
-}
-
-ptCigarIt* ptCigarIt_construct(bam1_t* b, bool use_cs){
-	ptCigarIt* cigar_it = (ptCigarIt*) malloc(sizeof(ptCigarIt));
-	cigar_it->cigar = bam_get_cigar(b);
-	cigar_it->len = 0;
-	cigar_it->op = -1;
-	cigar_it->is_rev = bam_is_rev(b);
-	cigar_it->n = b->core.n_cigar;
-	cigar_it->idx = -1;
-	cigar_it->sqs = 0;
-	cigar_it->sqe = -1;
-	cigar_it->rfs = b->core.pos;
-	cigar_it->rfe = b->core.pos - 1;
-	int lclip = 0;
-	int rclip = 0;
-	if (bam_cigar_op(cigar_it->cigar[0]) == BAM_CHARD_CLIP) {
-		lclip = bam_cigar_oplen(cigar_it->cigar[0]);
-        }
-        if (bam_cigar_op(cigar_it->cigar[cigar_it->n - 1]) == BAM_CHARD_CLIP) {
-        	rclip = bam_cigar_oplen(cigar_it->cigar[cigar_it->n - 1]);
-        }
-	cigar_it->rds_f = cigar_it->is_rev ? rclip + lclip + b->core.l_qseq : 0;
-	cigar_it->rde_f = cigar_it->is_rev ? rclip + lclip + b->core.l_qseq  - 1 : -1;
-	cigar_it->use_cs = use_cs;
-	int error;
-	if(use_cs){
-		cigar_it->offset_cs = 0;
-		cigar_it->cs = bam_aux_get(b, "cs") + 1; // skip "Z" at the beginning
-		if ((error = regcomp(&cigar_it->preg_cs, CS_PATTERN, REG_EXTENDED)) != 0) {
-                	printf("regcomp() failed, returning nonzero (%d)\n", error);
-                	exit(1);
-        	}
-		//printf("%s\n",cigar_it->cs);
-	}
-	return cigar_it;
-}
-
-
-int ptCigarIt_next_cs(ptCigarIt* cigar_it){
-        regmatch_t pm;
-	char* cs_shifted = cigar_it->cs + cigar_it->offset_cs;
-	int error = regexec(&cigar_it->preg_cs, cs_shifted, 1, &pm, REG_NOTBOL);
-	if (error != 0) return 0;
-	int rd_step;
-        int sq_step;
-        int rf_step;
-	char match_len[20];
-	/*for(int i=pm.rm_so; i<pm.rm_eo; i++){
-		printf("%c", cs_shifted[i]);
-	}
-	printf("\n");*/
-        switch(cs_shifted[pm.rm_so]) {
-		case ':':
-			cigar_it->op = BAM_CEQUAL;
-			memcpy(match_len, cs_shifted + 1, pm.rm_eo - pm.rm_so - 1);
-			match_len[pm.rm_eo - pm.rm_so - 1] = '\0';
-			cigar_it->len = atoi(match_len);
-			rd_step = cigar_it->len;
-                        sq_step = cigar_it->len;
-                        rf_step = cigar_it->len;
-                        break;
-		case '*':
-			cigar_it->op = BAM_CDIFF;
-			cigar_it->len = 1;
-                        rd_step = cigar_it->len;
-                        sq_step = cigar_it->len;
-                        rf_step = cigar_it->len;
-                        break;
-                case '+':
-			cigar_it->op = BAM_CINS;
-			cigar_it->len = pm.rm_eo - pm.rm_so - 1;
-                        rd_step = cigar_it->len;
-                        sq_step = cigar_it->len;
-                        rf_step = 0;
-                        break;
-                case '-':
-			cigar_it->op = BAM_CDEL;
-			cigar_it->len = pm.rm_eo - pm.rm_so - 1;
-                        rd_step = 0;
-                        sq_step = 0;
-                        rf_step = cigar_it->len;
-                        break;
-        }
-        //shift read interval on forward strand
-        if (cigar_it->is_rev) {
-                cigar_it->rde_f = cigar_it->rds_f - 1;
-                cigar_it->rds_f -= rd_step;
-        }
-        else {
-                cigar_it->rds_f = cigar_it->rde_f + 1;
-                cigar_it->rde_f += rd_step;
-        }
-        //shift seq interval
-        cigar_it->sqs = cigar_it->sqe + 1;
-        cigar_it->sqe += sq_step;
-        //shift ref interval
-        cigar_it->rfs = cigar_it->rfe + 1;
-        cigar_it->rfe += rf_step;
-	//update offset for cs tag
-	cigar_it->offset_cs += pm.rm_eo;
-	return cigar_it->len;
-}
-
-int ptCigarIt_next(ptCigarIt* cigar_it){
-	if (cigar_it->idx == cigar_it->n - 1) return 0;
-	uint32_t* cigar = cigar_it->cigar;
-	if(cigar_it->use_cs){ // if it is set to use CS tag instead of cigar itself
-		bool first_clip = cigar_it->idx == -1 && 
-				  (bam_cigar_op(cigar[0]) == BAM_CSOFT_CLIP ||
-                           	   bam_cigar_op(cigar[0]) == BAM_CHARD_CLIP);
-		bool second_clip = cigar_it->idx == 0 &&
-                                  (bam_cigar_op(cigar[1]) == BAM_CSOFT_CLIP ||
-                                   bam_cigar_op(cigar[1]) == BAM_CHARD_CLIP);
-		if(!(first_clip || second_clip)){//if no soft- or hard-clip at the beginning
-			int cs_return = ptCigarIt_next_cs(cigar_it);
-			// if CS is finished and there exist soft- or hard- clipping 
-			// in one operation before the last one
-			if(cs_return == 0 &&
-			   (bam_cigar_op(cigar[cigar_it->n-2]) == BAM_CSOFT_CLIP ||
-                           bam_cigar_op(cigar[cigar_it->n-2]) == BAM_CHARD_CLIP)){
-				cigar_it->idx = cigar_it->idx = cigar_it->n-3;
-				cigar_it->use_cs = false;
-				return ptCigarIt_next(cigar_it);
-                        }
-			// if CS is finished and there exist soft- or hard- clipping
-                        // in the last operation
-			else if(cs_return == 0 &&
-				(bam_cigar_op(cigar[cigar_it->n-1]) == BAM_CSOFT_CLIP ||
-                           	bam_cigar_op(cigar[cigar_it->n-1]) == BAM_CHARD_CLIP )){
-                                cigar_it->idx = cigar_it->idx = cigar_it->n-2;
-                                cigar_it->use_cs = false;
-                                return ptCigarIt_next(cigar_it);
-                        }
-			else return cs_return;
-		}
-	}
-	cigar_it->idx += 1;
-	int rd_step;
-	int sq_step;
-	int rf_step;
-	cigar_it->op = bam_cigar_op(cigar[cigar_it->idx]);
-	cigar_it->len = bam_cigar_oplen(cigar[cigar_it->idx]);
-	switch(cigar_it->op) {
-		case BAM_CMATCH:
-		case BAM_CEQUAL:
-		case BAM_CDIFF:
-			rd_step = cigar_it->len;
-			sq_step = cigar_it->len;
-			rf_step = cigar_it->len;	
-      			break;
-		case BAM_CINS:
-			rd_step = cigar_it->len;
-                        sq_step = cigar_it->len;
-                        rf_step = 0;
-                        break;
-   		case BAM_CDEL:
-			rd_step = 0;
-			sq_step = 0;
-			rf_step = cigar_it->len;
-			break;
-		case BAM_CSOFT_CLIP:
-			rd_step = cigar_it->len;
-			sq_step = cigar_it->len;
-			rf_step = 0;
-			break;
-		case BAM_CHARD_CLIP:
-			rd_step = cigar_it->len;
-                        sq_step = 0;
-                        rf_step = 0;
-      			break;
-	}
-	//shift read interval on forward strand
-	if (cigar_it->is_rev) {
-		cigar_it->rde_f = cigar_it->rds_f - 1;
-		cigar_it->rds_f -= rd_step;
-	}
-	else {
-		cigar_it->rds_f = cigar_it->rde_f + 1;
-		cigar_it->rde_f += rd_step;
-	}
-	//shift seq interval
-	cigar_it->sqs = cigar_it->sqe + 1;
-	cigar_it->sqe += sq_step;
-	//shift ref interval
-	cigar_it->rfs = cigar_it->rfe + 1;
-	cigar_it->rfe += rf_step;
-	return cigar_it->len;
 }
 
 
@@ -1051,7 +835,7 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 	int block_margin = 10;
 	for(int i=0; i < stList_length(blocks); i++){
 		block = stList_get(blocks, i);
-		DEBUG_PRINT("\t\t\t###     block#%d: seq[%d:%d] ref[%s:%d-%d]\n", i, block->sqs, block->sqe, contig_name, block->rfs, block->rfe);
+		//DEBUG_PRINT("\t\t\t###     block#%d: seq[%d:%d] ref[%s:%d-%d]\n", i, block->sqs, block->sqe, contig_name, block->rfs, block->rfe);
 		while((cigar_it->sqe < block->sqs) || (cigar_it->rfe < block->rfs)){
 			if(ptCigarIt_next(cigar_it) == 0) break;
 		}// end of while cigar_it->seq_start should be now less than or equal to block->seq_start
@@ -1071,6 +855,7 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 		   (block->sqs <= marker->base_idx - block_margin)){
 			seq_len = block->sqe - block->sqs + 1;
 			ref_len = block->rfe - block->rfs + 1;
+			DEBUG_PRINT("\t\t\t###     block#%d: seq[%d:%d] ref[%s:%d-%d]\n", i, block->sqs, block->sqe, contig_name, block->rfs, block->rfe);
 			DEBUG_PRINT("\t\t\t###     seq_len:%d\tref_len:%d\n", seq_len, ref_len);
 			if (seq_len < 5 || ref_len < 5) continue; // skip small blocks
 			//allocate read sequence
@@ -1189,11 +974,22 @@ bool contain_supp(ptAlignment** alignments, int alignments_len){
 
 void print_markers(stList* markers){
 	if(stList_length(markers) == 0) DEBUG_PRINT("NO MARKERS!\n");
+	DEBUG_PRINT("#alignment_idx\tseq_pos\tread_pos_f\tq\tis_match\tref_pos\n");
 	for(int t =0 ; t < stList_length(markers); t++) {
         	ptMarker* m = stList_get(markers, t);
-                DEBUG_PRINT("MARKER@%d\t%d\t%d\t%d\t%d\t%d\t%d\n", t, m->alignment_idx, m->base_idx, m->read_pos_f, m->base_q, m->is_match, m->ref_pos);
+                DEBUG_PRINT("%d\t%d\t%d\t%d\t%d\t%d\n", m->alignment_idx, m->base_idx, m->read_pos_f, m->base_q, m->is_match, m->ref_pos);
         }
 }
+
+void print_contigs(ptAlignment** alignments, int alignments_len, sam_hdr_t* h){
+        DEBUG_PRINT("\nalignments:\n");
+	DEBUG_PRINT("#alignment_idx\tcontig_name\t\n");
+        for(int t =0 ; t < alignments_len; t++) {
+                bam1_t* b = alignments[t]->record;
+                DEBUG_PRINT("%d\t%s\n", t, sam_hdr_tid2name(h, b->core.tid));
+        }
+}
+
 int main(int argc, char *argv[]){
 	int c;
 	bool baq_flag=false;
@@ -1208,7 +1004,7 @@ int main(int argc, char *argv[]){
 	char* fastaPath;
    	char *program;
    	(program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-   	while (~(c=getopt(argc, argv, "i:f:q:d:e:b:m:c:t:s:h"))) {
+   	while (~(c=getopt(argc, argv, "i:f:qd:e:b:m:ct:s:h"))) {
 		switch (c) {
                         case 'i':
                                 inputPath = optarg;
@@ -1290,15 +1086,16 @@ int main(int argc, char *argv[]){
 			// then we can decide which one is the best alignment
 			if ((stList_length(markers) > 0) && (alignments_len > 1) && !contain_supp(alignments, alignments_len)){
 
-DEBUG_PRINT("@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\n", read_name, alignments_len, alignments[0]->record->core.l_qseq);
+DEBUG_PRINT("\n@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\n", read_name, alignments_len, alignments[0]->record->core.l_qseq);
+				print_contigs(alignments, alignments_len, sam_hdr);
 				//DEBUG_PRINT("Initial markers:\n");
 				//print_markers(markers);
 				remove_all_mismatch_markers(&markers, alignments_len);
-				DEBUG_PRINT("No all-mismatch markers:\n");
-                                print_markers(markers);
+				//DEBUG_PRINT("No all-mismatch markers:\n");
+                                //print_markers(markers);
 				sort_and_fill_markers(&markers, alignments, alignments_len);
-				DEBUG_PRINT("Match-added markers:\n");
-                                print_markers(markers);
+				//DEBUG_PRINT("Match-added markers:\n");
+                                //print_markers(markers);
 				filter_ins_markers(&markers, alignments, alignments_len);
 				DEBUG_PRINT("Insertion-removed markers\n");
 				print_markers(markers);
@@ -1366,11 +1163,9 @@ DEBUG_PRINT("@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\n"
 		}
 		if (bytes_read <= -1) break; // file is finished so break
 		if(b->core.flag & BAM_FUNMAP) continue; // unmapped
-		fprintf(stderr, "\t# construct alignment\n");
 		alignments[alignments_len] = ptAlignment_construct(b, 0.0);
 		ptCigarIt* cigar_it = ptCigarIt_construct(b, true);
 		quality = bam_get_qual(b);
-		fprintf(stderr, "\t# iterate over cigars to find markers\n");
 		while(ptCigarIt_next(cigar_it)){
 			if (cigar_it->op == BAM_CDIFF) {
 				for(int j=0; j < cigar_it->len; j++){

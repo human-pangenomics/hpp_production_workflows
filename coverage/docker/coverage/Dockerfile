@@ -12,6 +12,16 @@ RUN cd /home && \
     tar -xvzf jdk-17_linux-x64_bin.tar.gz
 ENV PATH=$PATH:/home/jdk-17.0.1/bin
 
+#install bcftools
+RUN cd /home && \
+        wget https://github.com/samtools/bcftools/releases/download/1.12/bcftools-1.12.tar.bz2 && \
+        tar -vxjf bcftools-1.12.tar.bz2 && \
+        rm -rf bcftools-1.12.tar.bz2 && \
+        cd bcftools-1.12 && \
+        make
+ENV PATH=/home/bcftools-1.12:$PATH
+
+
 #intstall IGV
 RUN cd /home && \
     wget https://data.broadinstitute.org/igv/projects/downloads/2.11/IGV_2.11.3.zip &&\
@@ -43,7 +53,9 @@ ENV SPLIT_CONTIGS_COV_V2_BIN=/home/scripts/bin/split_contigs_cov_v2
 ENV PDF_GENERATOR_PY=/home/scripts/pdf_generator.py
 ENV SPLIT_BAM_BY_READNAME_BIN=/home/scripts/bin/split_bam_by_readname
 ENV PHASE_READS_BIN=/home/scripts/bin/phase_reads
+ENV PHASE_READS_DEBUG_BIN=/home/scripts/bin/phase_reads_debug
 ENV CORRECT_BAM_BIN=/home/scripts/bin/correct_bam
+ENV FILTER_ALT_READS_BIN=/home/scripts/bin/filter_alt_reads
 ENV EXTRACT_READS_BIN=/home/scripts/bin/extract_reads
 ENV INCREASE_MAPQ_BIN=/home/scripts/bin/increase_mapq
 
