@@ -274,7 +274,6 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath){
         bam1_t* b = bam_init1();
 	ptCigarIt* cigarIt;
 	int len;
-	uint8_t* seq;
 	char* readName;
 	int tid;
 	char* contigName;
@@ -286,16 +285,20 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath){
 	stIntTuple* locTuple;
 	bool writeFlag = true;
 	while( sam_read1(fp, sam_hdr, b) > -1){
-		if ((b->core.flag & BAM_FSECONDARY) > 0) continue;
+		if((b->core.flag & BAM_FUNMAP) > 0) continue;
 		readName = bam_get_qname(b);
-		seq = bam_get_seq(b);
-		tid = b->core.tid;
+                tid = b->core.tid;
                 contigName = sam_hdr_tid2name(sam_hdr, tid);
+		if ((b->core.flag & BAM_FSECONDARY) > 0) {
+			strcpy(contigNamePrev, contigName);
+			continue;
+		}
 		if (strcmp(contigName, contigNamePrev) != 0){
 			snpList = stHash_search(snpTable, contigName);
 			startSnpIndex = 0;
+			strcpy(contigNamePrev, contigName);
 		}
-		if (snpList == NULL) { // This contig has no snps
+		if (snpList == NULL || stList_length(snpList) == 0) { // This contig has no snps
 			if (sam_write1(fo, sam_hdr, b) == -1) {
                                 fprintf(stderr, "Couldn't write %s\n", readName);
                         }
@@ -317,7 +320,6 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath){
                         }
 			continue;
 		}
-		//printf("Start Iterating!\n");
 		cigarIt = ptCigarIt_construct(b, true);
 		snpIndex = startSnpIndex;
 		writeFlag = true;
@@ -325,7 +327,7 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath){
 			if (cigarIt->op == BAM_CDIFF) {
 				len = cigarIt->rfe - cigarIt->rfs + 1;
                                 for(int i=0; i < len; i++){
-					while(loc < (cigarIt->rfs + i) & snpIndex < stList_length(snpList) - 1){
+					while(loc < (cigarIt->rfs + i) && snpIndex < stList_length(snpList) - 1){
 						snpIndex++;
                         			locTuple = stList_get(snpList, snpIndex);
                         			loc = stIntTuple_get(locTuple, 0);
@@ -347,7 +349,11 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath){
                         	fprintf(stderr, "Couldn't write %s\n", readName);
 			}
 		}
+		ptCigarIt_destruct(cigarIt);
 	}
+	printf("all done\n");
+	sam_hdr_destroy(sam_hdr);
+	bam_destroy1(b);
 	sam_close(fo);
 	sam_close(fp);
 }
@@ -374,21 +380,31 @@ int main(int argc, char *argv[]){
                         default:
                                 if (c != 'h') fprintf(stderr, "[E::%s] undefined option %c\n", __func__, c);
                         help:
-                                fprintf(stderr, "\nUsage: %s  -i <INPUT_BAM> -v <VCF> -o <OUTPUT_BAM> \n", program);
+                                fprintf(stderr, "\nUsage: %s  -i <INPUT_BAM> -v <VCF> -o <OUTPUT_BAM> \n\t Filter the reads that contain the alternative alleles of the snps in the given VCF\n\n", program);
                                 fprintf(stderr, "Options:\n");
                                 fprintf(stderr, "         -i         input bam file (CS tag is required)\n");
                                 fprintf(stderr, "         -o         output bam file\n");
-				fprintf(stderr, "         -v         vcf file containing biallelic snps\n");
+				fprintf(stderr, "         -v         vcf file containing biallelic snps (output of 'bcftools view -Ov -f PASS -m2 -M2 -v snps')\n");
                                 return 1;
                 }
         }
 	stHash* snpTable = getSnpTable(vcfPath);
 	fprintf(stderr, "snp table is created\n");
+	/*
 	stHashIterator* it = stHash_getIterator(snpTable);
 	char* key;
-	/**while((key = stHash_getNext(it)) != NULL){
+	stList* list;
+	stIntTuple* locTuple;
+	while((key = stHash_getNext(it)) != NULL){
 		printf("%s\n",key);
-	}**/
+		list = stHash_search(snpTable, key);
+		for (int i=0 ; i < stList_length(list); i++){
+			locTuple = stList_get(list, i);
+                        int loc = stIntTuple_get(locTuple, 0);
+			printf("$ %d\n",loc);
+		}
+	}*/
+	printf("#\n");
 	filterReads(snpTable, inputPath, outputPath);
 	stHash_destruct(snpTable);
 }
