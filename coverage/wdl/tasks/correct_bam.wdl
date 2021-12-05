@@ -38,12 +38,12 @@ task correctBam {
         mkdir output
         OPTIONS="~{options}"
 
-        if [ -n ~{phasingLogText} ]
+        if [ -n "~{phasingLogText}" ]
         then
             OPTIONS="${OPTIONS} --phasingLog ~{phasingLogText}"
         fi
 
-        if [ -n ~{mapqTableText} ]
+        if [ -n "~{mapqTableText}" ]
         then
             OPTIONS="${OPTIONS} --mapqTable ~{mapqTableText}"
         fi
