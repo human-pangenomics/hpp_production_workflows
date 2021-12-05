@@ -32,9 +32,9 @@ task filterAltReads {
         
         FILENAME=$(basename ~{bam})
         PREFIX=${FILENAME%.bam}
-        bcftools view -Ov -m2 -M2 -v snps ~{vcf} > bi_snps.vcf
+        bcftools view -Ov -f PASS -m2 -M2 -v snps ~{vcf} > bi_snps.passed.vcf
         mkdir output
-        ${FILTER_ALT_READS_BIN} -i ~{bam} -o output/$PREFIX.alt_filtered.bam -v bi_snps.vcf
+        ${FILTER_ALT_READS_BIN} -i ~{bam} -o output/$PREFIX.alt_filtered.bam -v bi_snps.passed.vcf
     >>> 
     runtime {
         docker: dockerImage
