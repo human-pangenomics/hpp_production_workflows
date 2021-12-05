@@ -36,7 +36,7 @@ task correctBam {
         PREFIX=${FILENAME%.bam}
 
         mkdir output
-        OPTIONS=~{options}
+        OPTIONS="~{options}"
 
         if [ -n ~{phasingLogText} ]
         then
