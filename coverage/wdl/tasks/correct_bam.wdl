@@ -9,9 +9,10 @@ workflow runCorrectBam{
 
 task correctBam {
     input {
-        File phasingLogText
-        File mapqTableText
+        File? phasingLogText
+        File? mapqTableText
         File bam
+        String? options
         # runtime configurations
         Int memSize=4
         Int threadCount=2
@@ -33,9 +34,21 @@ task correctBam {
         
         FILENAME=$(basename ~{bam})
         PREFIX=${FILENAME%.bam}
+
         mkdir output
-        # -r1 will exclude sec alignments
-        ${CORRECT_BAM_BIN} -i ~{bam} -o output/$PREFIX.corrected.bam -p ~{phasingLogText} -m ~{mapqTableText} -r1 
+        OPTIONS=~{options}
+
+        if [ -n ~{phasingLogText} ]
+        then
+            OPTIONS="${OPTIONS} --phasingLog ~{phasingLogText}"
+        fi
+
+        if [ -n ~{mapqTableText} ]
+        then
+            OPTIONS="${OPTIONS} --mapqTable ~{mapqTableText}"
+        fi
+        
+        ${CORRECT_BAM_BIN} ${OPTIONS} -i ~{bam} -o output/$PREFIX.corrected.bam
     >>> 
     runtime {
         docker: dockerImage
