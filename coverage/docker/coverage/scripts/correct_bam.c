@@ -6,6 +6,7 @@
 #include "bgzf.h"
 #include <regex.h>
 #include "sonLib.h"
+#include "cigar_it.h"
 
 typedef struct {
 	char*	contig_name;
@@ -29,7 +30,7 @@ void location_destruct(void* location){
 
 stHash* get_phased_read_table(char* phased_reads_path){
 	stHash* phased_read_table = stHash_construct3(stHash_stringKey, stHash_stringEqualKey, NULL, location_destruct);
-	if(phased_read_table == NULL) return phased_read_table;
+	if(phased_reads_path == NULL) return phased_read_table;
 	FILE* fp = fopen(phased_reads_path, "r");
 	size_t read;
 	size_t len;
@@ -103,9 +104,10 @@ stHash* get_mapq_table(char* mapq_table_path){
                 contig_name = malloc(strlen(token) + 1);
                 strcpy(contig_name, token);
                 token = strtok(NULL, "\t");
-                start = atoi(token); // 0-based
+                start = atoi(token) - 1; // 0-based
 		token = strtok(NULL, "\t");
                 mapq = atoi(token);
+		//printf("%d\n",mapq);
                 loc = location_construct(contig_name, start, mapq);
 		locs = stHash_search(mapq_table, read_name);
 		if (locs == NULL){
@@ -128,6 +130,7 @@ uint8_t get_mapq(stHash* mapq_table, bam1_t* b, sam_hdr_t* sam_hdr){
 			loc = stList_get(locs, i);
 			if(strcmp(loc->contig_name, contig_name) == 0 &&
 			   loc->start == start){
+				//printf("%s\t%d\n",loc->contig_name, loc->mapq);
 				return loc->mapq;
 			}
 		}
@@ -135,19 +138,64 @@ uint8_t get_mapq(stHash* mapq_table, bam1_t* b, sam_hdr_t* sam_hdr){
         return b->core.qual;
 }
 
+int get_read_length(bam1_t* b){
+	ptCigarIt* cigar_it = ptCigarIt_construct(b, true);
+	int read_len = 0;
+	while(ptCigarIt_next(cigar_it)){
+		if(cigar_it->op == BAM_CDIFF ||
+		   cigar_it->op == BAM_CMATCH ||
+		   cigar_it->op == BAM_CEQUAL ||
+		   cigar_it->op == BAM_CINS ||
+		   cigar_it->op == BAM_CHARD_CLIP  ||
+		   cigar_it->op == BAM_CSOFT_CLIP){
+			read_len += cigar_it->len;
+		}
+	}
+	ptCigarIt_destruct(cigar_it);
+	return read_len;
+}
 
+int get_alignment_length(bam1_t* b){
+        ptCigarIt* cigar_it = ptCigarIt_construct(b, true);
+        int alignment_len = 0;
+        while(ptCigarIt_next(cigar_it)){
+                if(cigar_it->op == BAM_CDIFF ||
+                   cigar_it->op == BAM_CMATCH ||
+                   cigar_it->op == BAM_CEQUAL) {
+                        alignment_len += cigar_it->len;
+                }
+        }
+	ptCigarIt_destruct(cigar_it);
+        return alignment_len;
+}
+
+
+static struct option long_options[] =
+{
+    {"inputBam", required_argument, NULL, 'i'},
+    {"outputBam", required_argument, NULL, 'o'},
+    {"phasingLog", required_argument, NULL, 'P'},
+    {"mapqTable", required_argument, NULL, 'M'},
+    {"minReadLen", required_argument, NULL, 'm'},
+    {"minAlignmentLen", required_argument, NULL, 'a'},
+    {"primaryOnly", 0, NULL, 'p'},
+    {"noTag", 0, NULL, 't'},
+    {NULL, 0, NULL, 0}
+};
 
 int main(int argc, char *argv[]){
         int c;
         char* input_path;
 	char* output_path;
-	char* phasing_log_path;
-	char* mapq_table_path;
+	char* phasing_log_path=NULL;
+	char* mapq_table_path=NULL;
 	bool primary_only = false;
 	bool no_tag = false;
-        char *program;
+	int min_read_length = 5000;
+	int min_alignment_length = 5000;
+	char *program;
         (program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-        while (~(c=getopt(argc, argv, "i:o:p:m:t:r:h"))) {
+        while (~(c=getopt_long(argc, argv, "i:o:P:M:tpm:a:h", long_options, NULL))) {
                 switch (c) {
                         case 'i':
                                 input_path = optarg;
@@ -155,29 +203,37 @@ int main(int argc, char *argv[]){
                         case 'o':
                                 output_path = optarg;
                                 break;
-			case 'p':
+			case 'P':
                                 phasing_log_path = optarg;
                                 break;
-			case 'm':
+			case 'M':
 				mapq_table_path = optarg;
 				break;
 			case 't':
 				no_tag = true;
 				break;
-			case 'r':
+			case 'p':
 				primary_only = true;
 				break;
+			case 'm':
+                                min_read_length = atoi(optarg);
+                                break;
+			case 'a':
+                                min_alignment_length = atoi(optarg);
+                                break;
                         default:
                                 if (c != 'h') fprintf(stderr, "[E::%s] undefined option %c\n", __func__, c);
                         help:
-                                fprintf(stderr, "\nUsage: %s  -i <INPUT_BAM> -o <OUTPUT_BAM> -p <PHASING_LOG> -m <MAPQ_TABLE>\n", program);
+                                fprintf(stderr, "\nUsage: %s  -i <INPUT_BAM> -o <OUTPUT_BAM> -p <PHASING_LOG> -m <MAPQ_TABLE>\n\tModify the input bam file:\n\t* Apply the phasing log by swapping the primary and secondary alignments whenever necessary(stdout log of ./phase_reads)\n\t* Set the MAPQs to the values given in the mapq table\n\t\tmapq table is a tab delimited text containing 4 columns:\n\t\t1. read name\n\t\t2. contig name\n\t\t3. left-most coordinate on contig (1-based)\n\t\t4. adjusted mapq\n\t* Filter secondary alignments (After applying the phasing log)\n\t* Skip outputing the optional fields (like cs and MD tags)\n\t* Filter the reads shorter than the given threshold\n\t* Filter the alignments shorter than the given threshold\n\n", program);
                                 fprintf(stderr, "Options:\n");
-                                fprintf(stderr, "         -i         input bam file\n");
-                                fprintf(stderr, "         -o         output bam file\n");
-				fprintf(stderr, "         -p         the phasing log path\n");
-				fprintf(stderr, "         -m         the adjusted mapq table path\n");
-                                fprintf(stderr, "         -t         output no optional fields\n");
-                                fprintf(stderr, "         -m         output only primary alignments\n");
+                                fprintf(stderr, "         --inputBam,\t-i         input bam file\n");
+                                fprintf(stderr, "         --outputBam,\t-o         output bam file\n");
+				fprintf(stderr, "         --phasingLog,\t-P         the phasing log path [optional]\n");
+				fprintf(stderr, "         --mapqTable,\t-M         the adjusted mapq table path [optional]\n");
+                                fprintf(stderr, "         --noTag,\t-t         output no optional fields\n");
+                                fprintf(stderr, "         --primaryOnly,\t-p         output only primary alignments\n");
+				fprintf(stderr, "         --minReadLen,\t-m         min read length [default: 5k]\n");
+				fprintf(stderr, "         --minAlignmentLen,\t-a         min alignment length [default: 5k]\n");
 				return 1;
                 }
         }
@@ -190,10 +246,20 @@ int main(int argc, char *argv[]){
 	//get the table of phased reads (the locations of their primary alignments are stored as values)
 	stHash* phased_read_table = get_phased_read_table(phasing_log_path);
 	//get the table of reads with adjusted mapq (the locations (+ corresponding mapqs) are stored as values)
-	stHashIterator* it = stHash_getIterator(phased_read_table);
+	//stHashIterator* it = stHash_getIterator(phased_read_table);
 	char* read_name;
-	Location* loc;
+	//Location* loc;
 	stHash* mapq_table = get_mapq_table(mapq_table_path);
+	/*stHashIterator* it = stHash_getIterator(mapq_table);
+	stList* locs;
+	Location* loc;
+	while((read_name = stHash_getNext(it)) != NULL){
+		locs = stHash_search(mapq_table, read_name);
+		for(int i=0; i< stList_length(locs); i++){
+			loc = stList_get(locs, i);
+			printf("%s\t%s\t%d\t%d\n", read_name, loc->contig_name, loc->start, loc->mapq);
+		}
+	}*/
 	//modify mapq and sec/pri tags based on given logs and tables
 	bam1_t* b = bam_init1();
 	while(sam_read1(fp, sam_hdr, b) > -1) {
@@ -203,6 +269,11 @@ int main(int argc, char *argv[]){
 		else{
 			if(primary_only) continue;
 			b->core.flag |= BAM_FSECONDARY; // make it secondary
+		}
+		// skip short reads or short alignments
+		if (get_read_length(b) < min_read_length || 
+		    get_alignment_length(b) < min_alignment_length){
+			continue;
 		}
 		b->core.qual = get_mapq(mapq_table, b, sam_hdr);
 		if(no_tag) b->l_data -= bam_get_l_aux(b);
