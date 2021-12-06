@@ -57,6 +57,7 @@ ENV PHASE_READS_DEBUG_BIN=/home/scripts/bin/phase_reads_debug
 ENV CORRECT_BAM_BIN=/home/scripts/bin/correct_bam
 ENV FILTER_ALT_READS_BIN=/home/scripts/bin/filter_alt_reads
 ENV EXTRACT_READS_BIN=/home/scripts/bin/extract_reads
+ENV COV2WIG_BIN=/home/scripts/bin/cov2wig
 ENV INCREASE_MAPQ_BIN=/home/scripts/bin/increase_mapq
 
 

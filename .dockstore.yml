@@ -225,3 +225,6 @@ workflows:
    -  name: FilterAltReads
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/filter_alt_reads.wdl
+   -  name: Cov2Wig
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/cov2wig.wdl
