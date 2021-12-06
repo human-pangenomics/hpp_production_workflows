@@ -9,7 +9,7 @@ workflow runCov2Wig{
 
 task cov2wig{
     input{
-        File cov
+        File covGz
         Int segmentSize=1024
         Int threshold=250
         String trackName
@@ -33,11 +33,12 @@ task cov2wig{
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
         
-        FILENAME=`basename ~{cov}`
-        PREFIX="${FILENAME%.cov}"
+        FILENAME=`basename ~{covGz}`
+        PREFIX="${FILENAME%.cov.gz}"
 
+        gunzip -c ~{covGz} > ${PREFIX}.cov
         mkdir output
-        ${COV2WIG_BIN} -i ~{cov} -s ~{segmentSize} -t ~{threshold} -f ~{fai} -o output/${PREFIX}.wig -n ~{trackName}
+        ${COV2WIG_BIN} -i ${PREFIX}.cov -s ~{segmentSize} -t ~{threshold} -f ~{fai} -o output/${PREFIX}.wig -n ~{trackName}
     >>>
     runtime {
         docker: dockerImage
