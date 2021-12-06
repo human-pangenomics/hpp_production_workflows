@@ -12,6 +12,7 @@ task cov2wig{
         File cov
         Int segmentSize=1024
         Int threshold=250
+        String trackName
         File fai
         # runtime configurations
         Int memSize=4
@@ -36,7 +37,7 @@ task cov2wig{
         PREFIX="${FILENAME%.cov}"
 
         mkdir output
-        ${COV2WIG_BIN} -i ~{cov} -s ~{segmentSize} -t ~{threshold} -f ~{fai} -o output/${PREFIX}.wig
+        ${COV2WIG_BIN} -i ~{cov} -s ~{segmentSize} -t ~{threshold} -f ~{fai} -o output/${PREFIX}.wig -n ~{trackName}
     >>>
     runtime {
         docker: dockerImage
