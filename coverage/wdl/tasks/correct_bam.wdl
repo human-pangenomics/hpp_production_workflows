@@ -13,6 +13,7 @@ task correctBam {
         File? mapqTableText
         File bam
         String? options
+        String suffix
         # runtime configurations
         Int memSize=4
         Int threadCount=2
@@ -48,7 +49,7 @@ task correctBam {
             OPTIONS="${OPTIONS} --mapqTable ~{mapqTableText}"
         fi
         
-        ${CORRECT_BAM_BIN} ${OPTIONS} -i ~{bam} -o output/$PREFIX.corrected.bam
+        ${CORRECT_BAM_BIN} ${OPTIONS} -i ~{bam} -o output/$PREFIX.~{suffix}.bam
     >>> 
     runtime {
         docker: dockerImage
