@@ -20,8 +20,19 @@ the primary one is to the correct haplotype and if it is not find the correct on
 One way to achieve this aim is to find the single-base markers that can navigate us toward the correct haplotype. An example of such marker is shown
 in the top figure by green and red bars. All mismatched bases in the alignments of a single read form the initial set of candidate markers. After 
 projecting the intial markers into the coordinate of the read (instead of reference) it is possible to determine the match/mismatch status of a marker in 
-the other alignments of the same read. A marker that is a mismatch in all of the alignments is removed immediately. Among the remaining markers
-we perform two main filtering:
+the other alignments of the same read. A marker that is a mismatch in all of the alignments is removed immediately. 
 
-#### 1. 
+Among the remaining markers we perform two main filtering:
+
+#### 1. Markers within insertions
+
+If a marker, which is a mismatch in at least one alignment, appears within an insertion in another alignment we remove it in this step. We remove it 
+because it can be either a misassembly on the haplotype that contains the insertion or an error on the read. So that marker can be misleading on either cases. In the figure below you can see an example of such a marker (shown with a blue bar).
+
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/phasing/images/phase_reads_2.png" width="700" height="400">
+
+#### 1. Low quality markers
+
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/phasing/images/phase_reads_3.png" width="700" height="400">
+
 
