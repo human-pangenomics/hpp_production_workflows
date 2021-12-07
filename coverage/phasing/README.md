@@ -61,9 +61,9 @@ Two heuristics are applied for increasing specificity:
 
 ### Running phase_reads
 
-The source code of the phasing program is written in C and is available in `/docker/coverage/scripts/phase_reads.c`. The binary executable is also available in `/docker/coverage/scripts/bin/phase_reads` 
+The source code of the phasing program is written in C and it is available in [`coverage/docker/coverage/scripts/phase_reads.c`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/scripts/phase_reads.c). The path to the binary executable is [`coverage/docker/coverage/scripts/bin/phase_reads`](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docker/coverage/scripts/bin)
 
-The only prerequisite to run this program is the `htslib` library. You can find how to install htslib in `../docker/coverage/Dockerfile`. It is recommended
+The only prerequisite to run this program is the `htslib` library. You can find how to install htslib in [`coverage/docker/coverage/Dockerfile`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/Dockerfile). It is recommended
 to use the docker image `quay.io/masri2019/hpp_coverage:latest` in which `htslib` is installed and `phase_reads` program is also available. The path of this program is saved in the variable `${PHASE_READS_BIN}`.
 
 Here are the parameters `phase_reads` can accept:
@@ -115,7 +115,7 @@ Based on the initial letter of each line we can indentify the correct phasing of
 ### Correct the alignment
 
 To Swap the pri/sec tags of the reads reported in `out.log` and produce a modified bam file you can run the program  `correct_bam`.
-The source code of the correction program is written in C and is available in `../docker/coverage/scripts/correct_bam.c`. The binary executable is also available in `../docker/coverage/scripts/bin/correct_bam`. Again it is recommended to run it through the docker image `quay.io/masri2019/hpp_coverage:latest`. The path of this program is saved in the variable `${CORRECT_BAM_BIN}`.
+The source code of the correction program is written in C and is available in [`coverage/docker/coverage/scripts/correct_bam.c`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/scripts/correct_bam.c). The binary executable is also available in [`coverage/docker/coverage/scripts/bin/correct_bam`](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docker/coverage/scripts/bin). Again it is recommended to run it through the docker image `quay.io/masri2019/hpp_coverage:latest`. The path of this program is saved in the variable `${CORRECT_BAM_BIN}`.
 
 
 Here are the parameters `correct_bam` can accept:
@@ -153,6 +153,10 @@ To produce the modified bam file: (Here the input bam file can be sorted by refe
 
 Note the default values for `--minReadLen` and `--minAlignmentLen` are both `5k` and should be changed if not desired.
 
+### Workflows
+
+Each of the phasing and correction programs is wdlized separately and the wdl files can be found  in `coverage/wdl/tasks`. The phasing wdl file is named [`phase_reads.wdl`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/wdl/tasks/phase_reads.wdl) and the correction wdl file is named [`correct_bam.wdl`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/wdl/tasks/correct_bam.wdl).
+
 ### Acknowledgements
 
-Thanks to Heng Li for sharing the core idea of `mmphase` which is incorporated in `phase_reads` with some modifications.
+Thanks to Heng Li for sharing the core idea of [`mmphase`](https://github.com/lh3/minimap2/tree/master/misc) which is incorporated in `phase_reads` with some modifications.
