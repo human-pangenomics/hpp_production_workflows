@@ -24,14 +24,14 @@ workflow VariantCalling{
             threadCount = numberOfCallerNodes
     }
     scatter (part in zip(splitBamContigWise.splitBams, splitBamContigWise.splitBeds)) {
-        call increaseMapq{
-            input:
-                bam = part.left
-        }
+        #call increaseMapq{
+        #    input:
+        #       bam = part.left
+        #}
         call callDeepVariant{
             input:
                 assemblyFastaGz = assemblyFastaGz,
-                bam = increaseMapq.outputBam,
+                bam = part.left,
                 bed = part.right,
                 includeSecondary = includeSecondary,
                 includeSupplementary = includeSupplementary
