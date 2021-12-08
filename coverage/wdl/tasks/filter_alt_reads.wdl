@@ -4,6 +4,7 @@ workflow runFilterAltReads {
     call filterAltReads
     output {
         File filteredBam = filterAltReads.filteredBam
+        File altBam = filterAltReads.altBam
     }
 }
 
@@ -34,7 +35,7 @@ task filterAltReads {
         PREFIX=${FILENAME%.bam}
         bcftools view -Ov -f PASS -m2 -M2 -v snps ~{vcf} > bi_snps.passed.vcf
         mkdir output
-        ${FILTER_ALT_READS_BIN} -i ~{bam} -o output/$PREFIX.alt_filtered.bam -v bi_snps.passed.vcf
+        ${FILTER_ALT_READS_BIN} -i ~{bam} -o output/$PREFIX.alt_filtered.bam -f output/$PREFIX.alt.bam -v bi_snps.passed.vcf
     >>> 
     runtime {
         docker: dockerImage
@@ -44,7 +45,8 @@ task filterAltReads {
         preemptible : preemptible
     }
     output {
-        File filteredBam = glob("output/*.bam")[0]
+        File filteredBam = glob("output/*.alt_filtered.bam")[0]
+        File altBam = glob("output/*.alt.bam")[0]
     }
 }
 
