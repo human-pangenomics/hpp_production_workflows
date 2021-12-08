@@ -33,10 +33,19 @@ def main():
             groupContigs[i].append(BedBlocks[contigIdx])
             groupSizes[i] += BedBlocks[contigIdx][2] - BedBlocks[contigIdx][1]
             contigIdx += 1
+    # Distribute the remaining small contigs into different groups
+    for i in range(contigIdx, len(BedBlocks)):
+            groupContigs[i%n].append(BedBlocks[contigIdx])
+            groupSizes[i%n] += BedBlocks[contigIdx][2] - BedBlocks[contigIdx][1]
+            contigIdx += 1
+
+    total = 0 
     for i in range(n):
         print("{}:\t{:.2f} Mb".format(i, groupSizes[i]/1e6))
         with open("{}/{}_{}.bed".format(outputDir, prefix, i+1),"w") as f:
             for contig, start, end in groupContigs[i]:
+                total += end - start
                 f.write("{}\t{}\t{}\n".format(contig, start, end))
-
+    # check if the total size is correct
+    assert(total == totalSize)
 main()
