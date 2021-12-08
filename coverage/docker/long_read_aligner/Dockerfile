@@ -14,13 +14,17 @@ ENV PATH="/home/apps/Winnowmap-2.03/bin:${PATH}"
 
 ## minimap2
 RUN cd /home/apps && \
-    wget https://github.com/lh3/minimap2/archive/refs/tags/v2.21.zip && \
-    unzip v2.21.zip && \
-    rm v2.21.zip && \
-    cd minimap2-2.21 && \
+    #git clone -b 2.23 https://github.com/lh3/minimap2 && \
+    wget https://github.com/lh3/minimap2/archive/refs/tags/v2.23.zip && \
+    unzip v2.23.zip && \
+    rm v2.23.zip && \
+    cd minimap2-2.23 && \
+    #cd minimap2 && \
     make
-ENV PATH="/home/apps/minimap2-2.21:${PATH}"
-ENV PAFTOOLS_PATH="/home/apps/minimap2-2.21/misc/paftools.js"
+#ENV PATH="/home/apps/minimap2-2.21:${PATH}"
+#ENV PAFTOOLS_PATH="/home/apps/minimap2-2.21/misc/paftools.js"
+ENV PATH="/home/apps/minimap2:${PATH}"
+ENV PAFTOOLS_PATH="/home/apps/minimap2/misc/paftools.js"
 
 ## k8
 RUN cd /home/apps && \

@@ -99,14 +99,14 @@ task alignmentBam{
             meryl print greater-than distinct=0.9998 merylDB > repetitive_k~{kmerSize}.txt
             ALIGNER_CMD="winnowmap -W repetitive_k~{kmerSize}.txt"
         elif [[ ~{aligner} == "minimap2" ]] ; then
-            ALIGNER_CMD="minimap2"
+            ALIGNER_CMD="minimap2 -k ~{kmerSize}"
         else
              echo "UNSUPPORTED ALIGNER (expect minimap2 or winnowmap): ~{aligner}"
              exit 1
         fi
         
         fileBasename=$(basename ~{readFastq_or_queryAssembly})
-        ${ALIGNER_CMD} ~{options} -a -x ~{preset} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} | samtools view -h -b > ${fileBasename%.*.*}.bam
+        ${ALIGNER_CMD} -a -x ~{preset} ~{options} -t~{threadCount} ~{refAssembly} ~{readFastq_or_queryAssembly} | samtools view -h -b > ${fileBasename%.*.*}.bam
         
         if [ -z ~{suffix} ]; then
             OUTPUT_FILE=${fileBasename%.*.*}.sorted.bam
