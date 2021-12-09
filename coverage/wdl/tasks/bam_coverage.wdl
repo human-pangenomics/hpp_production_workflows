@@ -12,10 +12,7 @@ workflow runBamCoverage{
 
 task bamCoverage{
     input{
-        String sampleName
-        String sampleSuffix
-        String platform
-        Array[File] bamFiles
+        File bam
         Int minMAPQ
         String extraOptions = ""
         File assemblyFastaGz
@@ -39,24 +36,22 @@ task bamCoverage{
         set -o xtrace
         
         # Extract assembly and index
-        FILENAME=`basename ~{assemblyFastaGz}`
-        PREFIX="${FILENAME%.*.*}"
-        gunzip -c ~{assemblyFastaGz} > $PREFIX.fa
-        samtools faidx $PREFIX.fa
+        ASM_FILENAME=`basename ~{assemblyFastaGz}`
+        ASM_PREFIX="${ASM_FILENAME%.*.*}"
+        gunzip -c ~{assemblyFastaGz} > ${ASM_PREFIX}.fa
+        samtools faidx ${ASM_PREFIX}.fa
 
-        if (( ~{length(bamFiles)} == 1 ))
-        then 
-            samtools depth -aa -Q ~{minMAPQ} ~{extraOptions} ~{sep=" " bamFiles}  > ~{sampleName}.depth
-        else
-            samtools depth -aa -Q ~{minMAPQ} ~{extraOptions} ~{sep=" " bamFiles} | awk '{sum=0; for (i=3; i<=NF; i++) { sum+= $i } {print $1,$2,sum}}' > ~{sampleName}.depth
-        fi
+        BAM_FILENAME=$(basename ~{bam})
+        BAM_PREFIX=${BAM_FILENAME%.bam}
+        samtools depth -aa -Q ~{minMAPQ} ~{extraOptions} ~{bam}  > ${BAM_PREFIX}.depth
+
         # Convert the output of samtools depth into a compressed format
-        ${DEPTH2COV_BIN} -d ~{sampleName}.depth -f ${PREFIX}.fa.fai -o ~{sampleName}.~{sampleSuffix}.~{platform}.cov
+        ${DEPTH2COV_BIN} -d ${BAM_PREFIX}.depth -f ${ASM_PREFIX}.fa.fai -o ${BAM_PREFIX}.cov
         # Convert cov to counts
-        ${COV2COUNTS_BIN} -i ~{sampleName}.~{sampleSuffix}.~{platform}.cov -o ~{sampleName}.~{sampleSuffix}.~{platform}.counts
+        ${COV2COUNTS_BIN} -i ${BAM_PREFIX}.cov -o ${BAM_PREFIX}.counts
         # Calculate mean and standard deviation
-        python3 ${CALC_MEAN_SD_PY} --countsInput ~{sampleName}.~{sampleSuffix}.~{platform}.counts --meanOutput cov_mean.txt --sdOutput cov_sd.txt
-        gzip ~{sampleName}.~{sampleSuffix}.~{platform}.cov
+        python3 ${CALC_MEAN_SD_PY} --countsInput ${BAM_PREFIX}.counts --meanOutput cov_mean.txt --sdOutput cov_sd.txt
+        gzip ${BAM_PREFIX}.cov
     >>>
     runtime {
         docker: dockerImage
