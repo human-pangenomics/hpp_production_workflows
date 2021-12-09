@@ -7,6 +7,7 @@ workflow VariantCalling{
         File assemblyFastaGz
         File bam
         File bamIndex
+        Int minMAPQ = 0
         Int numberOfCallerNodes=16
         Int nodeThreadCount=16
         String includeSecondary="False"
@@ -34,7 +35,8 @@ workflow VariantCalling{
                 bam = part.left,
                 bed = part.right,
                 includeSecondary = includeSecondary,
-                includeSupplementary = includeSupplementary
+                includeSupplementary = includeSupplementary,
+                minMAPQ = minMAPQ
         }
     }
     call var_t.mergeVcf{
@@ -157,6 +159,7 @@ task callDeepVariant{
         File bam
         File assemblyFastaGz
         File bed
+        Int minMAPQ
         String includeSecondary="False"
         String includeSupplementary="False"
         String modelType
@@ -190,15 +193,12 @@ task callDeepVariant{
         gunzip -c ~{assemblyFastaGz} > asm.fa
         samtools faidx asm.fa
 
-        MAKE_EXAMPLES_EXTRA_ARGS=""
+        MAKE_EXAMPLES_EXTRA_ARGS="min_mapping_quality=~{minMAPQ}"
         if [ ~{includeSecondary} == "True"]; then
-            MAKE_EXAMPLES_EXTRA_ARGS="keep_secondary_alignments=true"
+            MAKE_EXAMPLES_EXTRA_ARGS="${MAKE_EXAMPLES_EXTRA_ARGS},keep_secondary_alignments=true"
         fi
         if [ ~{includeSupplementary} == "True" ]; then
-            if ! [ -z ${MAKE_EXAMPLES_EXTRA_ARGS} ];then
-                MAKE_EXAMPLES_EXTRA_ARGS="${MAKE_EXAMPLES_EXTRA_ARGS},"
-            fi
-            MAKE_EXAMPLES_EXTRA_ARGS="${MAKE_EXAMPLES_EXTRA_ARGS}keep_supplementary_alignments=true"
+            MAKE_EXAMPLES_EXTRA_ARGS="${MAKE_EXAMPLES_EXTRA_ARGS},keep_supplementary_alignments=true"
         fi
 
         ## call deepvariant 
