@@ -4,6 +4,7 @@ workflow runCorrectBam{
     call correctBam
     output {
         File correctedBam = correctBam.correctedBam
+        File correctedBamIndex = correctBam.correctedBamIndex
     }
 }
 
@@ -50,6 +51,7 @@ task correctBam {
         fi
         
         ${CORRECT_BAM_BIN} ${OPTIONS} -i ~{bam} -o output/$PREFIX.~{suffix}.bam
+        samtools index output/$PREFIX.~{suffix}.bam
     >>> 
     runtime {
         docker: dockerImage
@@ -60,6 +62,7 @@ task correctBam {
     }
     output {
         File correctedBam = glob("output/*.bam")[0]
+        File correctedBamIndex = glob("output/*.bam.bai")[0]
     }
 }
 

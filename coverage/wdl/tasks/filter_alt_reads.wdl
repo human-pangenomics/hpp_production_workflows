@@ -5,6 +5,8 @@ workflow runFilterAltReads {
     output {
         File filteredBam = filterAltReads.filteredBam
         File altBam = filterAltReads.altBam
+        File filteredBamIdex = filterAltReads.filteredBamIndex
+        File altBamIndex = filterAltReads.altBamIndex
     }
 }
 
@@ -36,6 +38,8 @@ task filterAltReads {
         bcftools view -Ov -f PASS -m2 -M2 -v snps ~{vcf} > bi_snps.passed.vcf
         mkdir output
         ${FILTER_ALT_READS_BIN} -i ~{bam} -o output/$PREFIX.alt_filtered.bam -f output/$PREFIX.alt.bam -v bi_snps.passed.vcf
+        samtools index output/$PREFIX.alt_filtered.bam
+        samtools index output/$PREFIX.alt.bam
     >>> 
     runtime {
         docker: dockerImage
@@ -47,6 +51,8 @@ task filterAltReads {
     output {
         File filteredBam = glob("output/*.alt_filtered.bam")[0]
         File altBam = glob("output/*.alt.bam")[0]
+        File filteredBamIndex = glob("output/*.alt_filtered.bam.bai")[0]
+        File altBamIndex = glob("output/*.alt.bam.bai")[0]
     }
 }
 
