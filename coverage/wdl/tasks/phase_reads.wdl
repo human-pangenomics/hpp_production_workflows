@@ -7,8 +7,6 @@ workflow runPhaseReads{
         File inputBam
         File diploidAssemblyFastaGz
         Boolean debugMode = true
-        String sampleName
-        String sampleSuffix
     }
     call sortByName{
          input:
@@ -29,12 +27,12 @@ workflow runPhaseReads{
     call concatLogs as concatErrLogs{
         input:
             logs = phaseReads.errLog,
-            filename = "${sampleName}.${sampleSuffix}.phasing_err"
+            filename = basename("${inputBam}", ".bam") + ".phasing_err"
     }
     call concatLogs as concatOutLogs{
         input:
             logs = phaseReads.outLog,
-            filename = "${sampleName}.${sampleSuffix}.phasing_out"
+            filename = basename("${inputBam}", ".bam") + ".phasing_out"
     }
 
     output{
