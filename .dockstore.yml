@@ -228,3 +228,6 @@ workflows:
    -  name: Cov2Wig
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/cov2wig.wdl
+   -  name: CoverageAnalysisStep1
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/workflows/coverage_analysis_step1.wdl

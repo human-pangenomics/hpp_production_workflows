@@ -2,11 +2,12 @@ version 1.0
 
 import "../../../asset/wdl/tasks/variant_calling.wdl" as var_t
 
-workflow VariantCalling{
+workflow runVariantCalling{
     input {
         File assemblyFastaGz
         File bam
         File bamIndex
+        String deepVariantModelType
         Int minMAPQ = 0
         Int numberOfCallerNodes=16
         Int nodeThreadCount=16
@@ -26,8 +27,9 @@ workflow VariantCalling{
         #    input:
         #       bam = part.left
         #}
-        call callDeepVariant{
+        call deepVariant{
             input:
+                modelType = deepVariantModelType,
                 assemblyFastaGz = assemblyFastaGz,
                 bam = part.left,
                 bed = part.right,
@@ -38,7 +40,7 @@ workflow VariantCalling{
     }
     call var_t.mergeVcf{
         input:
-            vcfGzFiles = callDeepVariant.vcfGz,
+            vcfGzFiles = deepVariant.vcfGz,
             outputName = basename("${bam}", ".bam")
     }
     output{
@@ -151,7 +153,7 @@ task increaseMapq{
     }
 }
 
-task callDeepVariant{
+task deepVariant{
     input{
         File bam
         File assemblyFastaGz
