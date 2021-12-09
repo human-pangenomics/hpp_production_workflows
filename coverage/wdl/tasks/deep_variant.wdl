@@ -12,9 +12,6 @@ workflow VariantCalling{
         Int nodeThreadCount=16
         String includeSecondary="False"
         String includeSupplementary="False"
-        String sampleName
-        String sampleSuffix
-        String platform
     }
     call splitBamContigWise {
         input:
@@ -42,7 +39,7 @@ workflow VariantCalling{
     call var_t.mergeVcf{
         input:
             vcfGzFiles = callDeepVariant.vcfGz,
-            outputName = "${sampleName}.${sampleSuffix}.${platform}"
+            outputName = basename("${bam}", ".bam")
     }
     output{
         File vcfGz = mergeVcf.vcfGz 
