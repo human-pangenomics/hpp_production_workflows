@@ -1,29 +1,22 @@
-## A Mixture Model-Based Coverage Analysis For HPRC Y1 Assemblies
+## A Mixture Model-Based Coverage Analysis For Assessing Diploid Assemblies
 
 ### Overview
-On this page we are explaining the steps toward the coverage analysis of HPRC-Y1 assemblies. This analysis is still under development and this page will be updated once there is a newer version of the results. Here is a summary of this analysis 
-- Align the long reads to each assembly
-- Calculate the read coverage of each base of the assembly 
-- Fit a mixture model to the coverage distribution
+The main purpose of this analysis is to assess the copy number of the assembled blocks in a diploid assembly. To use this pipeline a BAM file containing the read alignments to the diploid assembly should be prepared in advance. Using the BAM file this pipeline is able to flag mis-assemblies by detecting anomalies in the coverage distribution along the assembly. It can also categorize the mis-assemblies into 3 main groups: erroreous, (falsely) duplicated, and collapsed. 
+
+The examples shown here are from the [Human Pan-Genome Project](https://humanpangenome.org/) since it was the main motivation for this developing the pipeline.
+
+The pipeline has 3 core steps:
+- Calculate the read coverage of each assembly base 
+- Fit a mixture model to the coverage distributions
 - Extract the blocks assigned to the model's 4 main components: erroreous, duplicated, haploid, and collapsed.
 
-### 1. Read Alignment
-The ONT and HiFi reads are aligned to each diploid assembly (~ 6Gbases long) with winnowmap v2.03. Since we are aligning the reads to the diploid assembly the expected base-level coverage should be half of the sequencing coverage.
-Here are the main commands used for producing the alignments (taken from the [winnowmap docs](https://github.com/marbl/Winnowmap)):
-```` 
-  # making the k-mer table with meryl
-  meryl count k=15 output merylDB asm.fa
-  meryl print greater-than distinct=0.9998 merylDB > repetitive_k15.txt
-  
-  # alignment with winnowmap
-  winnowmap -W repetitive_k15.txt -ax [map-ont | map-pb] -Y -L --eqx --cs -I8g <(cat pat_asm.fa mat_asm.fa) reads.fq.gz | \
-    samtools view -hb > read_alignment.bam
-````
+### Docker
+All programs used in this analysis are available in the docker image `quay.io/masri2019/hpp_coverage:latest`. It is recommended to use this docker for running 
+the programs. The path to each program is saved in an evironment variable. The environment variable for each program is mentioned in its 
+corresponding section below.
 
-
-### 2. Calculating Depth of Coverage
-With `samtools depth` we could calculate the the depth of coverage for each assembly base. The output of `samtools depth -aa` is like below. (`-aa` 
-option allows reporting the bases with no coverage)
+### 1. Calculating Depth of Coverage
+Given the read alignments in the BAM format it is possible to calculate the the depth of coverage for each assembly base by `samtools depth`. The output of `samtools depth -aa` is like below. (`-aa` option allows outputing the bases with zero coverage)
 ````
 contig_1  1 0
 contig_1  2 1
@@ -34,28 +27,29 @@ contig_1  6 2
 ````
 In the order in which they appear, the columns are showing the contig name, the base coordinate and the coverage. 
 Each base has a separate line even if consecutive bases are having the same coverage. 
-In order to make this output more compact we converted it to the format below
+In order to make this output more compact it can be converted to the format below
 ````
 >contig_1 6
 1 1 0
 2 4 1
 5 6 2
 ````
-Where each contig's name appears only once before the first block of that contig and the consecutive bases with the same coverage take only one line.
-The number that comes after the name of the contig is the contig size. We added the suffix `.cov` to the files with this format.
+In which each contig's name appears only once before the first block of that contig and the consecutive bases with the same coverage take only one line.
+The number that comes after the name of the contig is the contig size. The coverage files with such a format have the suffix `.cov`.
 Here are the main commands for producing the coverage files:
 ````
 samtools depth -aa -Q 0 read_alignment.bam > read_alignment.depth
 ./depth2cov -d read_alignment.depth -f asm.fa.fai -o read_alignment.cov
 ````
-`depth2cov` is a binary executable that converts the output of `samtools depth` to `.cov` format. Its source code is written in C and is available in `docker/coverage/scripts`
+`depth2cov` is a program that converts the output of `samtools depth` to `.cov` format. Its source code is available [here](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/scripts/depth2cov.c) and the environment variable to run the program in
+the docker is `${DEPTH2COV_BIN}`.
 
 Since the reads aligned to the homozygous regions are expected to have low mapping qualities we don't filter reads based on their mapping qualities.
-In the figure below you can see the histograms of mapping qualities and the distributions of alignment indentities for HG00438 as an example. Three sets of alignments are shown here; the alignments to the diploid assembly and to each haploid assembly (maternal and paternal) separately. The alignments to the haploid assemblies are shown here just for comparison and as it was mentioned above they are not used for the current analysis.
+In the figure below you can see the histograms of mapping qualities and the distributions of alignment indentities for HG00438 as an example. Three sets of alignments are shown here; the alignments to the diploid assembly and to each haploid assembly (maternal and paternal) separately. The alignments to the haploid assemblies are shown here just for comparison and are not used for the current analysis.
 
 <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_mapq_hist.png" width="700" height="275">
 
-About 20% of the diploid alignments are having MAPQs lower than 20. One of the future developments will be on accurately phasing the reads with low MAPQ alignments. 
+About 20% of the diploid alignments are having MAPQs lower than 20. To phase the reads with low MAPQ alignments it is recommended to run [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/phasing) on the BAM file before calculating the coverage.
 
 ### 3. Coverage Distribution and Fitting The Model
 
