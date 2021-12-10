@@ -10,7 +10,7 @@ correctly and the other one has a long indel or a break point (could be split in
 the diploid assembly, the aligner may align the read to the both haplotypes and report the one to the false haplotype as the primary alignment. This happens
 because of the error in the assembly. Even if the assembly is perfect it may also happen for highly similar haplotypes since 
 the aligner chooses one haplotype randomly.
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/phasing/images/phase_reads_1.png" width="700" height="400">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/images/phase_reads_1.png" width="700" height="400">
 
 Given a set of secondary alignments (most of the time only one) and one primary alignment we want to make sure if 
 the primary one is to the correct haplotype and if it is not find the correct one among the secondary alignments.
@@ -31,7 +31,7 @@ Among the remaining markers we perform two main filtering:
 If a marker, which is a mismatch in at least one alignment, appears within an insertion in another alignment we remove it in this step. We remove it 
 because it can be either a misassembly on the haplotype that induces the insertion or an error on the read. So that marker can be misleading on either cases. In the figure below you can see an example of such a marker (shown with a blue bar).
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/phasing/images/phase_reads_2.png" width="700" height="400">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/images/phase_reads_2.png" width="700" height="400">
 
 #### 2.2 Filter markers with low BAQ
 
@@ -49,7 +49,7 @@ There are two points worth noting:
 
 More information about BAQ can be found in [this paper](https://academic.oup.com/bioinformatics/article/27/8/1157/227268). BAQ calculation is already implemented in htslib and [that implmentation](https://github.com/samtools/htslib/blob/9672589346459d675d62851d5b7b5f2e5c919076/probaln.c) has been imported to this pipeline.
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/phasing/images/phase_reads_3.png" width="700" height="400">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/images/phase_reads_3.png" width="700" height="400">
 
 #### 3. Select the best alignment using Marker Consistency Score
 
