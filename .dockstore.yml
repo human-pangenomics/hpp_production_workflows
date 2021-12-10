@@ -234,3 +234,6 @@ workflows:
    -  name: DeepVariantNoSplit
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/deep_variant_no_split.wdl
+   -  name: PepperMarginDeepVariant
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/pepper_margin_deep_variant.wdl
