@@ -49,12 +49,12 @@ In the figure below you can see the histograms of mapping qualities and the dist
 
 <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_mapq_hist.png" width="700" height="275">
 
-About 20% of the diploid alignments are having MAPQs lower than 20. To phase the reads with low MAPQ alignments it is recommended to run [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/phasing) on the BAM file before calculating the coverage.
+In this example about 20% of the diploid alignments are having MAPQs lower than 20. To correctly phase the reads with low MAPQ alignments it is recommended to run [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/phasing) before calculating the coverage.
 
-### 3. Coverage Distribution and Fitting The Model
+### 2. Coverage Distribution and Fitting The Model
 
 
-The frequencies of coverages can be calculated w/ `cov2counts` which is a binary executable. The source code is written in C and is available in `docker/coverage/scripts`
+The frequencies of coverages can be calculated w/ `cov2counts`. Its source code is available in [here](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/scripts/cov2counts.c)
 ````
 ./cov2counts -i read_alignment.cov -o read_alignment.counts
 ````
@@ -62,20 +62,20 @@ The output file with `.counts` suffix is a 2-column tab-delimited file; the firs
 those coverages. Using `.counts` files we can produce distribution plots easily. For example below we are showing the coverage distribution for HG00438 diploid assembly.
 <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_dip_hifi_cov_dist.png" width="700" height="275">
 
-Then we pass each `.counts` file to `fit_model_extra.py` whose job is to fit the mixture model and find the best parameters through 
+The python script `fit_model_extra.py` is able to take a file `.counts` suffix and fit a mixture model and find the best parameters through 
 [Expectation Maximization (EM)](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm). This mixture model
 consists of 4 main components and each component represents a specific type of regions.
 
 The 4 components:
 
-1. **Error component**, which is modeled by a poisson distribution. To avoid overfitting, this mode only uses the coverages below 10 so its mean is limited to be between 0 and 10. It represents the regions with very low read support.
-2. **Duplicated component**, which is modeled by a gaussian distribution whose mean is constrained to be half of the haploid component's mean. It should mainly represents the falsely duplicated regions and the weight of this component is usually near to zero. It is worth noting that according to the recent 
+1. **Erroneous component**, which is modeled by a poisson distribution. To avoid overfitting, this mode only uses the coverages below 10 so its mean is limited to be between 0 and 10. It represents the regions with very low read support.
+2. **(Falsely) Duplicated component**, which is modeled by a gaussian distribution whose mean is constrained to be half of the haploid component's mean. It should mainly represents the falsely duplicated regions. It is worth noting that according to the recent 
 [T2T paper, The complete sequence of a human genome,](https://www.biorxiv.org/content/10.1101/2021.05.26.445798v1.abstract) there exist
  some satellite arrays (especially HSAT1) where the ONT and HiFi coverage drops systematically due to bias in sample preparation and sequencing.
- As a result this mode should contain a mix of duplicated and coverage-biased blocks, which are not easy to be distiguished through the current analysis.
+ As a result this mode should contain a mix of duplicated and coverage-biased blocks. To avoid overestimating this component a correction step is added to the pipeline.
 3. **Haploid component**, which is modeled by a gaussian distribution. It represents blocks with the coverages that we expect for the blocks of an error-free assembly.
 4. **Collpased component**, which is actually a set of components each of which follows a gaussian distribution and their means are constrained to be
-multiples of the haploid component's mean.
+multiples of the haploid component's mean. Similar to the duplicated component there are some regions where HiFi coverage increases systematically. This issue is addressed in one of the correction steps.
 
 Here is the command that fits the model:
 ````
@@ -102,16 +102,9 @@ Here is an example of such a table:
 3	241294	195958.8474	0.8434	0.0856	0.0710	0.0000
 4	201587	117491.9394	0.5708	0.2616	0.1676	0.0000
 5	207799	108998.0736	0.2497	0.4973	0.2530	0.0000
-6	214003	141291.2687	0.0782	0.6512	0.2706	0.0000
-7	280495	207289.2292	0.0216	0.7251	0.2533	0.0000
-8	317883	309510.6691	0.0059	0.7635	0.2306	0.0000
 ...
 ...
 ...
-60	1547886	1045679.3816	0.0000	0.0000	0.7351	0.2649
-61	1418178	920434.1445	0.0000	0.0000	0.6731	0.3269
-62	1326917	819701.9290	0.0000	0.0000	0.6031	0.3969
-63	1285300	740624.2274	0.0000	0.0000	0.5275	0.4725
 64	1211029	680304.0405	0.0000	0.0000	0.4493	0.5507
 65	1111166	635906.0944	0.0000	0.0000	0.3724	0.6276
 66	1034004	604733.6596	0.0000	0.0000	0.3004	0.6996
@@ -121,22 +114,22 @@ Here is an example of such a table:
 70	766435	565754.1385	0.0000	0.0000	0.1008	0.8992
 ````
 
-In the figure below, we are showing the model components. It is again for the HG00438 diploid assembly:
+The figure below shows the model components. It is again for the HG00438 diploid assembly:
 
 <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_fit_model.png" width="700" height="275">
 
-### 4. Extracting Blocks 
+### 3. Extracting Blocks 
 
-Now we have to assign each coverage value to one of the four components (error, duplicated, haploid, and collapsed). To do so, for each coverage value,
-we pick the component with the highest probability. For example for the coverage value, 0, the error component is being picked most of the times (the red line).
+Now we have to assign each coverage value to one of the four components (erroneous, duplicated, haploid, and collapsed). To do so, for each coverage value,
+we pick the component with the highest probability. For example for the coverage value, 0, is assigned to the erroneous component most of the times (the red line).
 In the figure below the coverage intervals are colored based on their assigned component.
 
 <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_fit_model_colored.png" width="700" height="275">
 
 After assigning the coverage values we then assign the bases of the corresponding assembly to the most probable component. Finally we will have 4 bed 
 files each of which points to the regions assinged to a single component.
-By passing a coverage file (suffix `.cov`) and its corresponding table file (suffix `.table`) to the binary executable `find_blocks` we can produce those
-4 bed files.
+`find_blocks` program is able to receive a coverage file (suffix `.cov`) and its corresponding table file (suffix `.table`) and produce the
+4 mentioned bed files.
 ````
 ./find_blocks -c read_alignment.cov -t read_alignment.table -p ${prefix}
 ````
