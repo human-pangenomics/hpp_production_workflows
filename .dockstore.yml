@@ -231,3 +231,6 @@ workflows:
    -  name: CoverageAnalysisStep1
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/workflows/coverage_analysis_step1.wdl
+   -  name: DeepVariantNoSplit
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/deep_variant_no_split.wdl
