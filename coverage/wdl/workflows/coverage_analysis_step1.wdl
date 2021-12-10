@@ -21,7 +21,8 @@ workflow runCoverageAnalysisStep1{
             bam = bam,
             phasingLogText = phasingLogText,
             suffix = "corrected",
-            options = "--primaryOnly --minReadLen ${minReadLength} --minAlignment ${minAlignmentLength}"
+            options = "--primaryOnly --minReadLen ${minReadLength} --minAlignment ${minAlignmentLength}",
+            diskSize = ceil(size(bam, "GB")) * 2 + 64
     }
     
     ## Call variants to be used for finding the reads with alternative alleles
@@ -33,14 +34,15 @@ workflow runCoverageAnalysisStep1{
             bamIndex = correctBam.correctedBamIndex,
             minMAPQ = 0,
             includeSecondary="False",
-            includeSupplementary="True" 
+            includeSupplementary="True"
     }
     
     ## Filter the reads with alternative alleles
     call filter_alt_reads_t.filterAltReads {
         input:
             vcf = dpv.vcfGz,
-            bam = correctBam.correctedBam
+            bam = correctBam.correctedBam,
+            diskSize = ceil(size(correctBam.correctedBam, "GB")) * 2 + 64
     }
     
     ## Calculate coverage for the corrected bam file (without filtering)
@@ -49,7 +51,7 @@ workflow runCoverageAnalysisStep1{
             bam = correctBam.correctedBam,
             minMAPQ = 0,
             assemblyFastaGz = assemblyFastaGz,
-            diskSize = 512
+            diskSize = ceil(size(correctBam.correctedBam, "GB")) + 256
     }
     
     ## Calculate coverage for the corrected bam file in which the 
@@ -59,7 +61,7 @@ workflow runCoverageAnalysisStep1{
             bam = filterAltReads.filteredBam,
             minMAPQ = 0,
             assemblyFastaGz = assemblyFastaGz,
-            diskSize = 512
+            diskSize = ceil(size(filterAltReads.filteredBam, "GB")) + 256
     }
 
     ## Calculate coverage of reads with high mapqs (20<) for the 
@@ -72,7 +74,7 @@ workflow runCoverageAnalysisStep1{
             bam = correctBam.correctedBam,
             minMAPQ = 20,
             assemblyFastaGz = assemblyFastaGz,
-            diskSize = 512
+            diskSize = ceil(size(correctBam.correctedBam, "GB")) + 256
     }
 
     ## Calculate coverage of reads with high mapqs (20<) for the 
@@ -86,7 +88,7 @@ workflow runCoverageAnalysisStep1{
             bam = filterAltReads.filteredBam,
             minMAPQ = 20,
             assemblyFastaGz = assemblyFastaGz,
-            diskSize = 512
+            diskSize = ceil(size(filterAltReads.filteredBam, "GB")) + 256
     }
     output {
         File vcfGz = dpv.vcfGz

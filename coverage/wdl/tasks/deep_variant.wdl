@@ -20,7 +20,8 @@ workflow runVariantCalling{
             bam = bam,
             bamIndex = bamIndex,
             splitNumber = numberOfCallerNodes,
-            threadCount = numberOfCallerNodes
+            threadCount = numberOfCallerNodes,
+            diskSize = 2 * ceil(size(bam, "GB")) + 64
     }
     scatter (part in zip(splitBamContigWise.splitBams, splitBamContigWise.splitBeds)) {
         #call increaseMapq{
@@ -35,7 +36,8 @@ workflow runVariantCalling{
                 bed = part.right,
                 includeSecondary = includeSecondary,
                 includeSupplementary = includeSupplementary,
-                minMAPQ = minMAPQ
+                minMAPQ = minMAPQ,
+                diskSize = 2 * ceil(size(part.left, "GB")) + 64
         }
     }
     call var_t.mergeVcf{

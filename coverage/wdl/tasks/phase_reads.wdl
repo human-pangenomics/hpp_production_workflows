@@ -10,18 +10,21 @@ workflow runPhaseReads{
     }
     call sortByName{
          input:
-             bamFile = inputBam
+             bamFile = inputBam,
+             diskSize = 3 * ceil(size(inputBam, "GB")) + 64
     }
     call splitByName{
          input:
-             bamFile = sortByName.outputBam
+             bamFile = sortByName.outputBam,
+             diskSize = 2 * ceil(size(sortByName.outputBam, "GB")) + 64
     }
     scatter (splitBam in splitByName.splitBams) { 
         call phaseReads{
             input:
                 bamFile = splitBam,
                 diploidAssemblyFastaGz = diploidAssemblyFastaGz,
-                debugMode = debugMode
+                debugMode = debugMode,
+                diskSize = ceil(size(splitBam, "GB")) + 64
         }
     }
     call concatLogs as concatErrLogs{

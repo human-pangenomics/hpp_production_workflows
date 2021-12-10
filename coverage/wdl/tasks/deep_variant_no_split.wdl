@@ -22,7 +22,7 @@ workflow runDeepVariantNoSplit{
             minMAPQ = minMAPQ,
             threadCount=64,
             memSize=256,
-            diskSize=512 
+            diskSize= 2 * ceil(size(bam, "GB")) + 64
     }
     output{
         File vcfGz = deepVariant.vcfGz
