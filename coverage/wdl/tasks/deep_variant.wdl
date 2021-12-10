@@ -157,7 +157,7 @@ task deepVariant{
     input{
         File bam
         File assemblyFastaGz
-        File bed
+        File? bed
         Int minMAPQ
         String includeSecondary="False"
         String includeSupplementary="False"
@@ -200,6 +200,10 @@ task deepVariant{
             MAKE_EXAMPLES_EXTRA_ARGS="${MAKE_EXAMPLES_EXTRA_ARGS},keep_supplementary_alignments=true"
         fi
 
+        if [ -n "~{bed}" ]; then
+            MORE_OPTIONS="--regions=~{bed}"
+        fi
+
         ## call deepvariant 
         /opt/deepvariant/bin/run_deepvariant \
         --model_type=~{modelType} \
@@ -209,8 +213,7 @@ task deepVariant{
         --make_examples_extra_args=${MAKE_EXAMPLES_EXTRA_ARGS} \
         --call_variants_extra_args="use_openvino=true" \
         --num_shards=$(nproc) \
-        --dry_run=false \
-        --regions=~{bed}
+        --dry_run=false ${MORE_OPTIONS}
 
         gzip -c ${BAM_PREFIX}.vcf > ${BAM_PREFIX}.vcf.gz 
         
