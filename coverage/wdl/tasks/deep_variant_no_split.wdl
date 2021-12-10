@@ -6,7 +6,7 @@ workflow runDeepVariantNoSplit{
     input {
         File assemblyFastaGz
         File bam
-        File bamIndex
+        File? bamIndex
         String deepVariantModelType
         Int minMAPQ = 0
         String includeSecondary="False"
@@ -17,6 +17,7 @@ workflow runDeepVariantNoSplit{
             modelType = deepVariantModelType,
             assemblyFastaGz = assemblyFastaGz,
             bam = bam,
+            bamIndex = bamIndex,
             includeSecondary = includeSecondary,
             includeSupplementary = includeSupplementary,
             minMAPQ = minMAPQ,

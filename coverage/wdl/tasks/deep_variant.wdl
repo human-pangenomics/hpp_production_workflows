@@ -158,6 +158,7 @@ task increaseMapq{
 task deepVariant{
     input{
         File bam
+        File? bamIndex
         File assemblyFastaGz
         File? bed
         Int minMAPQ
@@ -188,7 +189,11 @@ task deepVariant{
         BAM_NAME=$(basename ~{bam})
         BAM_PREFIX=${BAM_NAME%%.bam}
         ln -f ~{bam} > ${BAM_PREFIX}.bam
-        samtools index ${BAM_PREFIX}.bam
+        if [ -n ~{bamIndex} ]; then
+            ln -f ~{bamIndex} > ${BAM_PREFIX}.bam.bai
+        else       
+            samtools index ${BAM_PREFIX}.bam
+        fi
 
         ## unzip the fasta file and produce its index
         gunzip -c ~{assemblyFastaGz} > asm.fa
