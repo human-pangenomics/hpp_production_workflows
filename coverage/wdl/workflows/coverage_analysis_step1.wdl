@@ -48,7 +48,8 @@ workflow runCoverageAnalysisStep1{
         input:
             bam = correctBam.correctedBam,
             minMAPQ = 0,
-            assemblyFastaGz = assemblyFastaGz
+            assemblyFastaGz = assemblyFastaGz,
+            diskSize = 512
     }
     
     ## Calculate coverage for the corrected bam file in which the 
@@ -57,7 +58,8 @@ workflow runCoverageAnalysisStep1{
         input:
             bam = filterAltReads.filteredBam,
             minMAPQ = 0,
-            assemblyFastaGz = assemblyFastaGz
+            assemblyFastaGz = assemblyFastaGz,
+            diskSize = 512
     }
 
     ## Calculate coverage of reads with high mapqs (20<) for the 
@@ -69,7 +71,8 @@ workflow runCoverageAnalysisStep1{
         input:
             bam = correctBam.correctedBam,
             minMAPQ = 20,
-            assemblyFastaGz = assemblyFastaGz
+            assemblyFastaGz = assemblyFastaGz,
+            diskSize = 512
     }
 
     ## Calculate coverage of reads with high mapqs (20<) for the 
@@ -82,7 +85,8 @@ workflow runCoverageAnalysisStep1{
         input:
             bam = filterAltReads.filteredBam,
             minMAPQ = 20,
-            assemblyFastaGz = assemblyFastaGz
+            assemblyFastaGz = assemblyFastaGz,
+            diskSize = 512
     }
     output {
         File vcfGz = dpv.vcfGz
