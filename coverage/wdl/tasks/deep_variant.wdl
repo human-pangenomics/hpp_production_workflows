@@ -202,6 +202,7 @@ task deepVariant{
             MAKE_EXAMPLES_EXTRA_ARGS="${MAKE_EXAMPLES_EXTRA_ARGS},keep_supplementary_alignments=true"
         fi
 
+        MORE_OPTIONS=""
         if [ -n "~{bed}" ]; then
             MORE_OPTIONS="--regions=~{bed}"
         fi
