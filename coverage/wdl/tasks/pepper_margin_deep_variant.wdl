@@ -23,7 +23,7 @@ workflow runPepperMarginDeepVariant{
             minMAPQ = minMAPQ,
             threadCount=64,
             memSize=256,
-            diskSize= 2 * ceil(size(bam, "GB")) + 64
+            diskSize= 4 * ceil(size(bam, "GB")) + 64
     }
     output{
         File vcfGz = pmdv.vcfGz
