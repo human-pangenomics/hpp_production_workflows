@@ -16,7 +16,7 @@ workflow runPhaseReads{
     call splitByName{
          input:
              bamFile = sortByName.outputBam,
-             diskSize = 2 * ceil(size(sortByName.outputBam, "GB")) + 64
+             diskSize = 3 * ceil(size(sortByName.outputBam, "GB")) + 64
     }
     scatter (splitBam in splitByName.splitBams) { 
         call phaseReads{
