@@ -189,7 +189,7 @@ task deepVariant{
         BAM_NAME=$(basename ~{bam})
         BAM_PREFIX=${BAM_NAME%%.bam}
         ln -f ~{bam} > ${BAM_PREFIX}.bam
-        if [ -n ~{bamIndex} ]; then
+        if [ -n "~{bamIndex}" ]; then
             ln -f ~{bamIndex} > ${BAM_PREFIX}.bam.bai
         else       
             samtools index ${BAM_PREFIX}.bam

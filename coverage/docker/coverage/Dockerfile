@@ -50,12 +50,12 @@ COPY ./programs /home/programs
 RUN cd /home/programs && make
 ENV PATH="$PATH:/home/programs/bin"
 
-ENV CALC_MEAN_SD_PY=/home/programs/calc_mean_sd.py
-ENV FIT_MODEL_PY=/home/programs/fit_model.py
-ENV PROJECT_BLOCKS_PY=/home/programs/project_blocks.py
-ENV ASSIGN_GAPS_PY=/home/programs/assign_gaps.py
-ENV FIT_MODEL_EXTRA_PY=/home/programs/fit_model_extra.py
-ENV PDF_GENERATOR_PY=/home/programs/pdf_generator.py
+ENV CALC_MEAN_SD_PY=/home/programs/src/calc_mean_sd.py
+ENV FIT_MODEL_PY=/home/programs/src/fit_model.py
+ENV PROJECT_BLOCKS_PY=/home/programs/src/project_blocks.py
+ENV ASSIGN_GAPS_PY=/home/programs/src/assign_gaps.py
+ENV FIT_MODEL_EXTRA_PY=/home/programs/src/fit_model_extra.py
+ENV PDF_GENERATOR_PY=/home/programs/src/pdf_generator.py
 
 ## UCSC convention is to work in /data
 RUN mkdir -p /data
