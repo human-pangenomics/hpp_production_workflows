@@ -163,7 +163,7 @@ task splitByName {
         BAM_PREFIX=${BAM_FILENAME%.bam}
 
         mkdir output
-        ${SPLIT_BAM_BY_READNAME_BIN} -i ~{bamFile} -o output -n ~{NReadsPerBam}
+        split_bam_by_readname -i ~{bamFile} -o output -n ~{NReadsPerBam}
     >>>
     runtime {
         docker: dockerImage
@@ -210,7 +210,7 @@ task sortByName {
         if [ ~{excludeSingleAlignment} == "yes" ]; then
             samtools view ~{bamFile} | cut -f1 | sort | uniq -c > readnames.txt
             cat readnames.txt | awk '$1 > 1' | cut -f2 > selected_readnames.txt
-            ${EXTRACT_READS_BIN} -i ~{bamFile} -o output/${BAM_PREFIX}.bam -r selected_readnames.txt
+            extract_reads -i ~{bamFile} -o output/${BAM_PREFIX}.bam -r selected_readnames.txt
         else
             ln ~{bamFile} output/${BAM_PREFIX}.bam
         fi

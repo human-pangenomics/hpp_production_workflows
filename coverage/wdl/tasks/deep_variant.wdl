@@ -140,7 +140,7 @@ task increaseMapq{
         BAM_PREFIX=${BAM_NAME%%.bam}
 
         mkdir output
-        ${INCREASE_MAPQ_BIN} -i ~{bam} -o output/${BAM_PREFIX}.increased_mapq.bam -t ~{threshold}
+        increase_mapq -i ~{bam} -o output/${BAM_PREFIX}.increased_mapq.bam -t ~{threshold}
     >>>
     runtime {
         docker: dockerImage

@@ -42,9 +42,9 @@ task cov2countsContigWise {
         gunzip -c ~{coverageGz} > ${PREFIX_COV}.cov
         mkdir covs counts
         # Make a separate cov file for each contig
-        ${SPLIT_CONTIGS_COV_V2_BIN} -c ${PREFIX_COV}.cov -f ~{fai} -p covs/${PREFIX_COV} -s ~{windowSize} > ${PREFIX_FAI}.windows.txt
+        split_contigs_cov_v2 -c ${PREFIX_COV}.cov -f ~{fai} -p covs/${PREFIX_COV} -s ~{windowSize} > ${PREFIX_FAI}.windows.txt
         # Count each window-specific cov file
-        for c in $(ls covs);do ${COV2COUNTS_BIN} -i covs/$c -o counts/${c/.cov/.counts}; echo $c" finished";done
+        for c in $(ls covs);do cov2counts -i covs/$c -o counts/${c/.cov/.counts}; echo $c" finished";done
 
         # Compress Counts files
         tar -cf ${PREFIX_COV}.counts.tar counts
