@@ -77,7 +77,7 @@ task phaseReads {
         samtools faidx asm.fa
 
         mkdir output
-        COMMAND=${true=phase_reads_debug false=phase_reads debugMode}
+        COMMAND=~{true="phase_reads_debug" false="phase_reads" debugMode}
         ${COMMAND} ~{options} -i ~{bamFile} -f asm.fa 2> err.log > out.log
     >>>
     runtime {
