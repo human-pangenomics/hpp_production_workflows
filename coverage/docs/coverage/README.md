@@ -1,14 +1,14 @@
 ## A Mixture Model-Based Coverage Analysis For Assessing Diploid Assemblies
 
 ### Overview
-The main purpose of this analysis is to assess the copy number of the assembled blocks in a diploid assembly. To use this pipeline a BAM file containing the read alignments to the diploid assembly should be prepared in advance. Using the BAM file this pipeline is able to flag mis-assemblies by detecting anomalies in the coverage distribution along the assembly. It can also categorize the mis-assemblies into 3 main groups: erroreous, (falsely) duplicated, and collapsed. 
+The main purpose of this analysis is to assess the copy number of the assembled blocks in a diploid assembly. To use this pipeline a BAM file containing the read alignments to the diploid assembly should be prepared in advance. Using the BAM file this pipeline is able to flag mis-assemblies by detecting anomalies in the coverage distribution along the assembly. It can also categorize the mis-assemblies into 3 main groups: erroneous, (falsely) duplicated, and collapsed. 
 
 The examples shown here are from the [Human Pan-Genome Project](https://humanpangenome.org/) since it was the main motivation for this developing the pipeline.
 
 The pipeline has 3 core steps:
 - Calculate the read coverage of each assembly base 
 - Fit a mixture model to the coverage distributions
-- Extract the blocks assigned to the model's 4 main components: erroreous, duplicated, haploid, and collapsed.
+- Extract the blocks assigned to the model's 4 main components: erroneous, duplicated, haploid, and collapsed.
 
 ### Docker
 All programs used in this analysis are available in the docker image `quay.io/masri2019/hpp_coverage:latest`. It is recommended to use this docker for running 
@@ -38,11 +38,20 @@ In which each contig's name appears only once before the first block of that con
 The number that comes after the name of the contig is the contig size. The coverage files with such a format have the suffix `.cov`.
 Here are the main commands for producing the coverage files:
 ````
-samtools depth -aa -Q 0 read_alignment.bam > read_alignment.depth
-./depth2cov -d read_alignment.depth -f asm.fa.fai -o read_alignment.cov
+## Find base-level coverages
+samtools depth -aa -Q 0 ${INPUT_DIR}/read_alignment.bam > ${INPUT_DIR}/read_alignment.depth
+
+## Convert depth to cov
+docker run \
+ -v ${INPUT_DIR}:${INPUT_DIR} \
+ -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
+ quay.io/masri2019/hpp_coverage:latest \
+ depth2cov \
+ -d ${INPUT_DIR}/read_alignment.depth \
+ -f ${INPUT_DIR}/asm.fa.fai \
+ -o ${OUTPUT_DIR}/read_alignment.cov
 ````
-`depth2cov` is a program that converts the output of `samtools depth` to `.cov` format. Its source code is available [here](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/scripts/depth2cov.c) and the environment variable to run the program in
-the docker is `${DEPTH2COV_BIN}`.
+`depth2cov` is a program that converts the output of `samtools depth` to `.cov` format. Its source code is available [here](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/scripts/depth2cov.c).
 
 Since the reads aligned to the homozygous regions are expected to have low mapping qualities we don't filter reads based on their mapping qualities.
 In the figure below you can see the histograms of mapping qualities and the distributions of alignment indentities for HG00438 as an example. Three sets of alignments are shown here; the alignments to the diploid assembly and to each haploid assembly (maternal and paternal) separately. The alignments to the haploid assemblies are shown here just for comparison and are not used for the current analysis.
@@ -51,12 +60,18 @@ In the figure below you can see the histograms of mapping qualities and the dist
 
 In this example about 20% of the diploid alignments are having MAPQs lower than 20. To correctly phase the reads with low MAPQ alignments it is recommended to run [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/phasing) before calculating the coverage.
 
-### 2. Coverage Distribution and Fitting The Model
+### 2. Coverage Distribution and Fitting The Mixture Model
 
 
-The frequencies of coverages can be calculated w/ `cov2counts`. Its source code is available in [here](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/scripts/cov2counts.c)
+The frequencies of coverages can be calculated w/ `cov2counts`. Its source code is available in [cov2counts.c](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/scripts/cov2counts.c)
 ````
-./cov2counts -i read_alignment.cov -o read_alignment.counts
+docker run \
+ -v ${INPUT_DIR}:${INPUT_DIR} \
+ -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
+ quay.io/masri2019/hpp_coverage:latest \
+ cov2counts \
+ -i ${INPUT_DIR}/read_alignment.cov \
+ -o ${OUTPUT_DIR}/read_alignment.counts
 ````
 The output file with `.counts` suffix is a 2-column tab-delimited file; the first column shows coverages and the second column shows the frequencies of
 those coverages. Using `.counts` files we can produce distribution plots easily. For example below we are showing the coverage distribution for HG00438 diploid assembly.
@@ -79,7 +94,15 @@ multiples of the haploid component's mean. Similar to the duplicated component t
 
 Here is the command that fits the model:
 ````
-python3 fit_model_extra.py --counts read_alignment.counts --output read_alignment.table --cov ${expected_coverage}
+## Run fit_model_extra.py to fit the model
+docker run \
+ -v ${INPUT_DIR}:${INPUT_DIR} \
+ -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
+ quay.io/masri2019/hpp_coverage:latest \
+ python3 /home/programs/src/fit_model_extra.py \
+ --counts ${INPUT_DIR}/read_alignment.counts \
+ --cov ${EXPECTED_COVERAGE} \
+ --output ${OUTPUT_DIR}/read_alignment.table \
 ````
 
 Its output is a file with `.table` suffix. It contains a TAB-delimited table with the 7 fields described below:
@@ -131,7 +154,15 @@ files each of which points to the regions assinged to a single component.
 `find_blocks` program is able to receive a coverage file (suffix `.cov`) and its corresponding table file (suffix `.table`) and produce the
 4 mentioned bed files.
 ````
-./find_blocks -c read_alignment.cov -t read_alignment.table -p ${prefix}
+## Run find_blocks_from_table
+docker run \
+ -v ${INPUT_DIR}:${INPUT_DIR} \
+ -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
+ quay.io/masri2019/hpp_coverage:latest \
+ find_blocks_from_table \
+ -c ${INPUT_DIR}/read_alignment.cov \
+ -t ${INPUT_DIR}/read_alignment.table \
+ -p ${OUTPUT_DIR}/${OUTPUT_PREFIX}
 ````
 
 It outputs four bed files:
@@ -141,11 +172,25 @@ ${prefix}.duplicated.bed
 ${prefix}.haploid.bed
 ${prefix}.collapsed.bed
 ````
-### 5. Contig-Specific Coverage Analysis
 
-In step 3 we fit a single model for the whole diploid assembly. In step 4 we used that model to partition the assembly into 4 main components. It has been noticed that the model components may change for different regions and it may affect the accuracy of the partitioning process. In order to make the coverage thresholds more sensitive to the local patterns we fit a separate model for each contig. First we split the whole-genome coverage file produced in step 3 into multiple coverage files one for each contig.
+## Additional Correction Steps
+It has been noticed that the results of the previous steps need some corrections. In the neccessary steps below the issues are explained and 
+their solutions are also provided.
+
+### 1. Window-Specific Models
+
+In step 3 we fit a single model for the whole diploid assembly. In step 4 we used that model to partition the assembly into 4 main components. It has been noticed that the model components may change for different regions and it may affect the accuracy of the partitioning process. In order to make the coverage thresholds more sensitive to the local patterns the diploid assembly is split into windows of length (5-10Mb). For each window a separate model  is being fit. To do so first we split the whole-genome coverage file produced in step 3 into multiple coverage files one for each window.
 ```
-./split_contigs_cov -c read_alignment.cov -p ${PREFIX}
+## Split cov into multiple covs (each covering 5-10 Mb)
+docker run \
+ -v ${INPUT_DIR}:${INPUT_DIR} \
+ -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
+ quay.io/masri2019/hpp_coverage:latest \
+ split_contigs_cov_v2 \
+ -c ${INPUT_DIR}/read_alignment.cov \
+ -f ${INPUT_DIR}/asm.fa.fai \
+ -s 5000000 \
+ -p ${OUTPUT_DIR}/${OUTPUT_PREFIX}
 ```
 It will produce a list of coverage files like below.
 ```
@@ -156,7 +201,7 @@ HG00438.diploid.hifi.HG00438#1#JAHBCB010000003.1.cov
 HG00438.diploid.hifi.HG00438#2#JAHBCA010000257.1.cov
 HG00438.diploid.hifi.HG00438#2#JAHBCA010000258.1#MT.cov
 ```
-To show how the contig-specific models may be different from the whole-genome model, here is an example of a false duplication in the maternal assembly of HG01175 that couldn't be detected using the whole-genome model.
+To show how the window-specific models may be different from the whole-genome model, here is an example of a false duplication in the maternal assembly of HG01175 that couldn't be detected using the whole-genome model.
 The coverage distributions of three contigs along with the whole assembly are shown below. Two of those contigs are maternal and the other one is paternal. They are containing equivalent regions in the genome but one of the maternal contigs (`2#JAHBCE010000091.1` the red one ) is having a few mega bases of a false duplication of the paternal contig (`1#JAHBCF010000027.1` the yellow one).
 
 <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_dip_hifi_contig_cov_dist.png" width="700" height="275">
