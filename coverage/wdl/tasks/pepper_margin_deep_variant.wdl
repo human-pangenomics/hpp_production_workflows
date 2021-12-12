@@ -21,9 +21,7 @@ workflow runPepperMarginDeepVariant{
             bamIndex = bamIndex,
             includeSupplementary = includeSupplementary,
             minMAPQ = minMAPQ,
-            threadCount=64,
-            memSize=256,
-            diskSize= 4 * ceil(size(bam, "GB")) + 64
+            diskSize= 3 * ceil(size(bam, "GB")) + 64
     }
     output{
         File vcfGz = pmdv.vcfGz
@@ -39,9 +37,9 @@ task pmdv{
         String includeSupplementary="False"
         String modelType
         # runtime configurations
-        Int memSize=32
-        Int threadCount=16
-        Int diskSize=64
+        Int memSize=256
+        Int threadCount=64
+        Int diskSize=512
         String dockerImage="kishwars/pepper_deepvariant:r0.6"
         Int preemptible=2
         String zones="us-west2-a"
