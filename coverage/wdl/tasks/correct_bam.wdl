@@ -50,7 +50,7 @@ task correctBam {
             OPTIONS="${OPTIONS} --mapqTable ~{mapqTableText}"
         fi
         
-        ${CORRECT_BAM_BIN} ${OPTIONS} -i ~{bam} -o output/$PREFIX.~{suffix}.bam
+        correct_bam ${OPTIONS} -i ~{bam} -o output/$PREFIX.~{suffix}.bam
         samtools index output/$PREFIX.~{suffix}.bam
     >>> 
     runtime {

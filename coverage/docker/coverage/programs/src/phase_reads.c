@@ -13,7 +13,7 @@
 #define ARRAY_SIZE(arr) (sizeof((arr)) / sizeof((arr)[0]))
 #define CS_PATTERN "(:([0-9]+))|(([+-\\*])([a-z]+))" 
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 //void DEBUG_PRINT(const char *, ...);

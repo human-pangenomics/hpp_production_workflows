@@ -37,7 +37,7 @@ task filterAltReads {
         PREFIX=${FILENAME%.bam}
         bcftools view -Ov -f PASS -m2 -M2 -v snps ~{vcf} > bi_snps.passed.vcf
         mkdir output
-        ${FILTER_ALT_READS_BIN} -i ~{bam} -o output/$PREFIX.alt_filtered.bam -f output/$PREFIX.alt.bam -v bi_snps.passed.vcf
+        filter_alt_reads -i ~{bam} -o output/$PREFIX.alt_filtered.bam -f output/$PREFIX.alt.bam -v bi_snps.passed.vcf
         samtools index output/$PREFIX.alt_filtered.bam
         samtools index output/$PREFIX.alt.bam
     >>> 

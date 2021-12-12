@@ -12,7 +12,7 @@ task findBlocks {
     input {
         File coverageGz
         File table
-        String suffix="whole_genome_based"
+        String suffix=""
         # runtime configurations
         Int memSize=8
         Int threadCount=4
@@ -36,10 +36,17 @@ task findBlocks {
         PREFIX=${FILENAME%.cov.gz}
 
         gunzip -c ~{coverageGz} > $PREFIX.cov
-        mkdir ~{suffix}
-        ${FIND_BLOCKS_BIN} -c $PREFIX.cov -t ~{table} -p ~{suffix}/${PREFIX}.~{suffix}
-        tar -cf ${PREFIX}.beds.~{suffix}.tar ~{suffix}
-        gzip ${PREFIX}.beds.~{suffix}.tar
+        if [ -z ~{suffix} ]; then
+            mkdir blocks
+            find_blocks -c $PREFIX.cov -t ~{table} -p blocks/${PREFIX}
+            tar -cf ${PREFIX}.beds.tar blocks
+            gzip ${PREFIX}.beds.tar
+        else
+            mkdir ~{suffix}
+            find_blocks -c $PREFIX.cov -t ~{table} -p ~{suffix}/${PREFIX}.~{suffix}
+            tar -cf ${PREFIX}.beds.~{suffix}.tar ~{suffix}
+            gzip ${PREFIX}.beds.~{suffix}.tar
+        fi
     >>>
     runtime {
         docker: dockerImage
@@ -49,6 +56,6 @@ task findBlocks {
         preemptible : preemptible
     }
     output {
-        File bedsTarGz = glob("*.${suffix}.tar.gz")[0]
+        File bedsTarGz = glob("*.tar.gz")[0]
     }
 }

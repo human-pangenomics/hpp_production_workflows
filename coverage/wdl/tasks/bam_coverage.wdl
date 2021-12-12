@@ -46,9 +46,9 @@ task bamCoverage{
         samtools depth -aa -Q ~{minMAPQ} ~{extraOptions} ~{bam}  > ${BAM_PREFIX}.depth
 
         # Convert the output of samtools depth into a compressed format
-        ${DEPTH2COV_BIN} -d ${BAM_PREFIX}.depth -f ${ASM_PREFIX}.fa.fai -o ${BAM_PREFIX}.cov
+        depth2cov -d ${BAM_PREFIX}.depth -f ${ASM_PREFIX}.fa.fai -o ${BAM_PREFIX}.cov
         # Convert cov to counts
-        ${COV2COUNTS_BIN} -i ${BAM_PREFIX}.cov -o ${BAM_PREFIX}.counts
+        cov2counts -i ${BAM_PREFIX}.cov -o ${BAM_PREFIX}.counts
         # Calculate mean and standard deviation
         python3 ${CALC_MEAN_SD_PY} --countsInput ${BAM_PREFIX}.counts --meanOutput cov_mean.txt --sdOutput cov_sd.txt
         gzip ${BAM_PREFIX}.cov

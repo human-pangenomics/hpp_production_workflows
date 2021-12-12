@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
 	int split_idx = 0;
 	char output_path[100];
         sprintf(output_path, "%s/%d.bam", output_dir, split_idx);
-        samFile* fo = sam_open(output_path, "w");
+        samFile* fo = sam_open(output_path, "wb");
 	sam_hdr_write(fo, sam_hdr);
 	bam1_t* b = bam_init1();
 	while(sam_read1(fp, sam_hdr, b) > -1) {
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]){
 				sam_close(fo);
 				split_idx++;
                                 sprintf(output_path, "%s/%d.bam", output_dir, split_idx);
-                                fo = sam_open(output_path, "w");
+                                fo = sam_open(output_path, "wb");
 				sam_hdr_write(fo, sam_hdr);
 				reads_count = 1;
 			}

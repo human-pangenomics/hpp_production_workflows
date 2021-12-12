@@ -32,7 +32,7 @@ task cov2counts {
         PREFIX=${FILENAME%.cov.gz}
         
         gunzip -c ~{coverageGz} > ${PREFIX}.cov
-        ${COV2COUNTS_BIN} -i ${PREFIX}.cov -o ${PREFIX}.counts
+        cov2counts -i ${PREFIX}.cov -o ${PREFIX}.counts
     >>> 
     runtime {
         docker: dockerImage

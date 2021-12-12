@@ -30,8 +30,7 @@ workflow runFitModelBed{
     call find_blocks_t.findBlocks {
         input:
             coverageGz = subsetCoverage.outputCoverageGz,
-            table = fitModel.probabilityTable,
-            suffix = suffix 
+            table = fitModel.probabilityTable
     }
     output {
         File bedsTarGz = findBlocks.bedsTarGz

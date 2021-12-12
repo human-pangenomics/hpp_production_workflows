@@ -38,7 +38,7 @@ task cov2wig{
 
         gunzip -c ~{covGz} > ${PREFIX}.cov
         mkdir output
-        ${COV2WIG_BIN} -i ${PREFIX}.cov -s ~{segmentSize} -t ~{threshold} -f ~{fai} -o output/${PREFIX}.wig -n ~{trackName}
+        cvo2wig -i ${PREFIX}.cov -s ~{segmentSize} -t ~{threshold} -f ~{fai} -o output/${PREFIX}.wig -n ~{trackName}
     >>>
     runtime {
         docker: dockerImage

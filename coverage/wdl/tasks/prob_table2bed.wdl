@@ -37,7 +37,7 @@ task table2bed {
 
         gunzip -c ~{hifiCovGz} > ~{sampleName}.~{sampleSuffix}.hifi.cov
         gunzip -c ~{ontCovGz} > ~{sampleName}.~{sampleSuffix}.ont.cov
-        ${FIND_BLOCKS_FROM_TABLES} -t ~{hifiTable} -T ~{ontTable} -c ~{sampleName}.~{sampleSuffix}.hifi.cov -C ~{sampleName}.~{sampleSuffix}.ont.cov  -d ~{threshold} -o ~{sampleName}.~{sampleSuffix}.model.unreliable.unmerged.bed
+        find_blocks_from_tables -t ~{hifiTable} -T ~{ontTable} -c ~{sampleName}.~{sampleSuffix}.hifi.cov -C ~{sampleName}.~{sampleSuffix}.ont.cov  -d ~{threshold} -o ~{sampleName}.~{sampleSuffix}.model.unreliable.unmerged.bed
         bedtools merge -i ~{sampleName}.~{sampleSuffix}.model.unreliable.unmerged.bed > ~{sampleName}.~{sampleSuffix}.model.unreliable.bed
     >>> 
     runtime {
