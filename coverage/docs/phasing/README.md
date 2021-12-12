@@ -59,12 +59,9 @@ Two heuristics are applied for increasing specificity:
 - If the selected alignment is having a score lower than a specific threshold (in this pipeline `-50`) it is not reported as the correct one.
 - If the selected alignment is secondary its score should be at least `20` (`10` for ONT) units larger than the score of the primary alignment otherwise it is not reported as the correct one.
 
-### Running phase_reads
+### How To Run The Phasing Program
 
-The source code of the phasing program is written in C and it is available in [`coverage/docker/coverage/scripts/phase_reads.c`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/scripts/phase_reads.c). The path to the binary executable is [`coverage/docker/coverage/scripts/bin/phase_reads`](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docker/coverage/scripts/bin)
-
-The only prerequisite to run this program is the `htslib` library. You can find how to install htslib in [`coverage/docker/coverage/Dockerfile`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/Dockerfile). It is recommended
-to use the docker image `quay.io/masri2019/hpp_coverage:latest` in which `htslib` is installed and `phase_reads` program is also available. The path of this program is saved in the variable `${PHASE_READS_BIN}`.
+To run the phasing program it is recommended to use the docker image `quay.io/masri2019/hpp_coverage:latest`.
 
 Here are the parameters `phase_reads` can accept:
 ```
@@ -72,7 +69,7 @@ Here are the parameters `phase_reads` can accept:
 
 Usage: phase_reads  -i <INPUT_BAM> -f <FASTA> 
 Options:
-         -i         Input bam file [required]
+         -i         Input bam file (sorted by qname and must contain cs tag) [required]
          -f         Input fasta file [required]
          -q         Calculate BAQ [Default: false]
          -d         Gap prob [Default: 1e-4, (for ONT use 1e-2)]
@@ -88,17 +85,27 @@ The default values are set for the HiFi reads and the input bam file must be sor
 
 ```
 ## Sort by read name
-samtools sort -n -@8 ${BAM_PREFIX}.bam > ${BAM_PREFIX}.sorted.bam
+samtools sort -n -@8 ${INPUT_DIR}/${BAM_PREFIX}.bam > ${INPUT_DIR}/${BAM_PREFIX}.sorted_qname.bam
 
 ## Phase reads for HiFi
-./phase_reads -q -c -t10 -d 1e-4 -e 0.1 -b20 -m20 -s40 -i ${BAM_PREFIX}.sorted.bam 2> err.log > out.log
+docker run \
+	-v ${INPUT_DIR}:${INPUT_DIR} \
+	quay.io/masri2019/hpp_coverage:latest \
+	phase_reads -q -c -t10 -d 1e-4 -e 0.1 -b20 -m20 -s40 \
+	-i ${INPUT_DIR}/${BAM_PREFIX}.sorted.bam \
+	-f ${INPUT_DIR}/${FASTA_PREFIX}.fa > ${PHASING_OUT}.log
 
 ## Phase reads for ONT
-./phase_reads -q -c -t20 -d 1e-2 -e 0.1 -b20 -m10 -s20 -i ${BAM_PREFIX}.sorted.bam 2> err.log > out.log
+docker run \
+	-v ${INPUT_DIR}:${INPUT_DIR} \
+	quay.io/masri2019/hpp_coverage:latest \
+	phase_reads -q -c -t20 -d 1e-2 -e 0.1 -b20 -m10 -s20 \
+	-i ${INPUT_DIR}/${BAM_PREFIX}.sorted.bam \
+	-f ${INPUT_DIR}/${FASTA_PREFIX}.fa > ${OUTPUT_DIR}/${PHASING_OUT}.log
 ```
 
-`out.log` conatins the names of the reads which secondary and primary alignments have to be swapped. 
-Here is an example of a record in the `out.log`:
+`${PHASING_OUT}.log` conatins the names of the reads which secondary and primary alignments have to be swapped. 
+Here is an example of a record in the `${PHASING_OUT}.log`:
 
 ```
 $	m64043_200710_174426/2353/ccs
@@ -112,11 +119,12 @@ Based on the initial letter of each line we can indentify the correct phasing of
 - `@` proceeds the score and the start position of the secondary alignment which is to the correct haplotype
 - `!` proceeds the score and the start position of any other alignments (This example has only two alignments)
 
-### Correct the alignment
+The source code of the phasing program is available in [`phase_reads.c`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/programs/src/phase_reads.c).
 
-To Swap the pri/sec tags of the reads reported in `out.log` and produce a modified bam file you can run the program  `correct_bam`.
-The source code of the correction program is written in C and is available in [`coverage/docker/coverage/scripts/correct_bam.c`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/scripts/correct_bam.c). The binary executable is also available in [`coverage/docker/coverage/scripts/bin/correct_bam`](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docker/coverage/scripts/bin). Again it is recommended to run it through the docker image `quay.io/masri2019/hpp_coverage:latest`. The path of this program is saved in the variable `${CORRECT_BAM_BIN}`.
+### How To Run The Correction Program
 
+To swap the pri/sec tags of the reads reported in `${PHASING_OUT}.log` and produce a modified bam file you can run the program  `correct_bam`.
+Again it is recommended to run it using the docker image `quay.io/masri2019/hpp_coverage:latest`.
 
 Here are the parameters `correct_bam` can accept:
 ```
@@ -135,7 +143,7 @@ Usage: correct_bam  -i <INPUT_BAM> -o <OUTPUT_BAM> -p <PHASING_LOG> -m <MAPQ_TAB
 	* Filter the alignments shorter than the given threshold
 
 Options:
-         --inputBam,	-i         input bam file
+         --inputBam,	-i         input bam file (must contain cs tag)
          --outputBam,	-o         output bam file
          --phasingLog,	-P         the phasing log path [optional]
          --mapqTable,	-M         the adjusted mapq table path [optional]
@@ -145,17 +153,27 @@ Options:
          --minAlignmentLen,	-a        min alignment length [default: 5k]
 ```
 
-To produce the modified bam file: (Here the input bam file can be sorted by reference position and should contain the `cs` tag)
+To produce the modified bam file: (Here the input bam file can be sorted by reference position but must contain the `cs` tag)
 
 ```
-./correctBam -i ${BAM_PREFIX}.bam -o ${BAM_PREFIX} --phasingLog out.log --primaryOnly
+docker run \
+	-v ${INPUT_DIR}:${INPUT_DIR} \
+	-v ${OUTPUT_DIR}:${OUTPUT_DIR} \
+	quay.io/masri2019/hpp_coverage:latest \
+	correct_bam \
+	-i ${INPUT_DIR}/${BAM_PREFIX}.bam \
+	-P ${INPUT_DIR}/${PHASING_OUT}.log \
+	-o ${OUTPUT_DIR}/${BAM_PREFIX}.corrected.bam \
+	--primaryOnly
 ```
 
 Note the default values for `--minReadLen` and `--minAlignmentLen` are both `5k` and should be changed if not desired.
 
+The source code of the correction program is written in C and is available in [`correct_bam.c`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docker/coverage/programs/src/correct_bam.c).
+
 ### Workflows
 
-Each of the phasing and correction programs is wdlized separately and the wdl files can be found  in `coverage/wdl/tasks`. The phasing wdl file is named [`phase_reads.wdl`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/wdl/tasks/phase_reads.wdl) and the correction wdl file is named [`correct_bam.wdl`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/wdl/tasks/correct_bam.wdl).
+Each of the phasing and correction programs is wdlized separately and the wdl files can be found  [here](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/wdl/tasks). The phasing wdl file is named [`phase_reads.wdl`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/wdl/tasks/phase_reads.wdl) and the correction wdl file is named [`correct_bam.wdl`](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/wdl/tasks/correct_bam.wdl).
 
 ### Acknowledgements
 
