@@ -14,7 +14,7 @@ task findBlocksContigWise {
         File contigProbTablesTarGz
         Int minContigSize=5000000
         File windowsText
-        String suffix="contig_based"
+        String suffix="window_based"
         # runtime configurations
         Int memSize=8
         Int threadCount=8

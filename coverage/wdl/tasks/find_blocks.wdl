@@ -12,7 +12,7 @@ task findBlocks {
     input {
         File coverageGz
         File table
-        String suffix=""
+        String suffix="whole_genome"
         # runtime configurations
         Int memSize=8
         Int threadCount=4

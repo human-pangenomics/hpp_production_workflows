@@ -76,26 +76,27 @@ workflow runCoverageAnalysisV1{
             contigProbTablesTarGz = fitModelContigWise.contigProbTablesTarGz,
             genomeProbTable = fitModel.probabilityTable
     }
-    call combineBeds as combineContigBased{
+    call combineBeds as combineWindowBased{
         input:
-            outputPrefix = "contig_combined",
-            firstPrefix = "whole_genome_based",
-            secondPrefix = "contig_based",
+            outputPrefix = "window_corrected",
+            firstPrefix = "whole_genome",
+            secondPrefix = "window_based",
             firstBedsTarGz = findBlocks.bedsTarGz,
             secondBedsTarGz = findBlocksContigWise.contigBedsTarGz
     }
     call combineBeds as combineHsatBased{
        input:
-            outputPrefix = "combined",
-            firstPrefix = "contig_combined",
+            outputPrefix = "hsat_corrected",
+            firstPrefix = "window_corrected",
             secondPrefix = "hsat_based",
-            firstBedsTarGz = combineContigBased.combinedBedsTarGz,
+            firstBedsTarGz = combineWindowBased.combinedBedsTarGz,
             secondBedsTarGz = mergeHsatBeds.bedsTarGz
     }    
     call dupCorrectBeds {
         input:
             highMapqCovGz = highMapqCoverageGz,
-            combinedBedsTarGz = combineHsatBased.combinedBedsTarGz
+            bedsTarGz = combineHsatBased.combinedBedsTarGz,
+            prefix="hsat_corrected"
     }
     call filterBeds {
         input:
@@ -105,15 +106,15 @@ workflow runCoverageAnalysisV1{
         File genomeCounts = cov2counts.counts
         File genomeProbTable = fitModel.probabilityTable
         File genomeBedsTarGz = findBlocks.bedsTarGz
-        File contigCountsTarGz = cov2countsContigWise.contigCountsTarGz
-        File contigCovsTarGz = cov2countsContigWise.contigCovsTarGz
-        File contigProbTablesTarGz = fitModelContigWise.contigProbTablesTarGz
-        File contigBedsTarGz = findBlocksContigWise.contigBedsTarGz
+        File windowCountsTarGz = cov2countsContigWise.contigCountsTarGz
+        File windowCovsTarGz = cov2countsContigWise.contigCovsTarGz
+        File windowProbTablesTarGz = fitModelContigWise.contigProbTablesTarGz
+        File windowBedsTarGz = findBlocksContigWise.contigBedsTarGz
         File pdf = pdfGenerator.pdf
-        File combinedBedsTarGz = combineContigBased.combinedBedsTarGz
+        File combinedBedsTarGz = combineWindowBased.combinedBedsTarGz
         File dupCorrectedBedsTarGz = dupCorrectBeds.dupCorrectedBedsTarGz
         File filteredBedsTarGz = filterBeds.filteredBedsTarGz
-        File hsatBedsTarGz =  combineHsatBased.combinedBedsTarGz
+        File hsatCorrectedBedsTarGz =  combineHsatBased.combinedBedsTarGz
     }
 }
 
@@ -178,7 +179,8 @@ task combineBeds {
 task dupCorrectBeds {
     input {
         File highMapqCovGz
-        File combinedBedsTarGz
+        File bedsTarGz
+        String prefix
         Int minCov=5
         # runtime configurations
         Int memSize=16
@@ -204,7 +206,7 @@ task dupCorrectBeds {
         PREFIX=${FILENAME%.cov.gz}
 
         mkdir combined
-        tar --strip-components 1 -xvzf ~{combinedBedsTarGz} --directory combined
+        tar --strip-components 1 -xvzf ~{bedsTarGz} --directory ~{prefix}
 
         zcat ~{highMapqCovGz} | \
             awk '{if(substr($1,1,1) == ">") {contig=substr($1,2,40)} else if($3 >= ~{minCov}) {print contig"\t"$1-1"\t"$2}}' | \
@@ -213,13 +215,13 @@ task dupCorrectBeds {
         mkdir dup_corrected
 
         # do the correction
-        bedtools subtract -a combined/${PREFIX}.combined.duplicated.bed -b high_mapq.bed > dup_corrected/${PREFIX}.dup_corrected.duplicated.bed
-        bedtools intersect -a combined/${PREFIX}.combined.duplicated.bed -b high_mapq.bed > dup_to_hap.bed
-        cat dup_to_hap.bed combined/${PREFIX}.combined.haploid.bed | bedtools sort -i - | bedtools merge -i - > dup_corrected/${PREFIX}.dup_corrected.haploid.bed
+        bedtools subtract -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b high_mapq.bed > dup_corrected/${PREFIX}.dup_corrected.duplicated.bed
+        bedtools intersect -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b high_mapq.bed > dup_to_hap.bed
+        cat dup_to_hap.bed ~{prefix}/${PREFIX}.~{prefix}.haploid.bed | bedtools sort -i - | bedtools merge -i - > dup_corrected/${PREFIX}.dup_corrected.haploid.bed
         
         # just copy error and collapsed comps
-        cp combined/${PREFIX}.combined.error.bed dup_corrected/${PREFIX}.dup_corrected.error.bed
-        cp combined/${PREFIX}.combined.collapsed.bed dup_corrected/${PREFIX}.dup_corrected.collapsed.bed
+        cp ~{prefix}/${PREFIX}.~{prefix}.error.bed dup_corrected/${PREFIX}.dup_corrected.error.bed
+        cp ~{prefix}/${PREFIX}.~{prefix}.collapsed.bed dup_corrected/${PREFIX}.dup_corrected.collapsed.bed
 
         tar -cf ${PREFIX}.beds.dup_corrected.tar dup_corrected
         gzip ${PREFIX}.beds.dup_corrected.tar
