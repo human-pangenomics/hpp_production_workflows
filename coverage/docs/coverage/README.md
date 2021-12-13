@@ -56,7 +56,7 @@ docker run \
 Since the reads aligned to the homozygous regions are expected to have low mapping qualities we don't filter reads based on their mapping qualities.
 In the figure below you can see the histograms of mapping qualities and the distributions of alignment indentities for HG00438 as an example. Three sets of alignments are shown here; the alignments to the diploid assembly and to each haploid assembly (maternal and paternal) separately. The alignments to the haploid assemblies are shown here just for comparison and are not used for the current analysis.
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_mapq_hist.png" width="700" height="275">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/coverage/images/HG00438_mapq_hist.png" width="700" height="275">
 
 In this example about 20% of the diploid alignments are having MAPQs lower than 20. To correctly phase the reads with low MAPQ alignments it is recommended to run [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/phasing) before calculating the coverage.
 
@@ -75,7 +75,7 @@ docker run \
 ````
 The output file with `.counts` suffix is a 2-column tab-delimited file; the first column shows coverages and the second column shows the frequencies of
 those coverages. Using `.counts` files we can produce distribution plots easily. For example below we are showing the coverage distribution for HG00438 diploid assembly.
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_dip_hifi_cov_dist.png" width="700" height="275">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/coverage/images/HG00438_dip_hifi_cov_dist.png" width="700" height="275">
 
 The python script `model_extra.py` is able to take a file `.counts` suffix and fit a mixture model and find the best parameters through 
 [Expectation Maximization (EM)](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm). This mixture model
@@ -139,7 +139,7 @@ Here is an example of such a table:
 
 The figure below shows the model components. It is again for the HG00438 diploid assembly:
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_fit_model.png" width="700" height="275">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/coverage/images/HG00438_fit_model.png" width="700" height="275">
 
 ### 3. Extracting Blocks 
 
@@ -147,7 +147,7 @@ Now we have to assign each coverage value to one of the four components (erroneo
 we pick the component with the highest probability. For example for the coverage value, 0, is assigned to the erroneous component most of the times (the red line).
 In the figure below the coverage intervals are colored based on their assigned component.
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_fit_model_colored.png" width="700" height="275">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/coverage/images/HG00438_fit_model_colored.png" width="700" height="275">
 
 After assigning the coverage values we then assign the bases of the corresponding assembly to the most probable component. Finally we will have 4 bed 
 files each of which points to the regions assinged to a single component.
@@ -175,7 +175,7 @@ ${prefix}.collapsed.bed
 
 ## Additional Correction Steps
 It has been noticed that the results of the previous steps need corrections. In the neccessary steps below 3 main issues are explained and 
-their solutions are also provided.
+their solutions are also provided. The output of each correction step is used as an input for the next one.
 
 ### 1. Window-Specific Models
 
@@ -207,11 +207,11 @@ HG00438.diploid.hifi.HG00438#2#JAHBCA010000258.1#MT_1_16569.cov
 To show how the window-specific models may be different from the whole-genome model, here is an example of a false duplication in the maternal assembly of HG01175 that couldn't be detected using the whole-genome model.
 The coverage distributions of three contigs along with the whole assembly are shown below. Two of those contigs are maternal and the other one is paternal. They are containing equivalent regions in the genome but one of the maternal contigs (`2#JAHBCE010000091.1` the red one ) is having a few mega bases of a false duplication of the paternal contig (`1#JAHBCF010000027.1` the yellow one).
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_dip_hifi_contig_cov_dist.png" width="700" height="275">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/coverage/images/HG00438_dip_hifi_contig_cov_dist.png" width="700" height="275">
 
 After fitting the model the duplicated components can reveal such false duplications as you can see in the figure below. `2#JAHBCE010000105.1` does not have any duplicated component but the two others do. Since we know the maternal haplotype has a correct copy of this region in `2#JAHBCE010000105.1` we can deduce that `1#JAHBCF010000027.1` is assembled correctly and `2#JAHBCE010000091.1` is actually containing the false duplication. Without having more information it is not always easy to conclude which copy is the real one and which copy is the false one especially for segmental duplications within a single haplotype.
 
-<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/HG00438_contig_fit_model.png" width="700" height="400">
+<img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/coverage/images/HG00438_contig_fit_model.png" width="700" height="400">
 
 One important observation is that for short contigs we don't have a smooth coverage distribution and it is not possible to fit the mixture model. To address this issue we have done the window-specific coverage analysis only for the contigs longer than 5Mb and for the shorter contigs we use the results of the whole-genome analysis described previously. So the final results for the current release is a combination of window-specific and whole-genom coverage anslysis. (Look at the results section, the combined bed files are available in the `combined` subdirectory)
 
@@ -219,7 +219,7 @@ One important observation is that for short contigs we don't have a smooth cover
 ### 2. Incorporating HSATs Coverage Bias
 
 As it was mentioned in the 2nd step of the pipeline, there are some HSats in the genome where the HiFi or ONT coverage is systematically increased or decreased.
-Such platform-specific biases mislead the pipeline. For example the HiFi coverage of Hsat2 in chr1 is about 1.5 times larger than the average sequencing coverage.
+Such platform-specific biases mislead the pipeline. For example the HiFi coverage of Hsat2 in chr1 is about 1.5 times larger than the average sequencing coverage and it is very probable to wrongly flag this region as collapsed.
 In the figure below the read bars are showing the coverage of the HiFi alignments to the chm13v1.0.
 
 To incorporate such coverage biases and correct the results in the corresponding regions, the steps below are neccessary:
@@ -292,7 +292,7 @@ In the final bed files there is a noticeable number of very short blocks (a few 
 
     One approach is to correct the coverage in the correctly assembled region. The coverage can be corrected by detecting the marker snps and removing the reads from the wrong halpotype or segment. Here is an example of a region with ~40X coverage but after detecting the marker snps (by variant calling) and removing the wrong alignments the coverage has decreased to ~17X which is much closer to the expected coverage (~20X).
 
-   <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/coverage_correction.png" width="700" height="275">
+   <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/coverage/images/coverage_correction.png" width="700" height="275">
 
 
 ### Data, Source Code and Workflows Availability
