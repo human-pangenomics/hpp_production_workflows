@@ -11,9 +11,7 @@ The pipeline has 3 core steps:
 - Extract the blocks assigned to the model's 4 main components: erroneous, duplicated, haploid, and collapsed.
 
 ### Docker
-All programs used in this analysis are available in the docker image `quay.io/masri2019/hpp_coverage:latest`. It is recommended to use this docker for running 
-the programs. The path to each program is saved in an evironment variable. The environment variable for each program is mentioned in its 
-corresponding section below.
+All programs used in this analysis are available in the docker image `quay.io/masri2019/hpp_coverage:latest`. It is recommended to use this image for running the programs.
 
 ## The Pipeline
 
@@ -176,12 +174,12 @@ ${prefix}.collapsed.bed
 ````
 
 ## Additional Correction Steps
-It has been noticed that the results of the previous steps need some corrections. In the neccessary steps below the issues are explained and 
+It has been noticed that the results of the previous steps need corrections. In the neccessary steps below 3 main issues are explained and 
 their solutions are also provided.
 
 ### 1. Window-Specific Models
 
-In step 3 we fit a single model for the whole diploid assembly. In step 4 we used that model to partition the assembly into 4 main components. It has been noticed that the model components may change for different regions and it may affect the accuracy of the partitioning process. In order to make the coverage thresholds more sensitive to the local patterns the diploid assembly is split into windows of length (5-10Mb). For each window a separate model  is being fit. To do so first we split the whole-genome coverage file produced in step 3 into multiple coverage files one for each window.
+In step 3 a single model is fit for the whole diploid assembly. In step 4 that model is used to partition the assembly into 4 main components. It is noticed that the model components may change for different regions and it may affect the accuracy of the partitioning process. In order to make the coverage thresholds more sensitive to the local patterns the diploid assembly is split into windows of length (5-10Mb). For each window a separate model  should be fit. To do so first we split the whole-genome coverage file produced in step 3 into multiple coverage files one for each window.
 ```
 ## Split cov into multiple covs (each covering 5-10 Mb)
 docker run \
@@ -194,7 +192,7 @@ docker run \
  -s 5000000 \
  -p ${OUTPUT_DIR}/${OUTPUT_PREFIX}
 ```
-It will produce a list of coverage files like below.
+`split_contigs_cov_v2` program will produce a list of coverage files like below.
 ```
 HG00438.diploid.hifi.HG00438#1#JAHBCB010000001.1_10000001_15000000.cov
 HG00438.diploid.hifi.HG00438#1#JAHBCB010000001.1_15000001_20000000.cov
@@ -218,8 +216,62 @@ After fitting the model the duplicated components can reveal such false duplicat
 One important observation is that for short contigs we don't have a smooth coverage distribution and it is not possible to fit the mixture model. To address this issue we have done the window-specific coverage analysis only for the contigs longer than 5Mb and for the shorter contigs we use the results of the whole-genome analysis described previously. So the final results for the current release is a combination of window-specific and whole-genom coverage anslysis. (Look at the results section, the combined bed files are available in the `combined` subdirectory)
 
 
-### 2. Correcting The Bed Files Pointing To The False Duplications
-In some cases the duplicated component is mixed up with the haploid one. It usually happens when the coverage in the haploid component drops systematically and the contig has long stretches of false duplication. One extreme case happened in `HG002#1#JAHKSE010000028.1`. Nearly half of this contig is falsely duplicated but the combined (see the first correction step) results report almost the whole contig as `duplicated`. (https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/e9ad8022-1b30-11ec-ab04-0a13c5208311--COVERAGE_ANALYSIS_Y1_GENBANK/V1/HiFi/HG002/HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.cov_dist.pdf). One other indicator of a false duplication is the accumulation of alignments with low MAPQ. We have produced another coverage file only for MAPQ > 20 alignments and intersect it with the combined results to correct them. Whenever we see a region flagged as duplicated but it also has more than 5 high quality alignments we flag that region as haploid instead. (Look at the results section, the dup corrected bed files are available in the `dup_corrected` subdirectory)
+### 2. Incorporating HSATs Coverage Bias
+
+As it was mentioned in the 2nd step of the pipeline, there are some HSats in the genome where the HiFi or ONT coverage is systematically increased or decreased.
+Such platform-specific biases mislead the pipeline. For example the HiFi coverage of Hsat2 in chr1 is about 1.5 times larger than the average sequencing coverage.
+In the figure below the read bars are showing the coverage of the HiFi alignments to the chm13v1.0.
+
+To incorporate such coverage biases and correct the results in the corresponding regions, the steps below are neccessary:
+
+ 1. Align the diploid assembly to an (HSat-)annotated reference like chm13v1.1
+ 2. Find the assembly blocks aligned to the HSat of interest. To do so we need a bed file pointing to the HSat in the reference then we can run the script `project_blocks.py` to project it back to the assembly.
+ 3. Make a separate coverage file that covers the HSat blocks
+ 4. Run the pipeline again for the HSat-specific coverage file and obtain the 4 bed files
+ 5. Correct the `combined` bed files (output of the previous correction step) using the HSat-specific bed files
+ 
+````
+## ${ASM2REF}.bam is a bam file containing the assembly-to-ref alignments
+## First convert bam to paf since project_blocks.py works with paf
+k8 paftools.js sam2paf <(samtools view -h -F4 -F256 ) ${ASM2REF}.bam > ${ASM2REF}.paf
+
+## Given the paf file extract the HSat regions in the assembly 
+## and save them in ${HSAT_PROJECTION}.bed
+docker run \
+ -v ${INPUT_DIR}:${INPUT_DIR} \
+ -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
+ quay.io/masri2019/hpp_coverage:latest \
+ python3 /home/programs/src/project_blocks.py 
+ --mode 'ref2asm' \
+ --paf ${INPUT_DIR}/${ASM2REF}.paf \
+ --blocks ${HSAT}.bed \
+ --outputProjectable ${OUTPUT_DIR}/${PROJECTABLE}.bed \
+ --outputProjection ${OUTPUT_DIR}/${HSAT_PROJECTION}.bed
+
+## Sort and merge ${PROJECTION}.bed  
+bedtools sort -i  ${OUTPUT_DIR}/${HSAT_PROJECTION}.bed | bedtools merge -i - > ${OUTPUT_DIR}/${HSAT_PROJECTION}.merged.bed
+
+## Given the HSat blocks in the assembly, ${HSAT_PROJECTION}.merged.bed
+## and the whole genome coverage file, ${COVERAGE}.cov.gz
+## make a smaller coverage file covering only the HSat blocks
+zcat ${COVERAGE}.cov.gz | \
+            awk '{if(substr($1,1,1) == ">") {contig=substr($1,2,40); len_contig=$2} else {print contig"\t"$1-1"\t"$2"\t"$3"\t"len_contig}}' | \
+            bedtools intersect -a - -b ${HSAT_PROJECTION}.merged.bed | \
+            awk '{if(contig != $1){contig=$1; print ">"contig" "$5}; print $2+1"\t"$3"\t"$4}' | pigz -p4 > ${HSAT_COVERAGE}.cov.gz
+````
+`${HSAT_COVERAGE}.cov.gz` should be used as for the 2nd and 3rd steps of the pipeline. Please note that while calling `fit_model_extra.py` the parameter
+`--coverage` (The starting point of the fitting process) should be adjusted based on the expected coverage in the corresponding HSat.
+
+The process should be repeated for each HSat of interest that has a known covarage bias. For example for HiFi data it is recommended to do it for each of HSat1, HSat2 and Hsat3 and adjust `--coverage` as a function of the average sequencing coverage ${AVG_COVERAGE}.
+````
+HSat1 -> --coverage  0.75 * ${AVG_COVERAGE}
+HSat2 -> --coverage  1.25 * ${AVG_COVERAGE}
+HSat3 -> --coverage  1.25 * ${AVG_COVERAGE}
+````
+
+
+### 3. Correcting The Bed Files Pointing To The False Duplications
+In some cases the duplicated component is mixed up with the haploid one. It usually happens when the coverage in the haploid component drops systematically and the contig has long stretches of false duplication. One extreme case happened in `HG002#1#JAHKSE010000028.1`. Nearly half of this contig is falsely duplicated but the `hsat_corrected` (see the previous correction step) results report almost the whole contig as `duplicated`. (https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/e9ad8022-1b30-11ec-ab04-0a13c5208311--COVERAGE_ANALYSIS_Y1_GENBANK/V1/HiFi/HG002/HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.cov_dist.pdf). One other indicator of a false duplication is the accumulation of alignments with low MAPQ. We have produced another coverage file only for MAPQ > 20 alignments and intersect it with the combined results to correct them. Whenever we see a region flagged as duplicated but it also has more than 5 high quality alignments we flag that region as haploid instead. (Look at the results section, the dup corrected bed files are available in the `dup_corrected` subdirectory)
 
 ````
 ## Get blocks with more than 5 high quality alignments
@@ -233,69 +285,12 @@ bedtools intersect -a ${PREFIX}.combined.duplicated.bed -b high_mapq.bed > dup_t
 cat dup_to_hap.bed ${PREFIX}.combined.haploid.bed | bedtools sort -i - | bedtools merge -i - > ${PREFIX}.dup_corrected.haploid.bed
 ````
 
-### 3. Incorporating HSATs Coverage Bias
-
-As it was mentioned in the 2nd step of the pipeline, there are some HSats in the genome where the HiFi or ONT coverage is systematically increased or decreased.
-Such platform-specific biases mislead the pipeline. For example the HiFi coverage of Hsat2 in chr1 is about 1.5 times larger than the average sequencing coverage.
-In the figure below the read bars are showing the coverage of the HiFi alignments to the chm13v1.0.
-
-To incorporate such coverage biases and correct the results in the corresponding regions, the steps below are neccessary:
-
- 1. Align the diploid assembly to an (HSat-)annotated reference like chm13v1.1
- 2. Find the assembly blocks aligned to each of the HSats. To do so we need the bed files pointing to the HSats in the reference then we can run the script `project_blocks.py` to project it back to the assembly.
- 3. Make a separate coverage file for each HSat
- 4. Run the pipeline again for each HSat-specific coverage file and obtain the 4 bed files for each Hsat
- 5. Correct the `dup_corrected` bed files (output of the previous correction step) using the HSat-specific bed files
- 
-````
-## ${ASM2REF}.bam is a bam file containing the assembly-to-ref alignments
-## First convert bam to paf since project_blocks.py works with paf
-k8 paftools.js sam2paf <(samtools view -h -F4 -F256 ) ${ASM2REF}.bam > ${ASM2REF}.paf
-
-## Given the paf file extract the HSat regions in the assembly 
-## and save them in ${PROJECTION}.bed
-docker run \
- -v ${INPUT_DIR}:${INPUT_DIR} \
- -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
- quay.io/masri2019/hpp_coverage:latest \
- python3 /home/programs/src/project_blocks.py 
- --mode 'ref2asm' \
- --paf ${INPUT_DIR}/${ASM2REF}.paf \
- --blocks ${HSAT}.bed \
- --outputProjectable ${OUTPUT_DIR}/${PROJECTABLE}.bed \
- --outputProjection ${OUTPUT_DIR}/${PROJECTION}.bed
-
-## Sort and merge ${PROJECTION}.bed  
-bedtools sort -i  ${OUTPUT_DIR}/${PROJECTION}.bed | bedtools merge -i - > ${OUTPUT_DIR}/${PROJECTION}.merged.bed
-
-## Given the HSat blocks in the assembly, ${PROJECTION}.merged.bed
-## and the whole genome coverage file, ${COVERAGE}.cov.gz
-## make a smaller coverage file covering only the HSat
-zcat ${COVERAGE}.cov.gz | \
-            awk '{if(substr($1,1,1) == ">") {contig=substr($1,2,40); len_contig=$2} else {print contig"\t"$1-1"\t"$2"\t"$3"\t"len_contig}}' | \
-            bedtools intersect -a - -b ${PROJECTION}.merged.bed | \
-            awk '{if(contig != $1){contig=$1; print ">"contig" "$5}; print $2+1"\t"$3"\t"$4}' | pigz -p4 > ${HSAT_COVERAGE}.cov.gz
-````
-`${HSAT_COVERAGE}.cov.gz` should be used as for the 2nd and 3rd steps of the pipeline. Please note that while calling `fit_model_extra.py` the parameter
-`--coverage` should be adjusted based on the expected coverage in the corresponding HSat.
-
-The process should be repeated for each HSat of interest that has covarage bias. For example for HiFi data we repeated it three times
-once for each of HSat1, HSat2 and Hsat3.
-
-
-In the final bed files we have a noticeable number of very short blocks (a few bases or a few tens of bases long). They are very prone to be falsely categorized into one of the components. To increase the specificity we have merged the blocks closer than 100 and then removed the ones shorter than 1Kb.  (Look at the results section, the filtered bed files are available in the `filtered` subdirectory). These numbers may change in the next releases to make the blocks more contiguous.
+In the final bed files there is a noticeable number of very short blocks (a few bases or a few tens of bases long). They are very prone to be falsely categorized into one of the components. To increase the specificity we have merged the blocks closer than 100 and then removed the ones shorter than 1Kb.  (Look at the results section, the filtered bed files are available in the `filtered` subdirectory). These numbers may change in the next releases to make the blocks more contiguous.
 
 ### Known issues
-1. The reason that we used contig-specific models was to capture the local patterns and avoid underfitting. For the same reason we may not detect some misassemblies for very long contigs (tens of megabases long). For example there is a false duplication (~16Mb long) in `HG00438#1#JAHBCB010000015.1` but could not be detected w/ the current pipeline since the contig was about 80Mb long and there is a also systematic increase in the coverage of the duplicated region (HSAT-2). 
-https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/e9ad8022-1b30-11ec-ab04-0a13c5208311--COVERAGE_ANALYSIS_Y1_GENBANK/V1/HiFi/HG002/HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.cov_dist.pdf
-    
-    To fix this issue we may fit multiple models for the contigs longer than 20 Mb.
+1. Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. 
 
-2. Alignments with low mapping quality are usually happening in the regions with low heterozygosity. The reads with such alignments have to be phased more accurately. Removing (or at least modeling) the read errors and detecting the marker snps are the main steps for finding the correct haplotype of each read, which will be explored for the next releases.
- 
-3. Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. 
-
-    One approach is to correct the coverage in the correctly assembled region. The coverage can be corrected by detecting the marker snps and removing the reads from the wrong halpotype or segment. This is going to be incorporated in the next releases of this analysis. Here is an example of a region with ~40X coverage but after detecting the marker snps (by variant calling) and removing the wrong alignments the coverage has decreased to ~17X which is much closer to the expected coverage (~20X).
+    One approach is to correct the coverage in the correctly assembled region. The coverage can be corrected by detecting the marker snps and removing the reads from the wrong halpotype or segment. Here is an example of a region with ~40X coverage but after detecting the marker snps (by variant calling) and removing the wrong alignments the coverage has decreased to ~17X which is much closer to the expected coverage (~20X).
 
    <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/coverage_correction.png" width="700" height="275">
 
