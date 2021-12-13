@@ -27,6 +27,9 @@ workflows:
    -  name: Mash
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/mash.wdl
+   -  name: NTSM
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/ntsm.wdl
    -  name: MaskAssembly
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/mask_assembly.wdl
