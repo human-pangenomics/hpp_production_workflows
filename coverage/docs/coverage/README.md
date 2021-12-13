@@ -1,7 +1,7 @@
-## A Mixture Model-Based Coverage Analysis For Assessing Diploid Assemblies
+## Partitioner: A mixture model-based coverage analysis for assessing diploid assemblies
 
 ### Overview
-The main purpose of this analysis is to assess the copy number of the assembled blocks in a diploid assembly. To use this pipeline a BAM file containing the read alignments to the diploid assembly should be prepared in advance. Using the BAM file this pipeline is able to flag mis-assemblies by detecting anomalies in the coverage distribution along the assembly. It can also categorize the mis-assemblies into 3 main groups: erroneous, (falsely) duplicated, and collapsed. 
+The main purpose of the **Partitioner** pipeline is to assess the copy number of the assembled blocks in a diploid assembly. To use this pipeline a BAM file containing the read alignments to the diploid assembly should be prepared in advance. Using the BAM file this pipeline is able to flag mis-assemblies by detecting anomalies in the coverage distribution along the assembly. It can also categorize the mis-assemblies into 3 main groups: erroneous, (falsely) duplicated, and collapsed. 
 
 The examples shown here are from the [Human Pan-Genome Project](https://humanpangenome.org/) since it was the main motivation for this developing the pipeline.
 
