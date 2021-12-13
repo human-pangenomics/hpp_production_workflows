@@ -38,12 +38,12 @@ task findBlocks {
         gunzip -c ~{coverageGz} > $PREFIX.cov
         if [ -z ~{suffix} ]; then
             mkdir blocks
-            find_blocks -c $PREFIX.cov -t ~{table} -p blocks/${PREFIX}
+            find_blocks_from_table -c $PREFIX.cov -t ~{table} -p blocks/${PREFIX}
             tar -cf ${PREFIX}.beds.tar blocks
             gzip ${PREFIX}.beds.tar
         else
             mkdir ~{suffix}
-            find_blocks -c $PREFIX.cov -t ~{table} -p ~{suffix}/${PREFIX}.~{suffix}
+            find_blocks_from_table -c $PREFIX.cov -t ~{table} -p ~{suffix}/${PREFIX}.~{suffix}
             tar -cf ${PREFIX}.beds.~{suffix}.tar ~{suffix}
             gzip ${PREFIX}.beds.~{suffix}.tar
         fi
