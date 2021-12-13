@@ -64,10 +64,8 @@ task ntsm_count {
         count_kmer_size: "k-mer size to use (sliding window is applied: highest count is stored)"
     }
 
-    # Array[File] input_fastqs_run = select_all([input_fastqs])
-
     # Estimate disk size required
-    Int input_fastq_size  = 3 #ceil(size(input_fastqs_run, "GB"))       
+    Int input_fastq_size  = ceil(size(input_fastqs, "GB"))       
     Int final_disk_dize   = input_fastq_size * 2 + addldisk
 
     # Create output file name
