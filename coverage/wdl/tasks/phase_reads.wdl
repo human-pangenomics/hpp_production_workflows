@@ -138,10 +138,10 @@ task concatLogs {
 task splitByName {
     input {
         File bamFile
-        Int NReadsPerBam = 200000
+        Int NReadsPerBam = 400000
         # runtime configurations
-        Int memSize=4
-        Int threadCount=2
+        Int memSize=16
+        Int threadCount=8
         Int diskSize=512
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=2
@@ -163,7 +163,7 @@ task splitByName {
         BAM_PREFIX=${BAM_FILENAME%.bam}
 
         mkdir output
-        split_bam_by_readname -i ~{bamFile} -o output -n ~{NReadsPerBam}
+        split_bam_by_readname -i ~{bamFile} -o output -n ~{NReadsPerBam} -t~{threadCount}
     >>>
     runtime {
         docker: dockerImage
