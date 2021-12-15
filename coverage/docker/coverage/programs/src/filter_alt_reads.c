@@ -7,6 +7,7 @@
 #include "faidx.h"
 #include <getopt.h>
 #include "cigar_it.h"
+#include "thread_pool.h"
 
 stHash* getSnpTable(char* vcfPath){
     FILE * fp;
@@ -46,10 +47,23 @@ stHash* getSnpTable(char* vcfPath){
 }
 
 
-void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filteredPath){
+void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filteredPath, int nthreads){
 	samFile* fp = sam_open(inputPath, "r");
 	samFile* fo = sam_open(outputPath, "wb");
 	samFile* ff = sam_open(filteredPath, "wb");
+	// Make a multi threading pool
+        htsThreadPool p = {NULL, 0};
+        if (nthreads > 0) {
+                p.pool = hts_tpool_init(nthreads);
+                if (!p.pool) {
+                        fprintf(stderr, "Error creating thread pool\n");
+                }
+		else{ // Add I/O streams to the threading pool
+			hts_set_opt(fp, HTS_OPT_THREAD_POOL, &p);
+			hts_set_opt(fo, HTS_OPT_THREAD_POOL, &p);
+			hts_set_opt(ff, HTS_OPT_THREAD_POOL, &p);
+		}
+        }
         sam_hdr_t* sam_hdr = sam_hdr_read(fp);
 	sam_hdr_write(fo, sam_hdr);
 	sam_hdr_write(ff, sam_hdr);
@@ -141,6 +155,8 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filt
 	sam_close(fo);
 	sam_close(fp);
 	sam_close(ff);
+	if (p.pool)
+                hts_tpool_destroy(p.pool);
 }
 
 
@@ -150,9 +166,10 @@ int main(int argc, char *argv[]){
         char* outputPath;
 	char* filteredPath;
 	char* vcfPath;
+	int nthreads = 2;
         char *program;
         (program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-        while (~(c=getopt(argc, argv, "i:o:f:v:h"))) {
+        while (~(c=getopt(argc, argv, "i:o:f:v:t:h"))) {
                 switch (c) {
                         case 'i':
                                 inputPath = optarg;
@@ -166,6 +183,9 @@ int main(int argc, char *argv[]){
 		 	case 'v':
                                 vcfPath = optarg;
                                 break;
+			case 't':
+				nthreads = atoi(optarg);
+				break;
                         default:
                                 if (c != 'h') fprintf(stderr, "[E::%s] undefined option %c\n", __func__, c);
                         help:
@@ -175,6 +195,7 @@ int main(int argc, char *argv[]){
                                 fprintf(stderr, "         -o         output bam file\n");
 				fprintf(stderr, "         -f         output bam file that contains the removed reads with alternative alleles\n");
 				fprintf(stderr, "         -v         vcf file containing biallelic snps (output of 'bcftools view -Ov -f PASS -m2 -M2 -v snps')\n");
+				fprintf(stderr, "         -t         number of threads (for bam I/O) [Default: 2]\n");
                                 return 1;
                 }
         }
@@ -195,6 +216,6 @@ int main(int argc, char *argv[]){
 		}
 	}*/
 	//printf("#\n");
-	filterReads(snpTable, inputPath, outputPath, filteredPath);
+	filterReads(snpTable, inputPath, outputPath, filteredPath, nthreads);
 	stHash_destruct(snpTable);
 }

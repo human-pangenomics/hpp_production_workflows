@@ -16,8 +16,8 @@ task correctBam {
         String? options
         String suffix
         # runtime configurations
-        Int memSize=4
-        Int threadCount=2
+        Int memSize=8
+        Int threadCount=8
         Int diskSize=512
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=2
@@ -50,8 +50,8 @@ task correctBam {
             OPTIONS="${OPTIONS} --mapqTable ~{mapqTableText}"
         fi
         
-        correct_bam ${OPTIONS} -i ~{bam} -o output/$PREFIX.~{suffix}.bam
-        samtools index output/$PREFIX.~{suffix}.bam
+        correct_bam ${OPTIONS} -i ~{bam} -o output/$PREFIX.~{suffix}.bam -n~{threadCount}
+        samtools index -@~{threadCount} output/$PREFIX.~{suffix}.bam
     >>> 
     runtime {
         docker: dockerImage

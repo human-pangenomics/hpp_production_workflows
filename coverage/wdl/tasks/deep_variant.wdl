@@ -192,7 +192,7 @@ task deepVariant{
         if [ -n "~{bamIndex}" ]; then
             ln -f ~{bamIndex} > ${BAM_PREFIX}.bam.bai
         else       
-            samtools index ${BAM_PREFIX}.bam
+            samtools index -@~{threadCount} ${BAM_PREFIX}.bam
         fi
 
         ## unzip the fasta file and produce its index

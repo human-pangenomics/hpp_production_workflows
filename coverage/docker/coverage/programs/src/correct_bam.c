@@ -7,6 +7,7 @@
 #include <regex.h>
 #include "sonLib.h"
 #include "cigar_it.h"
+#include "thread_pool.h"
 
 typedef struct {
 	char*	contig_name;
@@ -193,9 +194,10 @@ int main(int argc, char *argv[]){
 	bool no_tag = false;
 	int min_read_length = 5000;
 	int min_alignment_length = 5000;
+	int nthreads = 2;
 	char *program;
         (program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-        while (~(c=getopt_long(argc, argv, "i:o:P:M:tpm:a:h", long_options, NULL))) {
+        while (~(c=getopt_long(argc, argv, "i:o:P:M:tpm:a:n:h", long_options, NULL))) {
                 switch (c) {
                         case 'i':
                                 input_path = optarg;
@@ -221,6 +223,9 @@ int main(int argc, char *argv[]){
 			case 'a':
                                 min_alignment_length = atoi(optarg);
                                 break;
+			case 'n':
+				nthreads = atoi(optarg);
+				break;
                         default:
                                 if (c != 'h') fprintf(stderr, "[E::%s] undefined option %c\n", __func__, c);
                         help:
@@ -234,6 +239,7 @@ int main(int argc, char *argv[]){
                                 fprintf(stderr, "         --primaryOnly,\t-p         output only primary alignments\n");
 				fprintf(stderr, "         --minReadLen,\t-m         min read length [default: 5k]\n");
 				fprintf(stderr, "         --minAlignmentLen,\t-a         min alignment length [default: 5k]\n");
+				fprintf(stderr, "         --threads,\t-n         number of threads (for bam I/O)[default: 2]\n");
 				return 1;
                 }
         }
@@ -243,6 +249,18 @@ int main(int argc, char *argv[]){
 	//open output bam file and write the header
 	samFile* fo = sam_open(output_path, "wb");
 	sam_hdr_write(fo, sam_hdr);
+	// Make a multi threading pool
+        htsThreadPool p = {NULL, 0};
+        if (nthreads > 0) {
+                p.pool = hts_tpool_init(nthreads);
+                if (!p.pool) {
+                        fprintf(stderr, "Error creating thread pool\n");
+                }
+                else{ // Add I/O streams to the threading pool
+                        hts_set_opt(fp, HTS_OPT_THREAD_POOL, &p);
+                        hts_set_opt(fo, HTS_OPT_THREAD_POOL, &p);
+                }
+        }
 	//get the table of phased reads (the locations of their primary alignments are stored as values)
 	stHash* phased_read_table = get_phased_read_table(phasing_log_path);
 	//get the table of reads with adjusted mapq (the locations (+ corresponding mapqs) are stored as values)
@@ -287,4 +305,6 @@ int main(int argc, char *argv[]){
         sam_hdr_destroy(sam_hdr);
 	stHash_destruct(mapq_table);
 	stHash_destruct(phased_read_table);
+	if (p.pool)
+                hts_tpool_destroy(p.pool);
 }
