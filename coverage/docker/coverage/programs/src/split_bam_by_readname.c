@@ -1,16 +1,17 @@
 #include <getopt.h>
 #include "sam.h"
-//#include "bgzf.h"
 #include <assert.h>
+#include "thread_pool.h"
 
 int main(int argc, char *argv[]){
         int c;
         char* input_path;
 	char* output_dir;
 	int n;
+	int nthreads = 0;
         char *program;
         (program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-        while (~(c=getopt(argc, argv, "i:o:n:h"))) {
+        while (~(c=getopt(argc, argv, "i:o:n:t:h"))) {
                 switch (c) {
                         case 'i':
                                 input_path = optarg;
@@ -21,6 +22,9 @@ int main(int argc, char *argv[]){
 			case 'n':
                                 n = atoi(optarg);
                                 break;
+			case 't':
+				nthreads = atoi(optarg);
+				break;
                         default:
                                 if (c != 'h') fprintf(stderr, "[E::%s] undefined option %c\n", __func__, c);
                         help:
@@ -29,11 +33,25 @@ int main(int argc, char *argv[]){
                                 fprintf(stderr, "         -i         input bam file\n");
                                 fprintf(stderr, "         -o         output dir\n");
 				fprintf(stderr, "         -n         number of reads per bam\n");
+				fprintf(stderr, "         -t         number of threads\n");
                                 return 1;
                 }
         }
-        samFile* fp = sam_open(input_path, "r");
-        sam_hdr_t* sam_hdr = sam_hdr_read(fp);
+
+	// open the input bam file
+	samFile* fp = sam_open(input_path, "r");
+	sam_hdr_t* sam_hdr = sam_hdr_read(fp);
+	bam1_t* b = bam_init1();
+	// Make a multi threading pool
+	htsThreadPool p = {NULL, 0};
+    	if (nthreads > 0) {
+        	p.pool = hts_tpool_init(nthreads);
+        	if (!p.pool) {
+            		fprintf(stderr, "Error creating thread pool\n");
+        	}
+    	}
+	// Add input stream to the threading pool
+	if (p.pool) hts_set_opt(fp, HTS_OPT_THREAD_POOL, &p);
         char read_name[100];
         char read_name_new[100];
         memset(read_name, '\0', 100);
@@ -41,12 +59,15 @@ int main(int argc, char *argv[]){
 	int reads_count = 0;
 	int split_idx = 0;
 	char output_path[100];
+	// Open the first output bam file 
         sprintf(output_path, "%s/%d.bam", output_dir, split_idx);
         samFile* fo = sam_open(output_path, "wb");
+	// Add the output stream to the threading pool
+	if (p.pool) hts_set_opt(fo, HTS_OPT_THREAD_POOL, &p);
 	sam_hdr_write(fo, sam_hdr);
-	bam1_t* b = bam_init1();
 	while(sam_read1(fp, sam_hdr, b) > -1) {
         	strcpy(read_name_new, bam_get_qname(b));
+		// The alignments of the same read should be in the same output file
 		if (strcmp(read_name_new, read_name) != 0) {
 			strcpy(read_name, read_name_new);
 			reads_count++;
@@ -55,6 +76,7 @@ int main(int argc, char *argv[]){
 				split_idx++;
                                 sprintf(output_path, "%s/%d.bam", output_dir, split_idx);
                                 fo = sam_open(output_path, "wb");
+				if (p.pool) hts_set_opt(fo, HTS_OPT_THREAD_POOL, &p);	
 				sam_hdr_write(fo, sam_hdr);
 				reads_count = 1;
 			}
@@ -68,4 +90,6 @@ int main(int argc, char *argv[]){
 	sam_close(fp);
         bam_destroy1(b);
         sam_hdr_destroy(sam_hdr);
+	if (p.pool)
+		hts_tpool_destroy(p.pool);
 }
