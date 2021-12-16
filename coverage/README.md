@@ -111,13 +111,18 @@ docker run \
 
 ### 7. Combine the Partitioner outputs in steps 3 and 6
 The partitioner outputs in steps 3 and 6 are expected to have a huge overlap but they are not the same. As an example one region that was detected as collapsed in step 3 may be categorized as haploid in step 6. This component change is showing that the flagged region is assembled correctly but the 
-its homologous region in the other haplotype is not assembled correctly and that's why the reads from the other haplotype aligned there.
+its homologous region in the other haplotype is not assembled correctly and that's why the reads from the other haplotype aligned there. 
+So by combining these two sets of partitioner outputs it is possible to infer more information about the unreliable blocks in the assembly.
 
-Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. 
-
-    One approach is to correct the coverage in the correctly assembled region. The coverage can be corrected by detecting the marker snps and removing the reads from the wrong halpotype or segment. This is going to be incorporated in the next releases of this analysis. Here is an example of a region with ~40X coverage but after detecting the marker snps (by variant calling) and removing the wrong alignments the coverage has decreased to ~17X which is much closer to the expected coverage (~20X).
-
-   <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/coverage_correction.png" width="700" height="275">
+The patitioner output is a gzipped tar file that contain 4 bed files one for each component.
+```
+bash combine_alt_removed_beds \
+-a ${BEDS_TAR_GZ_STEP3} \
+-b ${BEDS_TAR_GZ_STEP6} \
+-m /home/scripts/colors.txt \
+-t ${SAMPLE_NAME} \
+-o ${OUTPUT_BED}
+```
 
 
 ### Data, Source Code and Workflows Availability
