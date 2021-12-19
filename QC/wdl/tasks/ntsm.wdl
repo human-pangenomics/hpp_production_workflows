@@ -34,7 +34,9 @@ workflow ntsm_workflow {
     }
 
    output {
-       File ntsm_eval_out = ntsm_eval.ntsm_eval_out
+        File ntsv_count_1  = ntsm_count_1.ntsm_counts
+        File ntsv_count_2  = ntsm_count_2.ntsm_counts
+        File ntsm_eval_out = ntsm_eval.ntsm_eval_out
     }
 
     meta {
