@@ -1,25 +1,49 @@
 version 1.0
 
+import "extract_reads.wdl" as extract_reads
+
 workflow ntsm_workflow {
     input {
-        Array[File] input_fastqs_1
-        Array[File] input_fastqs_2
+        Array[File] input_reads_1
+        Array[File] input_reads_2
         String sample_id   = "sample"
         String read_1_type = "type1"
         String read_2_type = "type2"
+
+        File? cram_reference
     }
 
+    # Read Type 1: extract reads
+    scatter (read_file in input_reads_1) {
+        call extract_reads.extractReads as extract_reads_1 {
+            input:
+                readFile=read_file,
+                referenceFasta=cram_reference
+        }
+    }
 
+    # Type 1: NTSM count
     call ntsm_count as ntsm_count_1 {
         input:
-            input_fastqs = input_fastqs_1,
+            input_fastqs = extract_reads_1.extractedRead,
             sample_id    = sample_id,
             read_type    = read_1_type
     }
 
+
+    # Read Type 2: extract reads
+    scatter (read_file in input_reads_2) {
+        call extract_reads.extractReads as extract_reads_2 {
+            input:
+                readFile=read_file,
+                referenceFasta=cram_reference
+        }
+    }
+
+    # Type 2: NTSM count
     call ntsm_count as ntsm_count_2 {
         input:
-            input_fastqs = input_fastqs_2,
+            input_fastqs = extract_reads_2.extractedRead,
             sample_id    = sample_id,
             read_type    = read_2_type
     }
@@ -46,7 +70,6 @@ workflow ntsm_workflow {
     }
 }
 
-
 task ntsm_count {
     input {
         Array[File] input_fastqs
@@ -62,7 +85,7 @@ task ntsm_count {
     }
     
     parameter_meta {
-        input_fastqs: "Files must be in fastq.gz format"
+        input_fastqs: "Files must be in fastq format"
         count_kmer_size: "k-mer size to use (sliding window is applied: highest count is stored)"
     }
 
@@ -88,7 +111,7 @@ task ntsm_count {
             -a 31_CG.fa \
             -k ~{count_kmer_size} \
             -t ~{threadCount} \
-            <(pigz -cd ${FASTQS}) \
+            <(cat ${FASTQS}) \
             > ~{output_counts_fn}
     >>>
 
