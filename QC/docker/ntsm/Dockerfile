@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
     autotools-dev \
     automake \
     git \
-    pigz
+    pigz \
+    samtools
 
 RUN ln -s /usr/bin/python3 /usr/bin/python & \
     ln -s /usr/bin/pip3 /usr/bin/pip
