@@ -113,7 +113,7 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filt
                         }
 			continue;
 		}
-		cigarIt = ptCigarIt_construct(b, true);
+		cigarIt = ptCigarIt_construct(b, true, true);
 		snpIndex = startSnpIndex;
 		writeFlag = true;
 		while(ptCigarIt_next(cigarIt)){

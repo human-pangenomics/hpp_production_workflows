@@ -9,9 +9,10 @@
 #include <math.h>
 #include <float.h>
 #include "cigar_it.h"
+#include "common.h"
+
 
 #define ARRAY_SIZE(arr) (sizeof((arr)) / sizeof((arr)[0]))
-#define CS_PATTERN "(:([0-9]+))|(([+-\\*])([a-z]+))" 
 
 //#define DEBUG
 
@@ -28,14 +29,6 @@ void DEBUG_PRINT(const char *fmt, ...)
 #else
 static inline void DEBUG_PRINT(const char *fmt, ...) {};
 #endif
-
-int max(int a, int b){
-        return a > b ? a : b;
-}
-
-int min(int a, int b){
-        return a < b ? a : b;
-}
 
 
 /*! @typedef
@@ -283,7 +276,7 @@ void filter_ins_markers(stList** markers_p, ptAlignment** alignments, int alignm
 		b = alignments[i]->record;
 		j = bam_is_rev(b) ? stList_length(markers) - 1 : 0;
 		marker = stList_get(markers, j);
-		cigar_it = ptCigarIt_construct(b, true);
+		cigar_it = ptCigarIt_construct(b, true, true);
 		//iterate over cigars
 		while(ptCigarIt_next(cigar_it)){
 			//check if marker is located within the cigar operation
@@ -439,7 +432,7 @@ int get_best_record(ptAlignment** alignments, int alignments_len, double min_qv,
 stList* find_confident_blocks(ptAlignment* alignment, int threshold){
 	bam1_t* b = alignment->record;
 	stList* conf_blocks = stList_construct3(0, free);
-	ptCigarIt* cigar_it = ptCigarIt_construct(b, true);
+	ptCigarIt* cigar_it = ptCigarIt_construct(b, true, true);
 	int conf_sqs = 0; // the seq start of the confident block
 	int conf_rfs = b->core.pos; // the ref start of the confident block
 	int conf_rd_f = bam_is_rev(b) ? cigar_it->rde_f : cigar_it->rds_f;
@@ -575,7 +568,7 @@ void set_confident_blocks(ptAlignment** alignments, int alignments_len, int thre
 stList* find_flanking_blocks(ptAlignment* alignment, stList* markers, int margin){
 	bam1_t* b = alignment->record;
         stList* flank_blocks = stList_construct3(0, free);
-        ptCigarIt* cigar_it = ptCigarIt_construct(b, true);
+        ptCigarIt* cigar_it = ptCigarIt_construct(b, true, true);
 	// get the first merker for initializing start and end
 	int i = 0;
 	ptMarker* marker = stList_get(markers, i);
@@ -675,7 +668,7 @@ int correct_conf_blocks(ptAlignment** alignments, int alignments_len, int thresh
 		bam1_t* b = alignments[i]->record;
 		int j = bam_is_rev(b) ? stList_length(blocks) - 1 : 0;
 		corrected_conf_blocks = stList_construct3(0, free);
-        	ptCigarIt* cigar_it = ptCigarIt_construct(alignments[i]->record, true);
+        	ptCigarIt* cigar_it = ptCigarIt_construct(alignments[i]->record, true, true);
         	int block_rds_f, block_rde_f, cigar_rds_f, cigar_rde_f, rfs, rfe, sqs, sqe;
 		bool del_flag = false;
         	block = stList_get(blocks, j);
@@ -828,7 +821,7 @@ void calc_local_baq(const faidx_t* fai, const char* contig_name, ptAlignment* al
 	int markers_len = stList_length(markers);
 	int j = bam_is_rev(b) ? stList_length(markers) - 1 : 0;
 	ptMarker* marker = stList_get(markers, j);
-	ptCigarIt* cigar_it = ptCigarIt_construct(b, true);
+	ptCigarIt* cigar_it = ptCigarIt_construct(b, true, true);
 	ptBlock* block;
 	int ref_len; int seq_len;
 	DEBUG_PRINT("\t\t\t## Number of Blocks: %ld\n", stList_length(blocks));
@@ -1164,7 +1157,7 @@ DEBUG_PRINT("\n@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\
 		if (bytes_read <= -1) break; // file is finished so break
 		if(b->core.flag & BAM_FUNMAP) continue; // unmapped
 		alignments[alignments_len] = ptAlignment_construct(b, 0.0);
-		ptCigarIt* cigar_it = ptCigarIt_construct(b, true);
+		ptCigarIt* cigar_it = ptCigarIt_construct(b, true, true);
 		quality = bam_get_qual(b);
 		while(ptCigarIt_next(cigar_it)){
 			if (cigar_it->op == BAM_CDIFF) {

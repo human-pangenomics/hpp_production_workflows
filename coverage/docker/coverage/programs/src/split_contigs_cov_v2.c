@@ -4,16 +4,8 @@
 #include <getopt.h>
 #include <assert.h>
 #include "sonLib.h"
+#include "common.h"
 
-
-
-int min(int a, int b){
-	return a < b ? a : b;
-}
-
-int max(int a, int b){
-        return b < a ? a : b;
-}
 
 typedef struct{
 	char* contigName;

@@ -140,7 +140,7 @@ uint8_t get_mapq(stHash* mapq_table, bam1_t* b, sam_hdr_t* sam_hdr){
 }
 
 int get_read_length(bam1_t* b){
-	ptCigarIt* cigar_it = ptCigarIt_construct(b, true);
+	ptCigarIt* cigar_it = ptCigarIt_construct(b, true, true);
 	int read_len = 0;
 	while(ptCigarIt_next(cigar_it)){
 		if(cigar_it->op == BAM_CDIFF ||
@@ -157,7 +157,7 @@ int get_read_length(bam1_t* b){
 }
 
 int get_alignment_length(bam1_t* b){
-        ptCigarIt* cigar_it = ptCigarIt_construct(b, true);
+        ptCigarIt* cigar_it = ptCigarIt_construct(b, true, true);
         int alignment_len = 0;
         while(ptCigarIt_next(cigar_it)){
                 if(cigar_it->op == BAM_CDIFF ||
