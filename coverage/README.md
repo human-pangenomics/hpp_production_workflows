@@ -40,15 +40,89 @@ assembly. The 4 components are explained in detail [here](https://github.com/hum
 More information about Partitioner is available [here](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/coverage)
 
 ### 4. Call variants 
+By calling variants it is possible to detect the regions that needs polishing or the regions that have alignments from the wrong haplotype. It is recommeneded to use [Deepvariant](https://github.com/google/deepvariant) for calling variants from HiFi alignments and [Pepper-Margin-Deepvariant](https://github.com/kishwarshafin/pepper) for ONT. 
+````
+## For HiFi
+## Taken from deepvariant doc
+BIN_VERSION="1.3.0"
+docker run \
+  -v ${INPUT_DIR}:/input \
+  -v ${OUTPUT_DIR}:/output \
+  google/deepvariant:"${BIN_VERSION}" \
+  /opt/deepvariant/bin/run_deepvariant \
+  --model_type="PACBIO" \
+  --ref="/input/${ASSEMBLY_FASTA}" \
+  --reads="/input/${INPUT_BAM}" \
+  --output_vcf="/output/${OUTPUT_VCF}" \
+  --make_examples_extra_args="keep_supplementary_alignments=true, min_mapping_quality=0" \
+  --call_variants_extra_args="use_openvino=true" \
+  --num_shards=$(nproc) \
+  --dry_run=false 
+  
+## For ONT
+## Taken from pepper-margin-deepvariant doc
+sudo docker run \
+  -v ${INPUT_DIR}:/input \
+  -v ${OUTPUT_DIR}:/output \
+  kishwars/pepper_deepvariant:r0.6 \
+  run_pepper_margin_deepvariant call_variant \
+  -b "/input/${INPUT_BAM}" \
+  -f "/input/${ASSEMBLY_FASTA}" \
+  -o "/output" \
+  -t $(nproc) \
+  --ont_r9_guppy5_sup \
+  --pepper_include_supplementary \
+  --dv_min_mapping_quality 0 \
+  --pepper_min_mapping_quality 0 \
+  
+ 
+# --ont_r9_guppy5_sup is preset for ONT R9.4.1 Guppy 5 "Sup" basecaller
+# for ONT R10.4 Q20 reads: --ont_r10_q20
+````
+
+Note that for both variant callers, the minimum mapping quality is set to 0 which is neccessary to do if the assembly under evaluation is diploid.
+
 ### 5. Remove the alignments with alternative alleles
+The called variants are then filtered to include only the biallelic snps.
+````
+## Get the biallelic snps
+bcftools view -Ov -f PASS -m2 -M2 -v snps ${OUTPUT_VCF} > ${SNPS_VCF}
+````
+By having the biallelic snps it is possible to find the alignments with alternative alleles, remove them from the bam file and produce a new bam file.
+`filter_alt_reads` is a program that can be used for this aim.
+```
+## Run filter_alt_reads to get a bam file with no alternative-contained alignments
+docker run \
+ -v ${INPUT_DIR}:/input \
+ -v ${OUTPUT_DIR}:/output \
+ quay.io/masri2019/hpp_coverage:latest \
+ filter_alt_reads \
+ -i "/input/${INPUT_BAM}" \
+ -o "/output/${ALT_FILTERED_BAM}"
+ -f "/output/${ALT_BAM}"
+ -v "${SNPS_VCF}"
+ -t $(nproc)
+```
+`${ALT_FILTERED_BAM}` is the bam file with no alignments that contain alternative alleles and `${ALT_BAM}` includes the removed alignments.
+
 ### 6. Run Paritioner on the alignments with no alternative allele
+`${ALT_FILTERED_BAM}` produced in the previous step will be used as a new input for Partitioner. This step is same as the 3rd step except that the input bam file here does not have the alternative-contained alignments.
 
 
-Some regions are falsely flagged as collapsed. The reason is that the equivalent region in the other haplotype is not assembled correctly so the reads from two haplotypes are aligned to only one of them. This flagging can be useful since it points to a region whose counterpart in the other haplotype is not assembled correctly or not assembled at all. 
+### 7. Combine the Partitioner outputs in steps 3 and 6
+The partitioner outputs in steps 3 and 6 are expected to have a huge overlap but they are not the same. As an example one region that was detected as collapsed in step 3 may be categorized as haploid in step 6. This component change is showing that the flagged region is assembled correctly but the 
+its homologous region in the other haplotype is not assembled correctly and that's why the reads from the other haplotype aligned there. 
+So by combining these two sets of partitioner outputs it is possible to infer more information about the unreliable blocks in the assembly.
 
-    One approach is to correct the coverage in the correctly assembled region. The coverage can be corrected by detecting the marker snps and removing the reads from the wrong halpotype or segment. This is going to be incorporated in the next releases of this analysis. Here is an example of a region with ~40X coverage but after detecting the marker snps (by variant calling) and removing the wrong alignments the coverage has decreased to ~17X which is much closer to the expected coverage (~20X).
-
-   <img src="https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/images/coverage_correction.png" width="700" height="275">
+The patitioner output is a gzipped tar file that contain 4 bed files one for each component.
+```
+bash combine_alt_removed_beds \
+-a ${BEDS_TAR_GZ_STEP3} \
+-b ${BEDS_TAR_GZ_STEP6} \
+-m /home/scripts/colors.txt \
+-t ${SAMPLE_NAME} \
+-o ${OUTPUT_BED}
+```
 
 
 ### Data, Source Code and Workflows Availability
