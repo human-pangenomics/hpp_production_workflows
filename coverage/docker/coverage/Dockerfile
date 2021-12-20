@@ -47,6 +47,7 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 
 
 COPY ./programs /home/programs
+COPY ./scripts  /home/scripts
 RUN cd /home/programs && make
 ENV PATH="$PATH:/home/programs/bin"
 
