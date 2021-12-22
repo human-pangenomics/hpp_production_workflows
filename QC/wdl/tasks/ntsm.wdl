@@ -96,7 +96,7 @@ task ntsm_count {
                 SUFFIX="${FILENAME##*.}"
 
                 if [[ "$SUFFIX" == "bam" ]] ; then
-                    samtools fastq -@~{threadCount} -c 1 -0 output/${PREFIX}.fastq.gz $READFILE
+                    samtools fastq -@~{threadCount} $READFILE | gzip --fast --stdout > output/${PREFIX}.fastq.gz
 
                 elif [[ "$SUFFIX" == "cram" ]] ; then
                     if [[ ! -f "~{cram_reference}" ]] ; then
@@ -104,8 +104,8 @@ task ntsm_count {
                         exit 1
                     fi
                     ln -s ~{cram_reference}
-                    samtools fastq -@~{threadCount} -c 1 --reference `basename ~{cram_reference}` -0 output/${PREFIX}.fastq.gz $READFILE
-                
+                    # samtools fastq -@~{threadCount} -c 1 -1 output/${PREFIX}_1.fastq.gz -2 output/${PREFIX}_2.fastq.gz --reference `basename ~{cram_reference}` $READFILE
+                    samtools fastq -@~{threadCount} --reference `basename ~{cram_reference}` $READFILE | gzip --fast --stdout >  output/${PREFIX}.fastq.gz              
                 elif [[ "$SUFFIX" == "fastq" ]] ; then
                     gzip $READFILE > output/${PREFIX}.fastq.gz
                 
