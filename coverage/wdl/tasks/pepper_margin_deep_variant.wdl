@@ -83,7 +83,10 @@ task pmdv{
         -t ~{threadCount} \
         --~{modelType} ${MORE_OPTIONS}
 
-        mv output/PEPPER_MARGIN_DEEPVARIANT_OUTPUT.vcf.gz output/${BAM_PREFIX}.vcf.gz
+        mv output/PEPPER_MARGIN_DEEPVARIANT_FINAL_OUTPUT.vcf.gz output/${BAM_PREFIX}.vcf.gz
+        cd output 
+        tar -cf ${BAM_PREFIX}.intermediate_files.tar intermediate_files
+          
         
     >>>
     runtime {
@@ -96,6 +99,7 @@ task pmdv{
     }
     output {
         File vcfGz = glob("output/*.vcf.gz")[0]
+        File intermediateTar = glob("output/*.tar")[0]
     }
 }
 
