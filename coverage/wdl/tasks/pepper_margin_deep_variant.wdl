@@ -25,6 +25,7 @@ workflow runPepperMarginDeepVariant{
     }
     output{
         File vcfGz = pmdv.vcfGz
+        File intermediateTar = pmdv.intermediateTar
     }
 }
 
@@ -75,7 +76,7 @@ task pmdv{
 
         mkdir output
 
-        ## call pepper-margin-deepvariant
+        ## call pepper-margin-deepvariant 
         run_pepper_margin_deepvariant call_variant \
         -b  ${BAM_PREFIX}.bam \
         -f  asm.fa \
@@ -84,10 +85,9 @@ task pmdv{
         --~{modelType} ${MORE_OPTIONS}
 
         mv output/PEPPER_MARGIN_DEEPVARIANT_FINAL_OUTPUT.vcf.gz output/${BAM_PREFIX}.vcf.gz
-        cd output 
+        cd output
         tar -cf ${BAM_PREFIX}.intermediate_files.tar intermediate_files
-          
-        
+
     >>>
     runtime {
         docker: dockerImage
