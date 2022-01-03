@@ -143,8 +143,11 @@ task getHapBed {
         FILENAME=~{bed}
         PREFIX=$(basename ${FILENAME%.bed})
 
-        cat ~{bed} | grep "#1" > ${PREFIX}.pat.bed
-        cat ~{bed} | grep "#2" > ${PREFIX}.mat.bed
+        # The given bed file can be empty
+        touch ${PREFIX}.pat.bed
+        touch ${PREFIX}.mat.bed 
+        cat ~{bed} | grep "#1" >> ${PREFIX}.pat.bed
+        cat ~{bed} | grep "#2" >> ${PREFIX}.mat.bed
     >>>
 
     runtime {
