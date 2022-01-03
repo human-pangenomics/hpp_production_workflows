@@ -21,10 +21,10 @@ RUN cd /home/apps && \
     cd minimap2-2.23 && \
     #cd minimap2 && \
     make
-#ENV PATH="/home/apps/minimap2-2.21:${PATH}"
+ENV PATH="/home/apps/minimap2-2.23:${PATH}"
 #ENV PAFTOOLS_PATH="/home/apps/minimap2-2.21/misc/paftools.js"
-ENV PATH="/home/apps/minimap2:${PATH}"
-ENV PAFTOOLS_PATH="/home/apps/minimap2/misc/paftools.js"
+#ENV PATH="/home/apps/minimap2:${PATH}"
+ENV PAFTOOLS_PATH="/home/apps/minimap2-2.23/misc/paftools.js"
 
 ## k8
 RUN cd /home/apps && \

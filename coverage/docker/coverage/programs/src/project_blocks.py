@@ -276,7 +276,8 @@ def main():
             chromStart = int(attrbs[7]) + 1 # 1-based
             chromEnd = int(attrbs[8])
             # The cigar string starts after "cg:Z:"
-            cigarString = line.strip().split()[16][5:]
+            afterCg = line.strip().split("cg:Z:")[1]
+            cigarString = afterCg.split()[0]
             cigarList = getCigarList(cigarString)
             #print(orientation,chromStart,chromEnd,cigarString)
             # rBlocks contains the projections and 

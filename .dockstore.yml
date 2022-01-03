@@ -243,3 +243,6 @@ workflows:
    -  name: GetCopyValFinalBed
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/get_copyval_final_bed.wdl
+   -  name: ProjectCopyValFinalBed
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/workflows/project_copyval_final_bed.wdl
