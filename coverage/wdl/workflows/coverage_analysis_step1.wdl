@@ -9,7 +9,7 @@ workflow runCoverageAnalysisStep1{
     input {
         File bam
         File assemblyFastaGz
-        File phasingLogText
+        File? phasingLogText
         Int minReadLength 
         Int minAlignmentLength
         String deepVariantModelType
