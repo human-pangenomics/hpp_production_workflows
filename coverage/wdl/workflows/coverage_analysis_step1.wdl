@@ -4,6 +4,7 @@ import "../tasks/correct_bam.wdl" as correct_bam_t
 import "../tasks/deep_variant.wdl" as deep_variant_t
 import "../tasks/filter_alt_reads.wdl" as filter_alt_reads_t
 import "../tasks/bam_coverage.wdl" as bam_coverage_t
+import "../tasks/pepper_margin_deep_variant.wdl" as pmdv_t
 
 workflow runCoverageAnalysisStep1{
     input {
@@ -13,6 +14,8 @@ workflow runCoverageAnalysisStep1{
         Int minReadLength 
         Int minAlignmentLength
         String deepVariantModelType
+        String pepperModelType
+        String variantCaller = "dv"
     }
     
     ## Correct the bam file by swapping pri/sec tags for the wrongly phased reads
@@ -25,22 +28,38 @@ workflow runCoverageAnalysisStep1{
             diskSize = ceil(size(bam, "GB")) * 2 + 64
     }
     
-    ## Call variants to be used for finding the reads with alternative alleles
-    call deep_variant_t.runVariantCalling as dpv {
-        input:
-            deepVariantModelType = deepVariantModelType,
-            assemblyFastaGz = assemblyFastaGz,
-            bam = correctBam.correctedBam,
-            bamIndex = correctBam.correctedBamIndex,
-            minMAPQ = 0,
-            includeSecondary="False",
-            includeSupplementary="True"
+    if ("${variantCaller}" == "dv") { 
+        ## Call variants to be used for finding the reads with alternative alleles
+        call deep_variant_t.runVariantCalling as dpv {
+            input:
+                deepVariantModelType = deepVariantModelType,
+                assemblyFastaGz = assemblyFastaGz,
+                bam = correctBam.correctedBam,
+                bamIndex = correctBam.correctedBamIndex,
+                minMAPQ = 0,
+                includeSecondary="False",
+                includeSupplementary="True"
+        }
     }
-    
+    if ("${variantCaller}" == "pmdv") {
+        ## Call variants to be used for finding the reads with alternative alleles
+        call pmdv_t.runPepperMarginDeepVariant as pmdv {
+            input:
+                pmdvModelType = deepVariantModelType,
+                assemblyFastaGz = assemblyFastaGz,
+                bam = correctBam.correctedBam,
+                bamIndex = correctBam.correctedBamIndex,
+                minMAPQ = 0,
+                includeSupplementary="True"
+        }
+    }
+   
+    File vcfGz1 = select_first([dpv.vcfGz, pmdv.vcfGz])     
+
     ## Filter the reads with alternative alleles
     call filter_alt_reads_t.filterAltReads {
         input:
-            vcf = dpv.vcfGz,
+            vcf = vcfGz1,
             bam = correctBam.correctedBam,
             diskSize = ceil(size(correctBam.correctedBam, "GB")) * 2 + 64
     }
@@ -91,7 +110,7 @@ workflow runCoverageAnalysisStep1{
             diskSize = ceil(size(filterAltReads.filteredBam, "GB")) + 256
     }
     output {
-        File vcfGz = dpv.vcfGz
+        File vcfGz = vcfGz1
         File altBam = filterAltReads.altBam
         File altBai = filterAltReads.altBamIndex
         Float meanCorrectedCoverageFloat = bam2cov_corrected.coverageMean
