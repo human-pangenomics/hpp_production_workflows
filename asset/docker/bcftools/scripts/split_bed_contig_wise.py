@@ -14,14 +14,17 @@ def main():
     outputDir = args.dir
     BedBlocks = []
     totalSize = 0
+    nContigs = 0
     with open(bedPath,"r") as f:
         for line in f:
+            nContigs += 1
             elems = line.strip().split()
             contig = elems[0]
             start = int(elems[1])
             end = int(elems[2])
             BedBlocks.append((contig,start,end))
             totalSize += end - start
+    n = min(n, nContigs)
     BedBlocks.sort(key= lambda x : x[1] - x[2])
     intervalSize = int(totalSize / (n+1)) + 1
     groupContigs = [[BedBlocks[i]] for i in range(n)] # initialize groups with the longest contigs

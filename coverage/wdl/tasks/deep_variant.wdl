@@ -92,10 +92,11 @@ task splitBamContigWise{
 
         ## split the bed file of the whole assembly into multiple bed files
         mkdir split_beds split_bams
-        python3 ${SPLIT_BED_CONTIG_WISE_PY} --bed ${ASSEMBLY_PREFIX}.bed --n 16 --dir split_beds --prefix ${ASSEMBLY_PREFIX}
-
+        python3 ${SPLIT_BED_CONTIG_WISE_PY} --bed ${ASSEMBLY_PREFIX}.bed --n ~{splitNumber} --dir split_beds --prefix ${ASSEMBLY_PREFIX}
+        
         ## make a separate bam for each bed file
-        seq 1 ~{splitNumber} | xargs -I {} -n 1 -P ~{threadCount} sh -c "samtools view -h -b -L split_beds/${ASSEMBLY_PREFIX}_{}.bed ${BAM_PREFIX}.bam > split_bams/${BAM_PREFIX}_{}.bam"
+        n=$(ls split_beds/ | wc -l)
+        seq 1 ${n} | xargs -I {} -n 1 -P ~{threadCount} sh -c "samtools view -h -b -L split_beds/${ASSEMBLY_PREFIX}_{}.bed ${BAM_PREFIX}.bam > split_bams/${BAM_PREFIX}_{}.bam"
     >>>
     runtime {
         docker: dockerImage
