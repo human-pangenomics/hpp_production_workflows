@@ -240,3 +240,6 @@ workflows:
    -  name: SamtoolsView
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/samtools_view.wdl
+   -  name: GetCopyValFinalBed
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/get_copyval_final_bed.wdl
