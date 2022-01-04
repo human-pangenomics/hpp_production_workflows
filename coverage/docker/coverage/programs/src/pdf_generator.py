@@ -106,8 +106,11 @@ def main():
     from os import listdir
     from os.path import isfile, join
     tableFiles = [join(tablesDir, f) for f in listdir(tablesDir)]
-    tableFiles= sorted(tableFiles, key = lambda x:(x.split("#")[1], x.split("#")[2]))
+    # x.split("_")[-2] is the start position of the window
+    # "_".join(x.split("_")[0:-2]) is everything before that including the contig name
+    tableFiles= sorted(tableFiles, key = lambda x:("_".join(x.split("_")[0:-2]) , int(x.split("_")[-2])))
     windowname = "##"
+    plotTitlePage("Window-Specific Models", pdf)
     if isDiploid:
         # Make a title page for paternal contigs
         plotTitlePage("Paternal Contigs", pdf)
@@ -122,7 +125,7 @@ def main():
                 plotTitlePage("Maternal Contigs", pdf)
         windowname = windowname_new
         attrbs = windowname.strip().split("_")
-        plotPairDist(table, pdf, "{}\n{}\n{}-{}".format(prefix, attrbs[0], attrbs[1], attrbs[2]))
+        plotPairDist(table, pdf, "{}\n{}\n{}-{}".format(prefix, "_".join(attrbs[0:-2]), attrbs[-2], attrbs[-1]))
     pdf.close()
 
 if __name__ == "__main__":
