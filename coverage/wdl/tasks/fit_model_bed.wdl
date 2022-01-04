@@ -12,14 +12,14 @@ workflow runFitModelBed{
         File coverageGz
         Float covFloat
     }
-    if ("${bed}" == "") {
+    if (size(bed) == 0) {
         call makeNullOutput{
             input:
                 prefix = basename("${coverageGz}", ".cov.gz"),
                 suffix = suffix
         }
     }
-    if("${bed}" != ""){
+    if (size(bed) > 0){
         call sub_cov_t.subsetCoverage{
             input:
                 coverageGz = coverageGz,

@@ -12,12 +12,12 @@ import "../tasks/fit_model_bed.wdl" as fit_model_bed_t
 
 workflow runCoverageAnalysisV1{
     input {
-        File matHsat1Bed = ""
-        File patHsat1Bed = ""
-        File matHsat2Bed = ""
-        File patHsat2Bed = ""
-        File matHsat3Bed = ""
-        File patHsat3Bed = ""
+        File matHsat1Bed = "gs://hprc/null.bed"
+        File patHsat1Bed = "gs://hprc/null.bed"
+        File matHsat2Bed = "gs://hprc/null.bed"
+        File patHsat2Bed = "gs://hprc/null.bed"
+        File matHsat3Bed = "gs://hprc/null.bed"
+        File patHsat3Bed = "gs://hprc/null.bed"
         File coverageGz
         File highMapqCoverageGz
         File fai
