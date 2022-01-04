@@ -13,7 +13,6 @@ workflow runYakAssemblyStats {
         File assemblyFastaPat
         File assemblyFastaMat
         File? referenceFasta
-        Int kmerSize = 21
         Int shardLinesPerFile = 256000000
         Int fileExtractionDiskSizeGB = 256
         String dockerImage = "juklucas/hpp_yak:latest"
