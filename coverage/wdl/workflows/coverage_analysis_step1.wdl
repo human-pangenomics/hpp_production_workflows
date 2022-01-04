@@ -13,8 +13,8 @@ workflow runCoverageAnalysisStep1{
         File? phasingLogText
         Int minReadLength 
         Int minAlignmentLength
-        String deepVariantModelType
-        String pepperModelType
+        String deepVariantModelType = "PACBIO"
+        String pepperModelType = "ont_r9_guppy5_sup"
         String variantCaller = "dv"
     }
     
@@ -45,7 +45,7 @@ workflow runCoverageAnalysisStep1{
         ## Call variants to be used for finding the reads with alternative alleles
         call pmdv_t.runPepperMarginDeepVariant as pmdv {
             input:
-                pmdvModelType = deepVariantModelType,
+                pmdvModelType = pepperModelType,
                 assemblyFastaGz = assemblyFastaGz,
                 bam = correctBam.correctedBam,
                 bamIndex = correctBam.correctedBamIndex,
