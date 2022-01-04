@@ -10,6 +10,7 @@ task pdfGenerator{
     input {
         File contigProbTablesTarGz
         File genomeProbTable
+        Boolean isDiploid=true
         # runtime configurations
         Int memSize=16
         Int threadCount=8
@@ -33,7 +34,11 @@ task pdfGenerator{
         tar --strip-components 1 -xvzf ~{contigProbTablesTarGz} --directory tables
         FILENAME=$(basename ~{contigProbTablesTarGz})
         PREFIX=${FILENAME%.tables.tar.gz}
-        python3 ${PDF_GENERATOR_PY} --table  ~{genomeProbTable} --dir tables --pdf ${PREFIX}.cov_dist.pdf
+        python3 ${PDF_GENERATOR_PY} \
+            --table  ~{genomeProbTable} \
+            --dir tables \
+            --pdf ${PREFIX}.cov_dist.pdf \
+            ~{true="--diploid" false="" isDiploid}
         
     >>> 
     runtime {

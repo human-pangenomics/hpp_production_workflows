@@ -86,10 +86,13 @@ def main():
     parser.add_argument('--table', type=str, help='path to the whole genome probability table file')
     parser.add_argument('--dir', type=str, help='directory that contains contig-specific probability table files')
     parser.add_argument('--pdf', type=str, help='path to output pdf')
+    parser.add_argument('--diploid', action='store_true', help='if the reference is diploid')
+    parser.set_defaults(diploid=False)
     args = parser.parse_args()
     tablePath = args.table
     tablesDir = args.dir
     outputPath = args.pdf
+    isDiploid = args.diploid
 
     import matplotlib.backends.backend_pdf
     pdf = matplotlib.backends.backend_pdf.PdfPages(outputPath)
@@ -105,16 +108,18 @@ def main():
     tableFiles = [join(tablesDir, f) for f in listdir(tablesDir)]
     tableFiles= sorted(tableFiles, key = lambda x:(x.split("#")[1], x.split("#")[2]))
     windowname = "##"
-    # Make a title page for paternal contigs
-    plotTitlePage("Paternal Contigs", pdf)
+    if isDiploid:
+        # Make a title page for paternal contigs
+        plotTitlePage("Paternal Contigs", pdf)
     for p in tableFiles:
         table = pd.read_csv(p, sep="\t")
         filename = os.path.basename(p)
         # Extract contig name from file name
         windowname_new = filename[(len(prefix) + 1):-len(".table")]
-        # Make a title page for maternal contigs
-        if windowname.split("#")[1] == '1' and windowname_new.split("#")[1] == '2':
-            plotTitlePage("Maternal Contigs", pdf)
+        if isDiploid:
+            # Make a title page for maternal contigs
+            if windowname.split("#")[1] == '1' and windowname_new.split("#")[1] == '2':
+                plotTitlePage("Maternal Contigs", pdf)
         windowname = windowname_new
         attrbs = windowname.strip().split("_")
         plotPairDist(table, pdf, "{}\n{}\n{}-{}".format(prefix, attrbs[0], attrbs[1], attrbs[2]))
