@@ -29,7 +29,7 @@ workflow runCoverageAnalysisV1{
                 margin = 50000,
                 outputPrefix = basename(hsatBed[0], ".bed")
         }
-        Float factor = read_float(hsatBed[1]) 
+        Float factor = read_float(write_lines([hsatBed[1]]))
         call fit_model_bed_t.runFitModelBed as hsatModels {
             input:
                 bed = merge.mergedBed,
