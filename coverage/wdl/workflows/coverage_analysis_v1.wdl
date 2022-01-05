@@ -12,31 +12,29 @@ import "../tasks/fit_model_bed.wdl" as fit_model_bed_t
 
 workflow runCoverageAnalysisV1{
     input {
-        File matHsat1Bed = "gs://hprc/null.bed"
-        File patHsat1Bed = "gs://hprc/null.bed"
-        File matHsat2Bed = "gs://hprc/null.bed"
-        File patHsat2Bed = "gs://hprc/null.bed"
-        File matHsat3Bed = "gs://hprc/null.bed"
-        File patHsat3Bed = "gs://hprc/null.bed"
+        File hsatBedsTsv
         File coverageGz
         File highMapqCoverageGz
         File fai
         Float covFloat
         Boolean isDiploid
     }
-    scatter (bedAndFactor in zip([matHsat1Bed, patHsat1Bed, matHsat2Bed, patHsat2Bed, matHsat3Bed, patHsat3Bed], [(0.75, "mat_hsat1"), (0.75, "pat_hsat1"), (1.25, "mat_hsat2"), (1.25, "pat_hsat2"), (1.25, "mat_hsat3"), (1.25, "pat_hsat3")])){
+    # Each element in hsatBedsArray is an array itself;
+    # [BED URL, Coverage Factor, Suffix Name]
+    Array[Array[String]] hsatBedsArray = read_tsv(hsatBedsTsv)
+    scatter (hsatBed in hsatBedsArray){
         call bedtools_t.merge {
             input:
-                bed = bedAndFactor.left,
+                bed = hsatBed[0],
                 margin = 50000,
-                outputPrefix = basename("${bedAndFactor.left}", ".bed")
+                outputPrefix = basename(hsatBed[0], ".bed")
         } 
         call fit_model_bed_t.runFitModelBed as hsatModels {
             input:
                 bed = merge.mergedBed,
-                suffix = bedAndFactor.right.right,
+                suffix = hsatBed[2],
                 coverageGz = coverageGz,
-                covFloat = covFloat * bedAndFactor.right.left
+                covFloat = covFloat * read_float(hsatBed[1])
          }
     }
     call mergeHsatBeds {
