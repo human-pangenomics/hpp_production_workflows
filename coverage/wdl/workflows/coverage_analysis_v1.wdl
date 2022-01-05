@@ -29,13 +29,16 @@ workflow runCoverageAnalysisV1{
                 margin = 50000,
                 outputPrefix = basename(hsatBed[0], ".bed")
         }
-        #Float factor = read_float(write_lines([hsatBed[1]]))
+        call String2Float{
+            input:
+                str = hsatBed[1]
+        }
         call fit_model_bed_t.runFitModelBed as hsatModels {
             input:
                 bed = merge.mergedBed,
                 suffix = hsatBed[2],
                 coverageGz = coverageGz,
-                covFloat = covFloat * hsatBed[1]
+                covFloat = covFloat * String2Float.number
          }
     }
     call mergeHsatBeds {
@@ -119,22 +122,23 @@ workflow runCoverageAnalysisV1{
     }
 }
 
-#task String2Float {
-#    input {
-#        String str
-#    }
-#    command <<<
-#        echo ~{str} > file.txt
-#    >>>
-#    runtime {
-#        docker: "quay.io/masri2019/hpp_coverage:latest"
-#        memory: "1 GB"
-#        cpu: 2
-#        disks: "local-disk 1 SSD"
-#        preemptible : preemptible
-#    }
-#
-#}
+task String2Float {
+    input {
+        String str
+    }
+    command <<<
+        echo ~{str} > file.txt
+    >>>
+    runtime {
+        docker: "quay.io/masri2019/hpp_coverage:latest"
+        memory: "1 GB"
+        cpu: 1
+        disks: "local-disk 1 SSD"
+    }
+    output {
+        Float number = read_float("file.txt")
+    }
+}
 task combineBeds {
     input {
         File firstBedsTarGz
