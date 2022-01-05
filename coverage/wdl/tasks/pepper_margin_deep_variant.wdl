@@ -41,7 +41,7 @@ task pmdv{
         Int memSize=256
         Int threadCount=64
         Int diskSize=512
-        String dockerImage="kishwars/pepper_deepvariant:r0.6"
+        String dockerImage="kishwars/pepper_deepvariant:r0.7"
         Int preemptible=2
         String zones="us-west2-a"
     }
