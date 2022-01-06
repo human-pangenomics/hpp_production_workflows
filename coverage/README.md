@@ -1,7 +1,7 @@
 ## CopyVal 
 
 ### Overview
-**CopyVal** is a read-based pipeline that can detect different types of mis-assemblies in a draft diploid assembly. One core component of this pipeline is another pipeline named [**Partitioner**](https://github.com/human-pangenomics/hpp_production_workflows/edit/asset/coverage/docs/coverage/README.md). Partitioner is a pipeline that recieves the read alignments to the draft assembly and partition the assembly into 4 main components; erroneous, (falsely) duplicated, haploid and collapsed.
+**CopyVal** is a read-based pipeline that can detect different types of mis-assemblies in a draft diploid assembly. One core component of this pipeline is another pipeline named [**Partitioner**](https://github.com/human-pangenomics/hpp_production_workflows/edit/asset/coverage/docs/coverage/README.md). Partitioner recieves the read alignments to the draft assembly and partition the assembly into 4 main components; erroneous, (falsely) duplicated, haploid and collapsed.
 
 CopyVal has 7 steps:
 - Align reads to the diploid assembly
@@ -9,7 +9,7 @@ CopyVal has 7 steps:
 - Run Partitioner on the alignments
 - Call variants 
 - Remove the alignments with alternative alleles
-- Run Paritioner on the alignments with no alternative allele
+- Run Paritioner using the alignments with no alternative allele
 - Combine the Partitioner outputs
 ### 1. Align Reads
 The ONT and HiFi reads can be aligned to a diploid assembly (~ 6Gbases long) with winnowmap. Since the assembly is diploid the expected base-level coverage should be half of the sequencing coverage.
@@ -110,9 +110,9 @@ docker run \
 
 
 ### 7. Combine the Partitioner outputs in steps 3 and 6
-The partitioner outputs in steps 3 and 6 are expected to have a huge overlap but they are not the same. As an example one region that was detected as collapsed in step 3 may be categorized as haploid in step 6. This component change is showing that the flagged region is assembled correctly but the 
+The partitioner outputs in steps 3 and 6 are expected to have a huge overlap but they are not the same. As an example one region that was detected as collapsed in step 3 may be categorized as haploid in step 6. This component change is showing that the flagged region is assembled correctly but 
 its homologous region in the other haplotype is not assembled correctly and that's why the reads from the other haplotype aligned there. 
-So by combining these two sets of partitioner outputs it is possible to infer more information about the unreliable blocks in the assembly.
+So by combining these two sets of partitioner output it is possible to infer more information about the unreliable blocks in the assembly.
 
 The patitioner output is a gzipped tar file that contain 4 bed files one for each component.
 ```
@@ -123,6 +123,23 @@ bash combine_alt_removed_beds \
 -t ${SAMPLE_NAME} \
 -o ${OUTPUT_BED}
 ```
+
+In `${OUTPUT_BED}` one of the 8 components below is assigned to each block. 
+
+### Components
+Only `Hh` and `Hc` point to the regions with expected read support. `Hc` also shows a mis-assembly in another haplotype.
+|Component|Initial|After|Color |Description|
+|:--------|:------|:----|:-----|:----------|
+|Cc |Collapsed |**Collapsed** |Purple| Two highly similar haplotypes are collapsed into this block |
+|Hc  |Collapsed | **Haploid** |Blue|This block is assembled correctly. It also has false alignments from a not assembled haplotype |
+|Dd  |Duplicated |**Duplicated** |Orange| This block is a false duplication of another block. (Mainly low-MAPQ alignments with half of the expected coverage)|
+|Ee  |Erroneous |**Erroneous** |Dark Red| This block has low read coverage |
+|Dh  |Haploid |**Duplicated** |Yellow| This block is a false duplication of another block like `Dd`, it also has false alignments from a not assembled haplotype |
+|Eh  |Haploid| **Erroneous** |Red| This block needs polishing |
+|Hh  |Haploid| **Haploid** | Green|This block is correctly assembled and has the expected read coverage |
+|Ec  |Collapsed| **Errorneous** | Pink|This block needs polishing. It also has alignments from multiple not-assembled haplotypes and after removing the false alignments it does not have the expected read coverage|
+
+`Initial` column shows the component the block has been assigned to before removing the alignments with alternative alleles and `After` shows the component after removing. Each of these components has their own color when they are shown in the IGV or Genome Browser.
 
 
 ### Data, Source Code and Workflows Availability
@@ -145,7 +162,9 @@ The wdl files that have been used for this analysis are available in
 
 https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/wdl/tasks
 
+
 ### Results Availability
+### ATTENTION: These Results ARE OLD! Will be updated soon.
 
 The results are available in 
 
