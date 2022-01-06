@@ -124,7 +124,10 @@ bash combine_alt_removed_beds \
 -o ${OUTPUT_BED}
 ```
 
-In `${OUTPUT_BED}` one of the 8 components below is assigned to each block. Only `Hh` shows no mis-assembly.
+In `${OUTPUT_BED}` one of the 8 components below is assigned to each block. 
+
+### Components
+Only `Hh` and `Hc` point to the regions with expected read support. `Hc` also shows a mis-assembly in another haplotype.
 |Component|Initial|After|Color |Description|
 |:--------|:------|:----|:-----|:----------|
 |Cc |Collapsed |**Collapsed** |Purple| Two highly similar haplotypes are collapsed into this block |
@@ -132,9 +135,9 @@ In `${OUTPUT_BED}` one of the 8 components below is assigned to each block. Only
 |Dd  |Duplicated |**Duplicated** |Orange| This block is a false duplication of another block. (Mainly low-MAPQ alignments with half of the expected coverage)|
 |Ee  |Erroneous |**Erroneous** |Dark Red| This block has low read coverage |
 |Dh  |Haploid |**Duplicated** |Yellow| This block is a false duplication of another block like `Dd`, it also has false alignments from a not assembled haplotype |
-|Eh  |Haploid| **Erroneous** |Red| This block does not have enough read coverage like `Ee`, it also has false alignments from a not assembled haplotype |
+|Eh  |Haploid| **Erroneous** |Red| This block needs polishing |
 |Hh  |Haploid| **Haploid** | Green|This block is correctly assembled and has the expected read coverage |
-|Ec  |Collapsed| **Errorneous** | Pink|This block has alignments from multiple not-assembled haplotypes and after removing the false alignments it does not have the expected read coverage|
+|Ec  |Collapsed| **Errorneous** | Pink|This block needs polishing. It also has alignments from multiple not-assembled haplotypes and after removing the false alignments it does not have the expected read coverage|
 
 `Initial` column shows the component the block has been assigned to before removing the alignments with alternative alleles and `After` shows the component after removing. Each of these components has their own color when they are shown in the IGV or Genome Browser.
 
