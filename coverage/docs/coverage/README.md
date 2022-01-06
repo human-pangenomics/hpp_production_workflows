@@ -3,7 +3,7 @@
 ### Overview
 The main purpose of the **Partitioner** pipeline is to assess the copy number of the assembled blocks in a diploid assembly. To use this pipeline a BAM file containing the read alignments to the diploid assembly should be prepared in advance. Using the BAM file this pipeline is able to flag mis-assemblies by detecting anomalies in the coverage distribution along the assembly. It can also categorize the mis-assemblies into 3 main groups: erroneous, (falsely) duplicated, and collapsed. 
 
-The examples shown here are from the [Human Pan-Genome Project](https://humanpangenome.org/) since it was the main motivation for this developing the pipeline.
+The examples shown here are from the [Human Pan-Genome Project](https://humanpangenome.org/) since it was the main motivation for developing this pipeline.
 
 The pipeline has 3 core steps:
 - Calculate the read coverage of each assembly base 
@@ -16,7 +16,7 @@ All programs used in this analysis are available in the docker image `quay.io/ma
 ## The Pipeline
 
 ### 1. Calculating Depth of Coverage
-Given the read alignments in the BAM format it is possible to calculate the the depth of coverage for each assembly base by `samtools depth`. The output of `samtools depth -aa` is like below. (`-aa` option allows outputing the bases with zero coverage)
+Given the read alignments in the BAM format it is possible to calculate the the depth of coverage for each base by `samtools depth`. The output of `samtools depth -aa` is like below. (`-aa` option allows outputing the bases with zero coverage)
 ````
 contig_1  1 0
 contig_1  2 1
