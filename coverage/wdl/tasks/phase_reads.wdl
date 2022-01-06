@@ -30,7 +30,8 @@ workflow runPhaseReads{
     call concatLogs as concatErrLogs{
         input:
             logs = phaseReads.errLog,
-            filename = basename("${inputBam}", ".bam") + ".phasing_err"
+            filename = basename("${inputBam}", ".bam") + ".phasing_err",
+            diskSize = 256
     }
     call concatLogs as concatOutLogs{
         input:
