@@ -41,9 +41,10 @@ ptCigarIt* ptCigarIt_construct(bam1_t* b, bool use_cs, bool use_md){
 	cigar_it->rds_f = cigar_it->is_rev ? rclip + lclip + b->core.l_qseq : 0;
 	cigar_it->rde_f = cigar_it->is_rev ? rclip + lclip + b->core.l_qseq  - 1 : -1;
 	int error;
-	cigar_it->cs = bam_aux_get(b, "cs") + 1; // skip "Z" at the beginning
-	cigar_it->md = bam_aux_get(b, "MD") + 1; // skip "Z" at the beginning
+	cigar_it->cs = bam_aux_get(b, "cs");
+	cigar_it->md = bam_aux_get(b, "MD");
 	if(cigar_it->cs && use_cs){
+		cigar_it->cs += 1; // skip "Z" at the beginning
 		cigar_it->use_cs = true;
 		cigar_it->offset_cs = 0;
 		if ((error = regcomp(&cigar_it->preg_cs, CS_PATTERN, REG_EXTENDED)) != 0) {
@@ -52,6 +53,7 @@ ptCigarIt* ptCigarIt_construct(bam1_t* b, bool use_cs, bool use_md){
                 }
 	}
 	else if (cigar_it->md && use_md){
+		cigar_it->md += 1; // skip "Z" at the beginning
 		cigar_it->use_md = true;
                 cigar_it->offset_md = 0;
                 if ((error = regcomp(&cigar_it->preg_md, MD_PATTERN, REG_EXTENDED)) != 0) {

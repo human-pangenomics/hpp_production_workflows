@@ -14,10 +14,10 @@ BINS=$(patsubst ${SRC_DIR}/%.c,${BIN_DIR}/%,$(SRCS))
 
 all: ${COMMON_OBJ} ${CIGAR_IT_OBJ} ${BIN_DIR} $(BINS) ${BIN_DIR}/phase_reads_debug
 
-bin/%: src/%.c
+bin/%: src/%.c $(CIGAR_IT_OBJ)
 	$(CC) -o $@ $< $(CIGAR_IT_OBJ) $(COMMON_OBJ) $(CCFLAGS)
 
-bin/phase_reads_debug: src/phase_reads.c
+bin/phase_reads_debug: src/phase_reads.c $(CIGAR_IT_OBJ)
 	$(CC) -o$@ $< $(CIGAR_IT_OBJ) $(COMMON_OBJ) -DDEBUG $(CCFLAGS)
 
 ${BIN_DIR}:

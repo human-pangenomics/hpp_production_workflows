@@ -413,8 +413,8 @@ int get_best_record(ptAlignment** alignments, int alignments_len, double min_qv,
 	if (alignments_len == 1) return 0;
 	double max_qv = -DBL_MAX;
 	int max_idx = -1;
-	double prim_qv;
-	int prim_idx;
+	double prim_qv = -DBL_MAX;
+	int prim_idx = -1;
 	for(int i=0; i < alignments_len; i++){
 		if ((alignments[i]->record->core.flag & BAM_FSECONDARY) == 0){
 			prim_idx = i;
@@ -1122,9 +1122,11 @@ DEBUG_PRINT("\n@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\
 			if (alignments_len > 0){ // maybe the previous alignment was unmapped
 				// get the best alignment
 				int best_idx = get_best_record(alignments, alignments_len, -50.0, min_q);
-				bam1_t* best = alignments[best_idx]->record;
+				bam1_t* best = 0 < best_idx ? alignments[best_idx]->record : NULL;
 				// write all alignments without any change if they are either chimeric or best alignment is primary
-				if(!contain_supp(alignments, alignments_len) && (best->core.flag & BAM_FSECONDARY)){
+				if(best &&
+				   !contain_supp(alignments, alignments_len) && 
+				   (best->core.flag & BAM_FSECONDARY)){
 					printf("$\t%s\n", read_name);
 					for(int i=0; i<alignments_len; i++){
 						// change primary to secondary

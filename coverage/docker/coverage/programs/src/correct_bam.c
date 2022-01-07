@@ -281,6 +281,7 @@ int main(int argc, char *argv[]){
 	//modify mapq and sec/pri tags based on given logs and tables
 	bam1_t* b = bam_init1();
 	while(sam_read1(fp, sam_hdr, b) > -1) {
+		if (b->core.flag & BAM_FUNMAP) continue; // if unmapped
 		if (is_prim(phased_read_table, b, sam_hdr)){
 			b->core.flag &= ~BAM_FSECONDARY; // make it primary
 		}
