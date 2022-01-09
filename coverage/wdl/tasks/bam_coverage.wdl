@@ -13,7 +13,8 @@ workflow runBamCoverage{
 task bamCoverage{
     input{
         File bam
-        Int minMAPQ
+        Int minMAPQ = 0
+        Int maxMAPQ = 60
         String extraOptions = ""
         File assemblyFastaGz
         # runtime configurations
@@ -43,7 +44,13 @@ task bamCoverage{
 
         BAM_FILENAME=$(basename ~{bam})
         BAM_PREFIX=${BAM_FILENAME%.bam}
-        samtools depth -aa -Q ~{minMAPQ} ~{extraOptions} ~{bam}  > ${BAM_PREFIX}.depth
+
+        if [ ~{maxMAPQ} -lt 60 ]; then
+            ./correct_bam -x~{maxMAPQ} -a 0 -m 0 -p -n~{threadCount} -i ~{bam} -o ${BAM_PREFIX}.bam
+        else
+            ln ~{bam} ${BAM_PREFIX}.bam 
+        fi
+        samtools depth -aa -Q ~{minMAPQ} ~{extraOptions} ${BAM_PREFIX}.bam  > ${BAM_PREFIX}.depth
 
         # Convert the output of samtools depth into a compressed format
         depth2cov -d ${BAM_PREFIX}.depth -f ${ASM_PREFIX}.fa.fai -o ${BAM_PREFIX}.cov

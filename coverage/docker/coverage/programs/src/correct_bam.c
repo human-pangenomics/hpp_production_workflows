@@ -195,15 +195,19 @@ int main(int argc, char *argv[]){
 	int min_read_length = 5000;
 	int min_alignment_length = 5000;
 	int nthreads = 2;
+	int max_mapq = 60;
 	char *program;
         (program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-        while (~(c=getopt_long(argc, argv, "i:o:P:M:tpm:a:n:h", long_options, NULL))) {
+        while (~(c=getopt_long(argc, argv, "i:o:x:P:M:tpm:a:n:h", long_options, NULL))) {
                 switch (c) {
                         case 'i':
                                 input_path = optarg;
                                 break;
                         case 'o':
                                 output_path = optarg;
+                                break;
+			case 'x':
+                                max_mapq = atoi(optarg);
                                 break;
 			case 'P':
                                 phasing_log_path = optarg;
@@ -233,6 +237,7 @@ int main(int argc, char *argv[]){
                                 fprintf(stderr, "Options:\n");
                                 fprintf(stderr, "         --inputBam,\t-i         input bam file\n");
                                 fprintf(stderr, "         --outputBam,\t-o         output bam file\n");
+				fprintf(stderr, "         --maxMapq,\t-x         maximum mapq [default:60]\n");
 				fprintf(stderr, "         --phasingLog,\t-P         the phasing log path [optional]\n");
 				fprintf(stderr, "         --mapqTable,\t-M         the adjusted mapq table path [optional]\n");
                                 fprintf(stderr, "         --noTag,\t-t         output no optional fields\n");
@@ -295,6 +300,7 @@ int main(int argc, char *argv[]){
 			continue;
 		}
 		b->core.qual = get_mapq(mapq_table, b, sam_hdr);
+		if(max_mapq < b->core.qual) continue;
 		if(no_tag) b->l_data -= bam_get_l_aux(b);
 		if (sam_write1(fo, sam_hdr, b) == -1) {
 			fprintf(stderr, "Couldn't write %s\n", bam_get_qname(b));
