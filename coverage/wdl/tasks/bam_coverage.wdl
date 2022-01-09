@@ -46,7 +46,7 @@ task bamCoverage{
         BAM_PREFIX=${BAM_FILENAME%.bam}
 
         if [ ~{maxMAPQ} -lt 60 ]; then
-            ./correct_bam -x~{maxMAPQ} -a 0 -m 0 -p -n~{threadCount} -i ~{bam} -o ${BAM_PREFIX}.bam
+            correct_bam -x~{maxMAPQ} -a 0 -m 0 -p -n~{threadCount} -i ~{bam} -o ${BAM_PREFIX}.bam
         else
             ln ~{bam} ${BAM_PREFIX}.bam 
         fi
