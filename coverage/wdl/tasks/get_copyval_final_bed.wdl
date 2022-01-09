@@ -12,6 +12,7 @@ task getFinalBed {
         File correctedBedsTarGz
         File altRemovedBedsTarGz
         String sampleName
+        String suffix
         # runtime configurations
         Int memSize=4
         Int threadCount=2
@@ -37,7 +38,7 @@ task getFinalBed {
             -b ~{altRemovedBedsTarGz} \
             -m /home/scripts/colors.txt \
             -t ~{sampleName} \
-            -o output/~{sampleName}.copyval_final.bed
+            -o output/~{sampleName}.~{suffix}.copyval_final.bed
    
     >>> 
     runtime {
