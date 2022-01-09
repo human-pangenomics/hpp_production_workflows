@@ -144,8 +144,8 @@ task getHapBed {
         PREFIX=$(basename ${FILENAME%.bed})
 
         # The given bed file can be empty
-        touch ${PREFIX}.pat.bed
-        touch ${PREFIX}.mat.bed
+        printf "\n" > ${PREFIX}.pat.bed
+        printf "\n" > ${PREFIX}.mat.bed
         if [ -s ~{bed} ]; then 
             cat ~{bed} | grep "#1" >> ${PREFIX}.pat.bed
             cat ~{bed} | grep "#2" >> ${PREFIX}.mat.bed
