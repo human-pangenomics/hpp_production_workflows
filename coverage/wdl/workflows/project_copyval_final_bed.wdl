@@ -131,14 +131,14 @@ task getHapBed {
     command <<<
         # Set the exit code of a pipeline to that of the rightmost command
         # to exit with a non-zero status, or zero if all commands of the pipeline exit
-        #set -o pipefail
+        set -o pipefail
         # cause a bash script to exit immediately when a command fails
-        #set -e
+        set -e
         # cause the bash shell to treat unset variables as an error and exit immediately
-        #set -u
+        set -u
         # echo each line of the script to stdout so we can see what is happening
         # to turn off echo do 'set +o xtrace'
-        #set -o xtrace
+        set -o xtrace
 
         FILENAME=~{bed}
         PREFIX=$(basename ${FILENAME%.bed})
@@ -147,8 +147,8 @@ task getHapBed {
         printf "\n" > ${PREFIX}.pat.bed
         printf "\n" > ${PREFIX}.mat.bed
         if [ -s ~{bed} ]; then 
-            cat ~{bed} | grep "#1" >> ${PREFIX}.pat.bed
-            cat ~{bed} | grep "#2" >> ${PREFIX}.mat.bed
+            cat ~{bed} | grep "#1" >> ${PREFIX}.pat.bed || true
+            cat ~{bed} | grep "#2" >> ${PREFIX}.mat.bed || true
         fi
     >>>
 
