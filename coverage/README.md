@@ -134,7 +134,7 @@ Only `Hh` and `Hc` point to the regions with expected read support. `Hc` also sh
 |Hc  |Collapsed | **Haploid** |Blue|This block is assembled correctly. It also has false alignments from a not assembled haplotype |
 |Dd  |Duplicated |**Duplicated** |Orange| This block is a false duplication of another block. (Mainly low-MAPQ alignments with half of the expected coverage)|
 |Ee  |Erroneous |**Erroneous** |Dark Red| This block has low read coverage |
-|Dh  |Haploid |**Duplicated** |Yellow| This block is a false duplication of another block like `Dd`, it also has false alignments from a not assembled haplotype |
+|Dh  |Haploid |**Duplicated** |Yellow| This block is a false duplication of another block like `Dd`, it also has false alignments from a not assembled haplotype. Probably one of the copies has to be polished to fix this issue |
 |Eh  |Haploid| **Erroneous** |Red| This block needs polishing |
 |Hh  |Haploid| **Haploid** | Green|This block is correctly assembled and has the expected read coverage |
 |Ec  |Collapsed| **Errorneous** | Pink|This block needs polishing. It also has alignments from multiple not-assembled haplotypes and after removing the false alignments it does not have the expected read coverage|
