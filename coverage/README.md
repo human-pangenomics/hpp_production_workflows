@@ -133,7 +133,7 @@ Only `Hh` and `Hc` point to the regions with expected read support. `Hc` also sh
 |Cc |Collapsed |**Collapsed** |Purple| Two highly similar haplotypes are collapsed into this block |
 |Hc  |Collapsed | **Haploid** |Blue|This block is assembled correctly. It also has false alignments from a not assembled haplotype |
 |Dd  |Duplicated |**Duplicated** |Orange| This block is a false duplication of another block. (Mainly low-MAPQ alignments with half of the expected coverage)|
-|Ee  |Erroneous |**Erroneous** |Dark Red| This block has low read coverage |
+|Ee  |Erroneous |**Erroneous** |Dark Red| This block has low read coverage. If it is located in the middle of a contig probably that's pointing to a misjoin|
 |Dh  |Haploid |**Duplicated** |Yellow| This block is a false duplication of another block like `Dd`, it also has false alignments from a not assembled haplotype. Probably one of the copies has to be polished to fix this issue |
 |Eh  |Haploid| **Erroneous** |Red| This block needs polishing |
 |Hh  |Haploid| **Haploid** | Green|This block is correctly assembled and has the expected read coverage |
