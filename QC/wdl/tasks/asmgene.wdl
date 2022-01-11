@@ -46,7 +46,7 @@ task asmgene {
         minimap2 -cx splice:hq -t ~{threadCount} ~{assemblyFasta} ~{genesFasta} > $PREFIX.paf
 
         # Computing statistics for gene completeness
-        paftools.js asmgene -a genesToRef.paf $PREFIX.paf > $PREFIX.gene_stats.txt
+        paftools.js asmgene -e -a genesToRef.paf $PREFIX.paf > $PREFIX.gene_stats.txt
     >>>
 
     runtime {

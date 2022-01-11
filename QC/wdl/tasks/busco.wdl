@@ -59,7 +59,7 @@ task busco {
             cd ..
             cmd+=( -l dataset/$DATASET )
         else
-            cmd+=( -l /root/tools/BUSCO/dataset/vertebrata_odb9 )
+            cmd+=( -l vertebrata_odb10 )
         fi
 
         # include extra arguments

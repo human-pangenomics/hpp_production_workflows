@@ -46,18 +46,18 @@ RUN wget https://github.com/EddyRivasLab/hmmer/archive/hmmer-3.2.1.tar.gz && \
 ### BUSCO
 # 3.0.2
 WORKDIR /root/tools/BUSCO
-RUN wget https://gitlab.com/ezlab/busco/-/archive/3.0.2/busco-3.0.2.tar.gz && \
-    tar xvf busco-3.0.2.tar.gz && \
-    mv busco-3.0.2 busco/ && \
-    rm busco-3.0.2.tar.gz && \
+RUN wget https://gitlab.com/ezlab/busco/-/archive/5.2.2/busco-5.2.2.tar.gz && \
+    tar xvf busco-5.2.2.tar.gz && \
+    mv busco-5.2.2 busco/ && \
+    rm busco-5.2.2.tar.gz && \
     cd busco && \
     python3 setup.py install
 COPY config.ini /root/tools/BUSCO/busco/config/config.ini
 # vertebrata dataset
-WORKDIR /root/tools/BUSCO/dataset/
-RUN wget http://busco.ezlab.org/v2/datasets/vertebrata_odb9.tar.gz && \
-    tar xvf vertebrata_odb9.tar.gz && \
-    rm vertebrata_odb9.tar.gz
+#WORKDIR /root/tools/BUSCO/dataset/
+#RUN wget http://busco.ezlab.org/v2/datasets/vertebrata_odb10.tar.gz && \
+#    tar xvf vertebrata_odb10.tar.gz && \
+#    rm vertebrata_odb10.tar.gz
 
 ### Augustus
 # 3.3.1
