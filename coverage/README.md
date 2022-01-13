@@ -6,10 +6,10 @@
 Flagger has 7 steps:
 - Align reads to the diploid assembly
 - Phase the ambiguous alignments using [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/README.md)
-- Run Partitioner on the alignments
+- Run Partitioner on the assembly using the alignments
 - Call variants 
 - Remove the alignments with alternative alleles
-- Run Paritioner using the alignments with no alternative allele
+- Run Paritioner on the assembly using the alignments with no alternative allele
 - Combine the Partitioner outputs
 ### 1. Align Reads
 The ONT and HiFi reads can be aligned to a diploid assembly (~ 6Gbases long) with winnowmap. Since the assembly is diploid the expected base-level coverage should be half of the sequencing coverage.
