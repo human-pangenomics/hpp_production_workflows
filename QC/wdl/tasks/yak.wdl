@@ -112,6 +112,7 @@ workflow runYakAssemblyStats {
 
 
 task yakCount {
+
     input{
         Array[File] readFiles
         String sampleName
@@ -122,20 +123,12 @@ task yakCount {
         Int diskSizeGB=256
         String dockerImage="juklucas/hpp_yak:latest"
     }
+
     command <<<
-        # Set the exit code of a pipeline to that of the rightmost command
-        # to exit with a non-zero status, or zero if all commands of the pipeline exit
-        set -o pipefail
-        # cause a bash script to exit immediately when a command fails
-        set -e
-        # cause the bash shell to treat unset variables as an error and exit immediately
-        set -u
-        # echo each line of the script to stdout so we can see what is happening
-        # to turn off echo do 'set +o xtrace'
-        set -o xtrace
 
         # Kmer counting with https://github.com/lh3/yak.
         yak count -t~{threadCount} -b~{bloomSize} -o ~{sampleName}.yak <(cat ~{sep=" " readFiles}) <(cat ~{sep=" " readFiles})
+
     >>>
 
     runtime {
@@ -153,6 +146,7 @@ task yakCount {
 
 
 task yakAssemblyStats {
+
     input {
         File assemblyFastaPat
         File assemblyFastaMat
@@ -167,17 +161,8 @@ task yakAssemblyStats {
         Int diskSizeGB = 256
         String dockerImage = "juklucas/hpp_yak:latest"
     }
+
     command <<<
-        # Set the exit code of a pipeline to that of the rightmost command
-        # to exit with a non-zero status, or zero if all commands of the pipeline exit
-        set -o pipefail
-        # cause a bash script to exit immediately when a command fails
-        set -e
-        # cause the bash shell to treat unset variables as an error and exit immediately
-        set -u
-        # echo each line of the script to stdout so we can see what is happening
-        # to turn off echo do 'set +o xtrace'
-        set -o xtrace
 
         # name
         PREFIX=$(basename ~{assemblyFastaPat} | sed 's/.gz$//' | sed 's/.fa\(sta\)*$//' | sed 's/[._][pm]at\(ernal\)*//')
