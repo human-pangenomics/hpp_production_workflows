@@ -12,93 +12,38 @@ workflow runYakAssemblyStats {
         Array[File] sampleReadsILM
         File assemblyFastaPat
         File assemblyFastaMat
-        File? referenceFasta
-        Int shardLinesPerFile = 256000000
-        Int fileExtractionDiskSizeGB = 256
         String dockerImage = "juklucas/hpp_yak:latest"
-    }
-
-    # extract reads
-    scatter (readFile in maternalReadsILM) {
-        call extractReads_t.extractReads as maternalReadsExtracted {
-            input:
-                readFile=readFile,
-                referenceFasta=referenceFasta,
-                memSizeGB=4,
-                threadCount=4,
-                diskSizeGB=fileExtractionDiskSizeGB,
-                dockerImage=dockerImage
-        }
-    }
-    scatter (readFile in paternalReadsILM) {
-        call extractReads_t.extractReads as paternalReadsExtracted {
-            input:
-                readFile=readFile,
-                referenceFasta=referenceFasta,
-                memSizeGB=4,
-                threadCount=4,
-                diskSizeGB=fileExtractionDiskSizeGB,
-                dockerImage=dockerImage
-        }
-    }
-    scatter (readFile in sampleReadsILM) {
-        call extractReads_t.extractReads as sampleReadsExtracted {
-            input:
-                readFile=readFile,
-                referenceFasta=referenceFasta,
-                memSizeGB=4,
-                threadCount=4,
-                diskSizeGB=fileExtractionDiskSizeGB,
-                dockerImage=dockerImage
-        }
-    }
-
-    # get file size of results (for yak counting)
-    call arithmetic_t.sum as maternalReadSize {
-        input:
-            integers=maternalReadsExtracted.fileSizeGB
-    }
-    call arithmetic_t.sum as paternalReadSize {
-        input:
-            integers=paternalReadsExtracted.fileSizeGB
-    }
-    call arithmetic_t.sum as sampleReadSize {
-        input:
-            integers=sampleReadsExtracted.fileSizeGB
     }
 
     # do counting
     call yakCount as yakCountMat {
         input:
-            readFiles=maternalReadsExtracted.extractedRead,
-            sampleName="mat",
-            diskSizeGB=maternalReadSize.value * 2,
-            dockerImage=dockerImage
+            readFiles = maternalReadsILM,
+            sampleName = "mat",
+            dockerImage = dockerImage
     }
     call yakCount as yakCountPat {
         input:
-            readFiles=paternalReadsExtracted.extractedRead,
-            sampleName="pat",
-            diskSizeGB=paternalReadSize.value * 2,
-            dockerImage=dockerImage
+            readFiles = paternalReadsILM,
+            sampleName = "pat",
+            dockerImage = dockerImage
     }
     call yakCount as yakCountSample {
         input:
-            readFiles=sampleReadsExtracted.extractedRead,
-            sampleName="sample",
-            diskSizeGB=sampleReadSize.value * 2,
-            dockerImage=dockerImage
+            readFiles = sampleReadsILM,
+            sampleName = "sample",
+            dockerImage = dockerImage
     }
 
     # get stats
     call yakAssemblyStats {
         input:
-            assemblyFastaPat=assemblyFastaPat,
-            assemblyFastaMat=assemblyFastaMat,
-            patYak=yakCountPat.outputYak,
-            matYak=yakCountMat.outputYak,
-            sampleYak=yakCountSample.outputYak,
-            dockerImage=dockerImage
+            assemblyFastaPat = assemblyFastaPat,
+            assemblyFastaMat = assemblyFastaMat,
+            patYak = yakCountPat.outputYak,
+            matYak = yakCountMat.outputYak,
+            sampleYak = yakCountSample.outputYak,
+            dockerImage = dockerImage
     }
 
 	output {
