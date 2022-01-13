@@ -4,56 +4,46 @@ import "extract_reads.wdl" as extractReads_t
 import "shard_reads.wdl" as shardReads_t
 import "arithmetic.wdl" as arithmetic_t
 
-workflow runYakAssemblyStats {
-
-    input {
-        Array[File] maternalReadsILM
-        Array[File] paternalReadsILM
-        Array[File] sampleReadsILM
-        File assemblyFastaPat
-        File assemblyFastaMat
-        String dockerImage = "juklucas/hpp_yak:latest"
+    workflow runYakAssemblyStats {
+        input {
+            Array[File] maternalReadsILM
+            Array[File] paternalReadsILM
+            Array[File] sampleReadsILM
+            File assemblyFastaPat
+            File assemblyFastaMat
+        }
+        # do counting
+        call yakCount as yakCountMat {
+            input:
+                readFiles = maternalReadsILM,
+                sampleName = "mat"
+        }
+        call yakCount as yakCountPat {
+            input:
+                readFiles = paternalReadsILM,
+                sampleName = "pat"
+        }
+        call yakCount as yakCountSample {
+            input:
+                readFiles = sampleReadsILM,
+                sampleName = "sample"
+        }
+        # get stats
+        call yakAssemblyStats {
+            input:
+                assemblyFastaPat = assemblyFastaPat,
+                assemblyFastaMat = assemblyFastaMat,
+                patYak = yakCountPat.outputYak,
+                matYak = yakCountMat.outputYak,
+                sampleYak = yakCountSample.outputYak
+        }
+        output {
+            File outputTarball = yakAssemblyStats.outputTarball
+            File outputSummary = yakAssemblyStats.outputSummary
+            File maternalYak = yakCountMat.outputYak
+            File paternalYak = yakCountPat.outputYak
+        }
     }
-
-    # do counting
-    call yakCount as yakCountMat {
-        input:
-            readFiles = maternalReadsILM,
-            sampleName = "mat",
-            dockerImage = dockerImage
-    }
-    call yakCount as yakCountPat {
-        input:
-            readFiles = paternalReadsILM,
-            sampleName = "pat",
-            dockerImage = dockerImage
-    }
-    call yakCount as yakCountSample {
-        input:
-            readFiles = sampleReadsILM,
-            sampleName = "sample",
-            dockerImage = dockerImage
-    }
-
-    # get stats
-    call yakAssemblyStats {
-        input:
-            assemblyFastaPat = assemblyFastaPat,
-            assemblyFastaMat = assemblyFastaMat,
-            patYak = yakCountPat.outputYak,
-            matYak = yakCountMat.outputYak,
-            sampleYak = yakCountSample.outputYak,
-            dockerImage = dockerImage
-    }
-
-	output {
-		File outputTarball = yakAssemblyStats.outputTarball
-		File outputSummary = yakAssemblyStats.outputSummary
-		File maternalYak = yakCountMat.outputYak
-		File paternalYak = yakCountPat.outputYak
-	}
-
-}
 
 
 task yakCount {
