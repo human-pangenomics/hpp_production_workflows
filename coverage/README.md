@@ -1,9 +1,9 @@
-## CopyVal 
+## Flagger 
 
 ### Overview
-**CopyVal** is a read-based pipeline that can detect different types of mis-assemblies in a draft diploid assembly. One core component of this pipeline is another pipeline named [**Partitioner**](https://github.com/human-pangenomics/hpp_production_workflows/edit/asset/coverage/docs/coverage/README.md). Partitioner recieves the read alignments to the draft assembly and partition the assembly into 4 main components; erroneous, (falsely) duplicated, haploid and collapsed.
+**Flagger** is a read-based pipeline that can detect different types of mis-assemblies in a draft diploid assembly. One core component of this pipeline is another pipeline named [**Partitioner**](https://github.com/human-pangenomics/hpp_production_workflows/edit/asset/coverage/docs/coverage/README.md). Partitioner recieves the read alignments to the draft assembly and partition the assembly into 4 main components; erroneous, (falsely) duplicated, haploid and collapsed.
 
-CopyVal has 7 steps:
+Flagger has 7 steps:
 - Align reads to the diploid assembly
 - Phase the ambiguous alignments using [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/README.md)
 - Run Partitioner on the alignments
@@ -133,8 +133,8 @@ Only `Hh` and `Hc` point to the regions with expected read support. `Hc` also sh
 |Cc |Collapsed |**Collapsed** |Purple| Two highly similar haplotypes are collapsed into this block |
 |Hc  |Collapsed | **Haploid** |Blue|This block is assembled correctly. It also has false alignments from a not assembled haplotype |
 |Dd  |Duplicated |**Duplicated** |Orange| This block is a false duplication of another block. (Mainly low-MAPQ alignments with half of the expected coverage)|
-|Ee  |Erroneous |**Erroneous** |Dark Red| This block has low read coverage |
-|Dh  |Haploid |**Duplicated** |Yellow| This block is a false duplication of another block like `Dd`, it also has false alignments from a not assembled haplotype |
+|Ee  |Erroneous |**Erroneous** |Dark Red| This block has low read coverage. If it is located in the middle of a contig probably that's pointing to a misjoin|
+|Dh  |Haploid |**Duplicated** |Yellow| This block is a false duplication of another block like `Dd`, it also has false alignments from a not assembled haplotype. Probably one of the copies has to be polished to fix this issue |
 |Eh  |Haploid| **Erroneous** |Red| This block needs polishing |
 |Hh  |Haploid| **Haploid** | Green|This block is correctly assembled and has the expected read coverage |
 |Ec  |Collapsed| **Errorneous** | Pink|This block needs polishing. It also has alignments from multiple not-assembled haplotypes and after removing the false alignments it does not have the expected read coverage|
