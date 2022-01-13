@@ -249,3 +249,4 @@ workflows:
    -  name: Wig2TDF
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/wig2tdf.wdl
+
