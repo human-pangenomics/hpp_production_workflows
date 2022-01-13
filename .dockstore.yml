@@ -228,6 +228,9 @@ workflows:
    -  name: Cov2Wig
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/cov2wig.wdl
+   -  name: Wig2TDF
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/wig2tdf.wdl
    -  name: CoverageAnalysisStep1
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/workflows/coverage_analysis_step1.wdl
@@ -246,7 +249,4 @@ workflows:
    -  name: ProjectCopyValFinalBed
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/workflows/project_copyval_final_bed.wdl
-   -  name: Wig2TDF
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/wig2tdf.wdl
 

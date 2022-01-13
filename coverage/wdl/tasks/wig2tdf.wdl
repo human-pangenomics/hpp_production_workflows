@@ -13,8 +13,8 @@ task wig2tdf{
         Int z=7
         File assemblyFastaGz
         # runtime configurations
-        Int memSize=4
-        Int threadCount=2
+        Int memSize=8
+        Int threadCount=4
         Int diskSize=256
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=2
