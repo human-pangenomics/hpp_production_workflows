@@ -84,7 +84,7 @@ consists of 4 main components and each component represents a specific type of r
 The 4 components:
 
 1. **Erroneous component**, which is modeled by a poisson distribution. To avoid overfitting, this mode only uses the coverages below 10 so its mean is limited to be between 0 and 10. It represents the regions with very low read support.
-2. **(Falsely) Duplicated component**, which is modeled by a gaussian distribution whose mean is constrained to be half of the haploid component's mean. It should mainly represents the falsely duplicated regions. It is worth noting that according to the recent 
+2. **(Falsely) Duplicated component**, which is modeled by a gaussian distribution which mean is constrained to be half of the haploid component's mean. It should mainly represents the falsely duplicated regions. It is worth noting that according to the recent 
 [T2T paper, The complete sequence of a human genome,](https://www.biorxiv.org/content/10.1101/2021.05.26.445798v1.abstract) there exist
  some satellite arrays (especially HSAT1) where the ONT and HiFi coverage drops systematically due to bias in sample preparation and sequencing.
  As a result this mode should contain a mix of duplicated and coverage-biased blocks. To avoid overestimating this component a correction step is added to the pipeline.
