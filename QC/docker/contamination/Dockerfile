@@ -33,9 +33,9 @@ RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.7.1/ncbi-blast-
     rm ncbi-blast-2.7.1+-x64-linux.tar.gz
 
 ### use python3, we have some scripts that need this
-ENV PATH="/root/bin/python_3.6.0/bin/:${PATH}"
-RUN ln -s /root/bin/python_3.6.0/bin/python3 /usr/bin/python && \
-    /root/bin/python_3.6.0/bin/pip3 install biopython==1.78
+ENV PATH="/opt/python/Python-3.6.0/bin:${PATH}"
+RUN ln -s /opt/python/Python-3.6.0/bin/python3 /usr/bin/python && \
+    /opt/python/Python-3.6.0/bin/pip3 install biopython==1.78
 
 ### bedtools
 WORKDIR /opt/bedtools

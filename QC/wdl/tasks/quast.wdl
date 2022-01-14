@@ -39,7 +39,7 @@ task quast {
         PREFIX="${ASM_FILENAME%.*}"
 
         # init quast command
-        cmd=(python /root/tools/quast/quast-5.0.2/quast-lg.py )
+        cmd=(python /opt/quast/quast-5.0.2/quast-lg.py )
         cmd+=( -t ~{threadCount} )
         cmd+=( -o $PREFIX.quast )
 

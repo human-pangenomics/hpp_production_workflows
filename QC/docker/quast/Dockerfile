@@ -8,7 +8,7 @@ RUN apt-get update && \
 
 
 ### QUAST
-WORKDIR /root/tools/quast
+WORKDIR /opt/quast
 RUN wget https://downloads.sourceforge.net/project/quast/quast-5.0.2.tar.gz && \
     tar -xzf quast-5.0.2.tar.gz && \
     rm quast-5.0.2.tar.gz && \

@@ -70,8 +70,7 @@ RUN wget https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz && \
     tar xvf Python-2.7.13.tgz && \
     rm /opt/python/Python-2.7.13.tgz && \
     cd Python-2.7.13 && \
-    mkdir -p /root/bin/python_2.7.13 && \
-    ./configure --with-ensurepip=install --prefix=/root/bin/python_2.7.13 && \
+    ./configure --with-ensurepip=install --prefix=/opt/python/Python-2.7.13 && \
     make install
 # 3.6.0
 WORKDIR /opt/python
@@ -79,10 +78,10 @@ RUN wget https://www.python.org/ftp/python/3.6.0/Python-3.6.0.tgz && \
     tar xvf Python-3.6.0.tgz && \
     rm /opt/python/Python-3.6.0.tgz && \
     cd Python-3.6.0 && \
-    mkdir -p /root/bin/python_3.6.0 && \
-    ./configure --with-ensurepip=install --prefix=/root/bin/python_3.6.0  && \
+    ./configure --with-ensurepip=install --prefix=/opt/python/Python-3.6.0  && \
     make install && \
-    ln -s /root/bin/python_3.6.0/bin/python3 /root/bin/python_3.6.0/bin/python
+    ln -s /opt/python/Python-3.6.0/bin/python3 /opt/python/Python-3.6.0/bin/python
+RUN chmod -R +x /opt/python/Python-3.6.0/
 
 
 WORKDIR /data
