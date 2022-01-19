@@ -104,7 +104,7 @@ task ntsm_count {
                         exit 1
                     fi
                     ln -s ~{cram_reference}
-                    # samtools fastq -@~{threadCount} -c 1 -1 output/${PREFIX}_1.fastq.gz -2 output/${PREFIX}_2.fastq.gz --reference `basename ~{cram_reference}` $READFILE
+                    
                     samtools fastq -@~{threadCount} --reference `basename ~{cram_reference}` $READFILE | gzip --fast --stdout >  output/${PREFIX}.fastq.gz              
                 elif [[ "$SUFFIX" == "fastq" ]] ; then
                     gzip $READFILE > output/${PREFIX}.fastq.gz
