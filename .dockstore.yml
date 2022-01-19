@@ -9,6 +9,8 @@ workflows:
    -  name: Quast
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/quast.wdl
+      testParameterFiles:
+        - /QC/test/s3_quast.json
    -  name: Meryl
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/meryl.wdl
@@ -45,6 +47,8 @@ workflows:
    -  name: ReadStats
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/read_stats.wdl
+      testParameterFiles:
+        - /QC/test/s3_read_stats.json
    -  name: FullQC
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/full_qc.wdl
@@ -69,6 +73,8 @@ workflows:
    -  name: fastqReadCounts
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/fastqReadCounts.wdl
+      testParameterFiles:
+        - /QC/test/s3_fastqReadCounts.json
    -  name: fastqReadCoverage
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/fastqReadCoverage.wdl
