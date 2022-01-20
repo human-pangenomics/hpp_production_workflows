@@ -19,8 +19,8 @@ workflow runFlaggerPhase2{
         Float covFloat
         Boolean isDiploid
     }
-    # Each element in hsatBedsArray is an array itself;
-    # [BED URL, Coverage Factor, Suffix Name]
+    ## Each element in hsatBedsArray is an array itself;
+    ## [BED URL, Coverage Factor, Suffix Name]
     Array[Array[String]] hsatBedsArray = read_tsv(hsatBedsTsv)
     scatter (hsatBed in hsatBedsArray){
         call bedtools_t.merge {

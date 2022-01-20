@@ -28,7 +28,7 @@ workflow runFlaggerPhase1{
             diskSize = ceil(size(bam, "GB")) * 2 + 64
     }
     
-    # If the user selected deepvariant as the variant caller
+    ## If the user selected deepvariant as the variant caller
     if ("${variantCaller}" == "dv") { 
         ## Call variants to be used for finding the reads with alternative alleles
         call deep_variant_t.runVariantCalling as dpv {
@@ -43,7 +43,7 @@ workflow runFlaggerPhase1{
         }
     }
 
-    # If the user selected pepper-margin-deepvariant as the variant caller 
+    ## If the user selected pepper-margin-deepvariant as the variant caller 
     if ("${variantCaller}" == "pmdv") {
         ## Call variants to be used for finding the reads with alternative alleles
         call pmdv_t.runPepperMarginDeepVariant as pmdv {
