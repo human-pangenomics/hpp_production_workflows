@@ -47,7 +47,7 @@ stHash* getSnpTable(char* vcfPath){
 }
 
 
-void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filteredPath, int nthreads){
+void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filteredPath, int nthreads, int clusterMargin){
 	samFile* fp = sam_open(inputPath, "r");
 	samFile* fo = sam_open(outputPath, "wb");
 	samFile* ff = sam_open(filteredPath, "wb");
@@ -78,8 +78,11 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filt
 	stList* snpList = NULL;
 	int startSnpIndex=0; int snpIndex=0;
 	int loc;
+	int locPrevious;
 	stIntTuple* locTuple;
 	bool writeFlag = true;
+	int clusterMismatchCount = 0;
+        int clusterTotalCount = 0;
 	while( sam_read1(fp, sam_hdr, b) > -1){
 		if((b->core.flag & BAM_FUNMAP) > 0) continue;
 		readName = bam_get_qname(b);
@@ -116,6 +119,10 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filt
 		cigarIt = ptCigarIt_construct(b, true, true);
 		snpIndex = startSnpIndex;
 		writeFlag = true;
+		clusterMismatchCount = 0;
+		clusterTotalCount = 0;
+		locPrevious = -1 * clusterMargin;
+		double clusterMismatchRatio = 0;
 		while(ptCigarIt_next(cigarIt)){
 			if (cigarIt->op == BAM_CDIFF) {
 				len = cigarIt->rfe - cigarIt->rfs + 1;
@@ -123,11 +130,18 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filt
 					while(loc < (cigarIt->rfs + i) && snpIndex < stList_length(snpList) - 1){
 						snpIndex++;
                         			locTuple = stList_get(snpList, snpIndex);
+						locPrevious = loc;
                         			loc = stIntTuple_get(locTuple, 0);
+						if (locPrevious + clusterMargin < loc && 0 < clusterTotalCount) { // one cluster is passed
+							clusterMismatchRatio = (double) clusterMismatchCount / clusterTotalCount;
+							if (0.3 <= clusterMismatchRatio) break;
+							clusterTotalCount = 0;
+							clusterMismatchCount = 0;
+						}
+						clusterTotalCount += 1;
 					}
 					if (cigarIt->rfs + i == loc){
-						writeFlag = false;
-						break;
+						clusterMismatchCount += 1;
 					}
 					if (loc < (cigarIt->rfs + i)){
                        				break;
@@ -137,7 +151,9 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filt
 				}
 			}
 		}
-		if(writeFlag){
+
+		if(0 < clusterTotalCount) clusterMismatchRatio = (double) clusterMismatchCount / clusterTotalCount;
+		if(clusterMismatchRatio < 0.3){
 			if (sam_write1(fo, sam_hdr, b) == -1) {
                         	fprintf(stderr, "Couldn't write %s\n", readName);
 			}
@@ -167,9 +183,10 @@ int main(int argc, char *argv[]){
 	char* filteredPath;
 	char* vcfPath;
 	int nthreads = 2;
+	int clusterMargin = 1000;
         char *program;
         (program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-        while (~(c=getopt(argc, argv, "i:o:f:v:t:h"))) {
+        while (~(c=getopt(argc, argv, "i:o:f:v:m:t:h"))) {
                 switch (c) {
                         case 'i':
                                 inputPath = optarg;
@@ -186,6 +203,9 @@ int main(int argc, char *argv[]){
 			case 't':
 				nthreads = atoi(optarg);
 				break;
+			case 'm':
+                                clusterMargin = atoi(optarg);
+                                break;
                         default:
                                 if (c != 'h') fprintf(stderr, "[E::%s] undefined option %c\n", __func__, c);
                         help:
@@ -196,6 +216,7 @@ int main(int argc, char *argv[]){
 				fprintf(stderr, "         -f         output bam file that contains the removed reads with alternative alleles\n");
 				fprintf(stderr, "         -v         vcf file containing biallelic snps (output of 'bcftools view -Ov -f PASS -m2 -M2 -v snps')\n");
 				fprintf(stderr, "         -t         number of threads (for bam I/O) [Default: 2]\n");
+				fprintf(stderr, "         -m         margin creating snp clusters [Default: 1000]\n");
                                 return 1;
                 }
         }
@@ -216,6 +237,6 @@ int main(int argc, char *argv[]){
 		}
 	}*/
 	//printf("#\n");
-	filterReads(snpTable, inputPath, outputPath, filteredPath, nthreads);
+	filterReads(snpTable, inputPath, outputPath, filteredPath, nthreads, clusterMargin);
 	stHash_destruct(snpTable);
 }
