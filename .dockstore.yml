@@ -195,9 +195,6 @@ workflows:
    -  name: ConcatAssemblies
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/concat_assemblies.wdl
-   -  name: CoverageAnalysisV1
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/workflows/coverage_analysis_v1.wdl
    -  name: PhaseReads
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/phase_reads.wdl
@@ -231,9 +228,12 @@ workflows:
    -  name: Wig2TDF
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/wig2tdf.wdl
-   -  name: CoverageAnalysisStep1
+   -  name: FlaggerPhase1
       subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/workflows/coverage_analysis_step1.wdl
+      primaryDescriptorPath: /coverage/wdl/workflows/flagger_phase1.wdl
+   -  name: FlaggerPhase2
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/workflows/flagger_phase2.wdl
    -  name: DeepVariantNoSplit
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/deep_variant_no_split.wdl
@@ -243,10 +243,10 @@ workflows:
    -  name: SamtoolsView
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/samtools_view.wdl
-   -  name: GetCopyValFinalBed
+   -  name: GetFlaggerFinalBed
       subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/get_copyval_final_bed.wdl
-   -  name: ProjectCopyValFinalBed
+      primaryDescriptorPath: /coverage/wdl/workflows/get_flagger_final_bed.wdl
+   -  name: ProjectFlaggerFinalBed
       subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/workflows/project_copyval_final_bed.wdl
+      primaryDescriptorPath: /coverage/wdl/workflows/project_flagger_final_bed.wdl
 

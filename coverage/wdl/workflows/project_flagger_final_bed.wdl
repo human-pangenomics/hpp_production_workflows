@@ -3,7 +3,7 @@ version 1.0
 import "../tasks/bam2paf.wdl" as bam2paf_t
 import "../tasks/project_blocks.wdl" as projectBlocks_t
 
-workflow runProjectBlocksComps {
+workflow runProjectFlaggerFinalBed {
     input {
         String sampleName
         File asm2refBamMat
@@ -31,7 +31,9 @@ workflow runProjectBlocksComps {
     scatter (bed in extractComps.beds) {
         call getHapBed {
             input:
-                bed=bed
+                bed=bed,
+                patKeyword = "#1",
+                matKeyword = "#2"
         }
         call projectBlocks_t.project as projectPat {
             input:
@@ -50,6 +52,8 @@ workflow runProjectBlocksComps {
                 mode="asm2ref"
         }
     }
+    # Merge the paternal BED files containing the projected blocks for 
+    # different components into a single colored BED file
     call mergeBeds as mergeBedsPat{
         input :
             trackName = "${sampleName}.pat",
@@ -57,6 +61,8 @@ workflow runProjectBlocksComps {
             beds = projectPat.projectionBed,
             comps = comps
     }
+    # Merge the maternal BED files containing the projected blocks for 
+    # different components into a single colored BED file
     call mergeBeds as mergeBedsMat{
         input :
             trackName = "${sampleName}.mat",
@@ -120,6 +126,8 @@ task extractComps{
 task getHapBed {
     input {
         File bed
+        String matKeyword
+        String patKeyword
         # runtime configurations
         Int memSize=4
         Int threadCount=2
@@ -143,13 +151,9 @@ task getHapBed {
         FILENAME=~{bed}
         PREFIX=$(basename ${FILENAME%.bed})
 
-        # The given bed file can be empty
-        #printf "\n" > ${PREFIX}.pat.bed
-        #printf "\n" > ${PREFIX}.mat.bed
-        #if [ -s ~{bed} ]; then 
-        cat ~{bed} | grep "#1" > ${PREFIX}.pat.bed || true
-        cat ~{bed} | grep "#2" > ${PREFIX}.mat.bed || true
-        #fi
+        
+        cat ~{bed} | grep ~{patKeyword} > ${PREFIX}.pat.bed || true
+        cat ~{bed} | grep ~{matKeyword} > ${PREFIX}.mat.bed || true
     >>>
 
     runtime {

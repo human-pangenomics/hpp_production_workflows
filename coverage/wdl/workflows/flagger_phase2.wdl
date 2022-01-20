@@ -10,7 +10,7 @@ import "../tasks/pdf_generator.wdl" as pdf_generator_t
 import "../tasks/bedtools.wdl" as bedtools_t
 import "../tasks/fit_model_bed.wdl" as fit_model_bed_t
 
-workflow runCoverageAnalysisV1{
+workflow runFlaggerPhase2{
     input {
         File hsatBedsTsv
         File coverageGz
