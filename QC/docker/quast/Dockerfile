@@ -1,10 +1,10 @@
 FROM tpesout/hpp_base:latest
 MAINTAINER Trevor Pesout, tpesout@ucsc.edu
 
-ENV PATH="/root/bin/python_3.6.0/bin/:${PATH}"
+ENV PATH="/opt/python/Python-3.6.0/bin:${PATH}"
 
 RUN apt-get update && \
-    apt-get install -y pkg-config libfreetype6-dev libpng-dev python-matplotlib python-simplejson
+    apt-get install -y pkg-config libfreetype6-dev libpng-dev python-matplotlib python-simplejson libjpeg-dev zlib1g-dev
 
 
 ### QUAST
@@ -13,7 +13,8 @@ RUN wget https://downloads.sourceforge.net/project/quast/quast-5.0.2.tar.gz && \
     tar -xzf quast-5.0.2.tar.gz && \
     rm quast-5.0.2.tar.gz && \
     cd quast-5.0.2 && \
-    pip3 install --upgrade setuptools matplotlib simplejson joblib==0.14.1 && \
+    pip3 install --upgrade pip && \
+    pip3 install --upgrade setuptools==59.6.0 matplotlib==3.3.4 simplejson==3.17.6 joblib==0.14.1 pyparsing==2.4.7 && \
     ./setup.py install && \
     ./quast.py -h
 
