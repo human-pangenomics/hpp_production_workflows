@@ -34,8 +34,8 @@ task rm2bed {
         ## Call RM2Bed
         RM2Bed.py ~{rm_out_file}
 
-        ## rename output
-        mv *_rm.bed ~{output_bed_fn}
+        ## sort output bed file
+        sort -V -k1,1 -k2,2 *_rm.bed ~{output_bed_fn}
 
     >>>
 
