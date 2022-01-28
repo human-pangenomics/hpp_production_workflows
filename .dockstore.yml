@@ -32,6 +32,9 @@ workflows:
    -  name: NTSM
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/ntsm.wdl
+   -  name: RM2Bed
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/rm2bed.wdl
    -  name: MaskAssembly
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/mask_assembly.wdl
