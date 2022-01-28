@@ -35,7 +35,7 @@ task rm2bed {
         RM2Bed.py ~{rm_out_file}
 
         ## sort output bed file
-        sort -V -k1,1 -k2,2 *_rm.bed ~{output_bed_fn}
+        sort -V -k1,1 -k2,2 *_rm.bed > ~{output_bed_fn}
 
     >>>
 
