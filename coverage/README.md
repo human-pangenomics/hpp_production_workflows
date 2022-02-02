@@ -5,12 +5,23 @@
 
 Flagger has 7 steps:
 - Align reads to the diploid assembly
-- Phase the ambiguous alignments using [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/README.md)
+- Phase the ambiguous alignments using [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/README.md) (Optional)
 - Run Partitioner on the assembly using the alignments
 - Call variants 
 - Remove the alignments with alternative alleles
 - Run Paritioner on the assembly using the alignments with no alternative allele
 - Combine the Partitioner outputs
+
+Flagger can be simplified by calling Partitioner only once. The simplified version will flag the same regions as unreliable. The only
+difference with the complete version is that it does not provide detailed categorization of the unreliable blocks. The blocks will be 
+assigned to the four main components; erroneous, duplicated, haploid and collapsed.
+
+- Align reads to the diploid assembly
+- Phase the ambiguous alignments using [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/README.md) (Optional)
+- Call variants 
+- Remove the alignments with alternative alleles
+- Run Paritioner on the assembly using the alignments with no alternative allele
+
 ### 1. Align Reads
 The ONT and HiFi reads can be aligned to a diploid assembly (~ 6Gbases long) with winnowmap. Since the assembly is diploid the expected base-level coverage should be half of the sequencing coverage.
 Here are the main commands for producing the alignments (taken from the [winnowmap docs](https://github.com/marbl/Winnowmap)):

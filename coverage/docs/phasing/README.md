@@ -1,4 +1,4 @@
-## Phasing the long reads aligned to the diploid assemblies
+## SecPhase: Phasing the long reads aligned to the diploid assemblies
 
 ### Motivation
 When we align long reads (HiFi or ONT at this time!) to the diploid assembly of the same sample, the reads coming from homozygous regions may
