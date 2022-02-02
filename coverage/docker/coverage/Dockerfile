@@ -61,6 +61,7 @@ ENV PROJECT_BLOCKS_PY=/home/programs/src/project_blocks.py
 ENV ASSIGN_GAPS_PY=/home/programs/src/assign_gaps.py
 ENV FIT_MODEL_EXTRA_PY=/home/programs/src/fit_model_extra.py
 ENV PDF_GENERATOR_PY=/home/programs/src/pdf_generator.py
+ENV PARTITION_SECPHASE_READS_PY=/home/programs/src/partition_secphase_reads.py
 
 ## UCSC convention is to work in /data
 RUN mkdir -p /data
