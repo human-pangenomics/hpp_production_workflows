@@ -42,7 +42,7 @@ task getPhasedReadIds{
         comm -13 hap1.txt hap2.txt > output/${PREFIX}.hap2_read_ids.initial.txt
         comm -12 hap1.txt hap2.txt > output/${PREFIX}.ambiguous_read_ids.txt
         
-        python3 {PARTITION_SECPHASE_READS_PY} --secphase ~{phasingOutText} --output1 output/${PREFIX}.1to2.txt --output2 output/${PREFIX}.2to1.txt
+        python3 ${PARTITION_SECPHASE_READS_PY} --secphase ~{phasingOutText} --output1 output/${PREFIX}.1to2.txt --output2 output/${PREFIX}.2to1.txt
         grep -v -F -f output/${PREFIX}.1to2.txt output/${PREFIX}.hap1_read_ids.initial.txt > output/hap1_tmp.txt
         cat output/hap1_tmp.txt output/${PREFIX}.2to1.txt > output/${PREFIX}.hap1_read_ids.txt
         grep -v -F -f output/${PREFIX}.2to1.txt output/${PREFIX}.hap2_read_ids.initial.txt > output/hap2_tmp.txt
