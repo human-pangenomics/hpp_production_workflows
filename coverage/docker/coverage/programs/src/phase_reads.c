@@ -425,7 +425,7 @@ int get_best_record(ptAlignment** alignments, int alignments_len, double min_qv,
 			max_qv = alignments[i]->qv;
 		}
 	}
-	if (max_qv < prim_qv + prim_margin || max_qv < min_qv) return prim_idx;
+	if (prim_idx == -1 || max_qv < (prim_qv + prim_margin) || max_qv < min_qv) return prim_idx;
 	else return max_idx;
 }
 
@@ -1061,7 +1061,7 @@ int main(int argc, char *argv[]){
 	stList* markers = stList_construct3(0, free);
 	int alignments_len=0;
 	int32_t read_pos;
-	ptAlignment* alignments[1000];
+	ptAlignment* alignments[10];
 	int bytes_read;
 	const char* contig_name;
 	bool conf_blocks_length;
@@ -1077,7 +1077,7 @@ int main(int argc, char *argv[]){
 		if ((strcmp(read_name_new, read_name) != 0) || (bytes_read <= -1)){
 			// If we have at least one marker and at least two alignments
 			// then we can decide which one is the best alignment
-			if ((stList_length(markers) > 0) && (alignments_len > 1) && !contain_supp(alignments, alignments_len)){
+			if ((stList_length(markers) > 0) && (alignments_len > 1) && (alignments_len <= 10) && !contain_supp(alignments, alignments_len)){
 
 DEBUG_PRINT("\n@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\n", read_name, alignments_len, alignments[0]->record->core.l_qseq);
 				print_contigs(alignments, alignments_len, sam_hdr);
@@ -1122,7 +1122,7 @@ DEBUG_PRINT("\n@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\
 			if (alignments_len > 0){ // maybe the previous alignment was unmapped
 				// get the best alignment
 				int best_idx = get_best_record(alignments, alignments_len, -50.0, min_q);
-				bam1_t* best = 0 < best_idx ? alignments[best_idx]->record : NULL;
+				bam1_t* best = 0 <= best_idx ? alignments[best_idx]->record : NULL;
 				// write all alignments without any change if they are either chimeric or best alignment is primary
 				if(best &&
 				   !contain_supp(alignments, alignments_len) && 
@@ -1158,6 +1158,7 @@ DEBUG_PRINT("\n@@ READ NAME: %s\n\t$ Number of alignments: %d\t Read l_qseq: %d\
 		}
 		if (bytes_read <= -1) break; // file is finished so break
 		if(b->core.flag & BAM_FUNMAP) continue; // unmapped
+		if(alignments_len > 9) continue;
 		alignments[alignments_len] = ptAlignment_construct(b, 0.0);
 		ptCigarIt* cigar_it = ptCigarIt_construct(b, true, true);
 		quality = bam_get_qual(b);
