@@ -4,6 +4,7 @@ workflow runHaplotag{
     call haplotag
     output{
         File haplotaggedBam = haplotag.haplotaggedBam
+        File haplotaggedBai = haplotag.haplotaggedBai
     }
 }
 
@@ -39,7 +40,8 @@ task haplotag{
         tabix ~{vcfGz}
 
         mkdir output
-        whatshap haplotag -o output/${PREFIX}.haplotagged.bam ~{vcfGz} ${PREFIX}.bam --ignore-read-groups --skip-missing-contigs 
+        whatshap haplotag -o output/${PREFIX}.haplotagged.bam ~{vcfGz} ${PREFIX}.bam --ignore-read-groups --skip-missing-contigs
+        samtools index output/${PREFIX}.haplotagged.bam 
 
     >>>
     runtime {
@@ -51,6 +53,7 @@ task haplotag{
     }
     output{
         File haplotaggedBam = glob("output/*.bam")[0]
+        File haplotaggedBai = glob("output/*.bai")[0]
     }
 }
 
