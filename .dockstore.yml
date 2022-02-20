@@ -249,4 +249,6 @@ workflows:
    -  name: ProjectFlaggerFinalBed
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/workflows/project_flagger_final_bed.wdl
-
+   -  name: WhatsHapHaplotag
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/whatshap_haplotag.wdl
