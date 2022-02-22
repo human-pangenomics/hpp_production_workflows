@@ -13,6 +13,7 @@ task haplotag{
         File bam
         File bai
         File vcfGz
+        File refFastaGz
         # runtime configurations
         Int memSize=8
         Int threadCount=4
@@ -39,8 +40,10 @@ task haplotag{
         ln ~{bai} ${PREFIX}.bai
         tabix ~{vcfGz}
 
+        gunzip -c ~{refFastaGz} > ref.fa
+
         mkdir output
-        whatshap haplotag -o output/${PREFIX}.haplotagged.bam ~{vcfGz} ${PREFIX}.bam --ignore-read-groups --skip-missing-contigs
+        whatshap haplotag --reference ref.fa -o output/${PREFIX}.haplotagged.bam ~{vcfGz} ${PREFIX}.bam --ignore-read-groups --skip-missing-contigs
         samtools index output/${PREFIX}.haplotagged.bam 
 
     >>>
