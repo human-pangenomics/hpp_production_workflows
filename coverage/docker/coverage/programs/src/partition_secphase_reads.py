@@ -34,7 +34,10 @@ def main():
                     fout2.write("{}\n".format(readname))
 
             if cols[0] == "$":
-                readname = cols[1]
+                if "RECORDS" in line:
+                    readname = cols[-1][:-1] # remove ":"
+                else:
+                    readname = cols[-1]
             elif cols[0] == "*":
                 prevContig = cols[2]
             elif cols[0] == "@":
