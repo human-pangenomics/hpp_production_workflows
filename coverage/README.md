@@ -1,18 +1,18 @@
-## Flagger 
+## Flagger-based evaluation pipeline
 
 ### Overview
-**Flagger** is a read-based pipeline that can detect different types of mis-assemblies in a draft diploid assembly. One core component of this pipeline is another pipeline named [**Partitioner**](https://github.com/human-pangenomics/hpp_production_workflows/edit/asset/coverage/docs/coverage/README.md). Partitioner recieves the read alignments to the draft assembly and partition the assembly into 4 main components; erroneous, (falsely) duplicated, haploid and collapsed.
+Here is a description of a read-based pipeline that can detect different types of mis-assemblies in a draft diploid assembly. One core component of this pipeline is another pipeline named [**Flagger**](https://github.com/human-pangenomics/hpp_production_workflows/edit/asset/coverage/docs/coverage/README.md). Flagger recieves the read alignments to the draft assembly and partition the assembly into 4 main components; erroneous, (falsely) duplicated, haploid and collapsed.
 
 Flagger has 7 steps:
 - Align reads to the diploid assembly
 - Phase the ambiguous alignments using [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/README.md) (Optional)
-- Run Partitioner on the assembly using the alignments
+- Run Flagger on the assembly using the alignments
 - Call variants 
 - Remove the alignments with alternative alleles
-- Run Paritioner on the assembly using the alignments with no alternative allele
-- Combine the Partitioner outputs
+- Run Flagger on the assembly using the alignments with no alternative allele
+- Combine the Flagger outputs
 
-Flagger can be simplified by calling Partitioner only once. The simplified version will flag the same regions as unreliable. The only
+The pipeline can be simplified by calling Flagger only once. The simplified version will flag the same regions as unreliable. The only
 difference with the complete version is that it does not provide detailed categorization of the unreliable blocks. The blocks will be 
 assigned to the four main components; erroneous, duplicated, haploid and collapsed.
 
@@ -20,7 +20,7 @@ assigned to the four main components; erroneous, duplicated, haploid and collaps
 - Phase the ambiguous alignments using [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/README.md) (Optional)
 - Call variants 
 - Remove the alignments with alternative alleles
-- Run Paritioner on the assembly using the alignments with no alternative allele
+- Run Flagger on the assembly using the alignments with no alternative allele
 
 ### 1. Align Reads
 The ONT and HiFi reads can be aligned to a diploid assembly (~ 6Gbases long) with winnowmap. Since the assembly is diploid the expected base-level coverage should be half of the sequencing coverage.
@@ -41,14 +41,14 @@ the alignment with the highest score is selected as the primary alignment. The o
 a corrected version of the input bam file, in which the primary and secondary alignments are swapped 
 whenever neccessary.
 
-More information about the phasing pipeline is available [here](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/README.md)
+More information about SecPhase is available [here](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/README.md)
 
-### 3. Run Partitioner on the alignments
-The corrected bam file is then given as input to Partitioner. Partitioner outputs a bed file for each of the 4 components; 
+### 3. Run Flagger on the alignments
+The corrected bam file is then given as input to Flagger. Flagger outputs a bed file for each of the 4 components; 
 erroneous, duplicated, haploid and collapsed. Any component other than the haploid one is pointing to unreliable blocks in
 assembly. The 4 components are explained in detail [here](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/coverage). 
 
-More information about Partitioner is available [here](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/coverage)
+More information about Flagger is available [here](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/coverage)
 
 ### 4. Call variants 
 By calling variants it is possible to detect the regions that needs polishing or the regions that have alignments from the wrong haplotype. It is recommeneded to use [Deepvariant](https://github.com/google/deepvariant) for calling variants from HiFi alignments and [Pepper-Margin-Deepvariant](https://github.com/kishwarshafin/pepper) for ONT. 
@@ -116,14 +116,14 @@ docker run \
 ```
 `${ALT_FILTERED_BAM}` is the bam file with no alignments that contain alternative alleles and `${ALT_BAM}` includes the removed alignments.
 
-### 6. Run Paritioner on the alignments with no alternative allele
-`${ALT_FILTERED_BAM}` produced in the previous step will be used as a new input for Partitioner. This step is same as the 3rd step except that the input bam file here does not have the alternative-contained alignments.
+### 6. Run Flagger on the alignments with no alternative allele
+`${ALT_FILTERED_BAM}` produced in the previous step will be used as a new input for Flagger. This step is same as the 3rd step except that the input bam file here does not have the alternative-contained alignments.
 
 
-### 7. Combine the Partitioner outputs in steps 3 and 6
-The partitioner outputs in steps 3 and 6 are expected to have a huge overlap but they are not the same. As an example one region that was detected as collapsed in step 3 may be categorized as haploid in step 6. This component change is showing that the flagged region is assembled correctly but 
+### 7. Combine the Flagger outputs in steps 3 and 6
+The Flagger outputs in steps 3 and 6 are expected to have a huge overlap but they are not the same. As an example one region that was detected as collapsed in step 3 may be categorized as haploid in step 6. This component change is showing that the flagged region is assembled correctly but 
 its homologous region in the other haplotype is not assembled correctly and that's why the reads from the other haplotype aligned there. 
-So by combining these two sets of partitioner output it is possible to infer more information about the unreliable blocks in the assembly.
+So by combining these two sets of Flagger output it is possible to infer more information about the unreliable blocks in the assembly.
 
 The patitioner output is a gzipped tar file that contain 4 bed files one for each component.
 ```
