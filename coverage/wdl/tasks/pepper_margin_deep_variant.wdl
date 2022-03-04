@@ -64,7 +64,7 @@ task removeMultiplePrimary{
         mkdir output
         # Remove reads with multiple primary alignment (it caused an issue for margin before)
         samtools view -F 0x904 ~{bam} | cut -f 1 | sort | uniq -c | awk '$1 > 1' | cut -f2 > read_ids_multiple_primary.txt
-        samtools view -h | grep -v -f read_ids_multiple_primary.txt | samtools view -b > output/${BAM_PREFIX}.bam
+        samtools view -h ~{bam} | grep -v -f read_ids_multiple_primary.txt | samtools view -h -b > output/${BAM_PREFIX}.bam
         samtools index output/${BAM_PREFIX}.bam
     >>>
     runtime {
