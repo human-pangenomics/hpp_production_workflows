@@ -21,7 +21,7 @@ workflow runPepperMarginDeepVariant{
             bamIndex = bamIndex,
             includeSupplementary = includeSupplementary,
             minMAPQ = minMAPQ,
-            diskSize= 4 * ceil(size(bam, "GB")) + 64
+            diskSize= 5 * ceil(size(bam, "GB")) + 64
     }
     output{
         File vcfGz = pmdv.vcfGz
@@ -60,10 +60,11 @@ task pmdv{
         ## hard link the bam file to the working directory and produce its index file
         BAM_NAME=$(basename ~{bam})
         BAM_PREFIX=${BAM_NAME%%.bam}
-        ln -f ~{bam} > ${BAM_PREFIX}.bam
-        ln -f ~{bamIndex} > ${BAM_PREFIX}.bam.bai
-        # Update the creation time of the index file
-        touch -c ${BAM_PREFIX}.bam.bai 
+
+        # Remove reads with multiple primary alignment (it caused an issue for margin before)
+        samtools view -F 0x904 ~{bam} | cut -f 1 | sort | uniq -c | awk '$1 > 1' | cut -f2 > read_ids_multiple_primary.txt
+        samtools view -h | grep -v -f read_ids_multiple_primary.txt | samtools view -b > ${BAM_PREFIX}.bam
+        samtools index ${BAM_PREFIX}.bam
 
         ## unzip the fasta file and produce its index
         gunzip -c ~{assemblyFastaGz} > asm.fa
@@ -73,7 +74,7 @@ task pmdv{
         if [ ~{includeSupplementary} == "True" ]; then
             MORE_OPTIONS="${MORE_OPTIONS} --pepper_include_supplementary"
         fi
-
+       
         mkdir output
 
         ## call pepper-margin-deepvariant 
