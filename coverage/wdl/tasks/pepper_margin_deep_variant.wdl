@@ -113,6 +113,7 @@ task pmdv{
         BAM_NAME=$(basename ~{bam})
         BAM_PREFIX=${BAM_NAME%%.bam}
         ln ~{bam} ${BAM_PREFIX}.bam
+        ln ~{bamIndex} ${BAM_PREFIX}.bam.bai
 
         ## unzip the fasta file and produce its index
         gunzip -c ~{assemblyFastaGz} > asm.fa
