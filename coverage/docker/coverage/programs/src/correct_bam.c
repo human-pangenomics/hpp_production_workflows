@@ -120,6 +120,24 @@ stHash* get_mapq_table(char* mapq_table_path){
         return mapq_table;
 }
 
+
+stSet* get_read_set(char* exclude_path){
+        stSet* exclude_read_set = stSet_construct3(stHash_stringKey, stHash_stringEqualKey, free);
+        if (exclude_path == NULL) return exclude_read_set;
+        FILE* fp = fopen(exclude_path, "r");
+        size_t read;
+        size_t len;
+        char* line = NULL;
+        char* read_name;
+        while((read = getline(&line, &len, fp)) != -1){
+                line[strlen(line)-1] = '\0';
+                read_name = malloc(strlen(line));
+		strcpy(read_name, line);
+                stSet_insert(exclude_read_set, read_name);
+        }
+        return exclude_read_set;
+}
+
 uint8_t get_mapq(stHash* mapq_table, bam1_t* b, sam_hdr_t* sam_hdr){
         int start = b->core.pos; // 0-based
         const char* contig_name = sam_hdr_tid2name(sam_hdr, b->core.tid);
@@ -188,6 +206,7 @@ int main(int argc, char *argv[]){
         int c;
         char* input_path;
 	char* output_path;
+	char* exclude_path=NULL;
 	char* phasing_log_path=NULL;
 	char* mapq_table_path=NULL;
 	bool primary_only = false;
@@ -198,7 +217,7 @@ int main(int argc, char *argv[]){
 	int max_mapq = 60;
 	char *program;
         (program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-        while (~(c=getopt_long(argc, argv, "i:o:x:P:M:tpm:a:n:h", long_options, NULL))) {
+        while (~(c=getopt_long(argc, argv, "i:o:x:e:P:M:tpm:a:n:h", long_options, NULL))) {
                 switch (c) {
                         case 'i':
                                 input_path = optarg;
@@ -209,6 +228,9 @@ int main(int argc, char *argv[]){
 			case 'x':
                                 max_mapq = atoi(optarg);
                                 break;
+			case 'e':
+				exclude_path = optarg;
+				break;
 			case 'P':
                                 phasing_log_path = optarg;
                                 break;
@@ -240,6 +262,7 @@ int main(int argc, char *argv[]){
 				fprintf(stderr, "         --maxMapq,\t-x         maximum mapq [default:60]\n");
 				fprintf(stderr, "         --phasingLog,\t-P         the phasing log path [optional]\n");
 				fprintf(stderr, "         --mapqTable,\t-M         the adjusted mapq table path [optional]\n");
+				fprintf(stderr, "         --exclude,\t-e         Path to a file containing the read names that have to be excluded [optional]\n");
                                 fprintf(stderr, "         --noTag,\t-t         output no optional fields\n");
                                 fprintf(stderr, "         --primaryOnly,\t-p         output only primary alignments\n");
 				fprintf(stderr, "         --minReadLen,\t-m         min read length [default: 5k]\n");
@@ -273,6 +296,7 @@ int main(int argc, char *argv[]){
 	char* read_name;
 	//Location* loc;
 	stHash* mapq_table = get_mapq_table(mapq_table_path);
+	stSet* exclude_read_set = get_read_set(exclude_path);
 	/*stHashIterator* it = stHash_getIterator(mapq_table);
 	stList* locs;
 	Location* loc;
@@ -287,6 +311,7 @@ int main(int argc, char *argv[]){
 	bam1_t* b = bam_init1();
 	while(sam_read1(fp, sam_hdr, b) > -1) {
 		if (b->core.flag & BAM_FUNMAP) continue; // if unmapped
+		if (stSet_search(exclude_read_set, bam_get_qname(b)) != NULL) continue; //if read should be excluded
 		if (is_prim(phased_read_table, b, sam_hdr)){
 			b->core.flag &= ~BAM_FSECONDARY; // make it primary
 		}
