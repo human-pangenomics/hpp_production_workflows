@@ -264,7 +264,7 @@ int ptCigarIt_next(ptCigarIt* cigar_it){
 			cigar_it->len = len;
 			cigar_it->op = op;
 			rd_step = len;
-                        sq_step = op;
+                        sq_step = len;
                         rf_step = 0;
                         break;
    		case BAM_CDEL:
