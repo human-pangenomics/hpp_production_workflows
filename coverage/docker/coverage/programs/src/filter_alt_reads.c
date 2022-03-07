@@ -47,7 +47,7 @@ stHash* getSnpTable(char* vcfPath){
 }
 
 
-void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filteredPath, int nthreads, int clusterMargin){
+void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filteredPath, int nthreads, int clusterMargin, double ratioThreshold){
 	samFile* fp = sam_open(inputPath, "r");
 	samFile* fo = sam_open(outputPath, "wb");
 	samFile* ff = sam_open(filteredPath, "wb");
@@ -83,11 +83,14 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filt
 	bool writeFlag = true;
 	int clusterMismatchCount = 0;
         int clusterTotalCount = 0;
+	double clusterMismatchRatio = 0.0;
+	fprintf(stderr, "[LOG:] readname\tcontig\tstart\tcluster_mismatch_count\tcluster_total_count\tcluster_mismatch_ratio\n");
 	while( sam_read1(fp, sam_hdr, b) > -1){
 		if((b->core.flag & BAM_FUNMAP) > 0) continue;
 		readName = bam_get_qname(b);
                 tid = b->core.tid;
                 contigName = sam_hdr_tid2name(sam_hdr, tid);
+		//update snps list if contig has changed
 		if (strcmp(contigName, contigNamePrev) != 0){
 			snpList = stHash_search(snpTable, contigName);
 			startSnpIndex = 0;
@@ -122,7 +125,10 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filt
 		clusterMismatchCount = 0;
 		clusterTotalCount = 0;
 		locPrevious = -1 * clusterMargin;
-		double clusterMismatchRatio = 0;
+		clusterMismatchRatio = 0;
+		if (b->core.pos <= loc) {
+			clusterTotalCount = 1;
+		}
 		while(ptCigarIt_next(cigarIt)){
 			if (cigarIt->op == BAM_CDIFF) {
 				len = cigarIt->rfe - cigarIt->rfs + 1;
@@ -134,12 +140,16 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filt
                         			loc = stIntTuple_get(locTuple, 0);
 						if (locPrevious + clusterMargin < loc && 0 < clusterTotalCount) { // one cluster is passed
 							clusterMismatchRatio = (double) clusterMismatchCount / clusterTotalCount;
-							if (0.3 <= clusterMismatchRatio) break;
+							if (ratioThreshold <= clusterMismatchRatio) {
+								writeFlag = false;
+								break;
+							}
 							clusterTotalCount = 0;
 							clusterMismatchCount = 0;
 						}
 						clusterTotalCount += 1;
 					}
+					if (writeFlag == false) break;
 					if (cigarIt->rfs + i == loc){
 						clusterMismatchCount += 1;
 					}
@@ -149,11 +159,12 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filt
 					//printf("##%d - %d\n", cigarIt->rfs, cigarIt->rfe);
 					//printf("#%d\n", cigarIt->len);
 				}
+				if (writeFlag == false) break;
 			}
 		}
 
 		if(0 < clusterTotalCount) clusterMismatchRatio = (double) clusterMismatchCount / clusterTotalCount;
-		if(clusterMismatchRatio < 0.3){
+		if(clusterMismatchRatio < ratioThreshold){
 			if (sam_write1(fo, sam_hdr, b) == -1) {
                         	fprintf(stderr, "Couldn't write %s\n", readName);
 			}
@@ -162,10 +173,11 @@ void filterReads(stHash* snpTable, char* inputPath, char* outputPath, char* filt
 			if (sam_write1(ff, sam_hdr, b) == -1) {
                                 fprintf(stderr, "Couldn't write %s\n", readName);
                         }
+			fprintf(stderr, "[LOG:] %s\t%s\t%d\t%d\t%d\t%.2f\n", readName, contigName, b->core.pos, clusterMismatchCount, clusterTotalCount, clusterMismatchRatio);
 		}
 		ptCigarIt_destruct(cigarIt);
 	}
-	printf("all done\n");
+	printf("All Done!\n");
 	sam_hdr_destroy(sam_hdr);
 	bam_destroy1(b);
 	sam_close(fo);
@@ -184,9 +196,10 @@ int main(int argc, char *argv[]){
 	char* vcfPath;
 	int nthreads = 2;
 	int clusterMargin = 1000;
+	double ratioThreshold = 0.3;
         char *program;
         (program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-        while (~(c=getopt(argc, argv, "i:o:f:v:m:t:h"))) {
+        while (~(c=getopt(argc, argv, "i:o:f:v:r:m:t:h"))) {
                 switch (c) {
                         case 'i':
                                 inputPath = optarg;
@@ -206,6 +219,9 @@ int main(int argc, char *argv[]){
 			case 'm':
                                 clusterMargin = atoi(optarg);
                                 break;
+			case 'r':
+				ratioThreshold = atof(optarg);
+				break;
                         default:
                                 if (c != 'h') fprintf(stderr, "[E::%s] undefined option %c\n", __func__, c);
                         help:
@@ -217,6 +233,7 @@ int main(int argc, char *argv[]){
 				fprintf(stderr, "         -v         vcf file containing biallelic snps (output of 'bcftools view -Ov -f PASS -m2 -M2 -v snps')\n");
 				fprintf(stderr, "         -t         number of threads (for bam I/O) [Default: 2]\n");
 				fprintf(stderr, "         -m         margin creating snp clusters [Default: 1000]\n");
+				fprintf(stderr, "         -r         threshold for cluster mismatch ratio [Default: 0.3]\n");
                                 return 1;
                 }
         }
@@ -237,6 +254,6 @@ int main(int argc, char *argv[]){
 		}
 	}*/
 	//printf("#\n");
-	filterReads(snpTable, inputPath, outputPath, filteredPath, nthreads, clusterMargin);
+	filterReads(snpTable, inputPath, outputPath, filteredPath, nthreads, clusterMargin, ratioThreshold);
 	stHash_destruct(snpTable);
 }
