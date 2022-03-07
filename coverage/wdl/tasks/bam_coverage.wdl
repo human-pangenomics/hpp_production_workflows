@@ -50,7 +50,10 @@ task bamCoverage{
         else
             ln ~{bam} ${BAM_PREFIX}.bam 
         fi
-        samtools depth -aa -Q ~{minMAPQ} ~{extraOptions} ${BAM_PREFIX}.bam  > ${BAM_PREFIX}.depth
+        
+        # create be file to only output the regions in the given assembly
+        cat ${ASM_PREFIX}.fa.fai | awk '{print $1"\t"0"\t"$2}' | bedtools sort -i - > ${ASM_PREFIX}.fa.fai.bed
+        samtools depth -b ${ASM_PREFIX}.fa.fai.bed -aa -Q ~{minMAPQ} ~{extraOptions} ${BAM_PREFIX}.bam  > ${BAM_PREFIX}.depth
 
         # Convert the output of samtools depth into a compressed format
         depth2cov -d ${BAM_PREFIX}.depth -f ${ASM_PREFIX}.fa.fai -o ${BAM_PREFIX}.cov
