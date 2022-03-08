@@ -53,7 +53,7 @@ workflow runFlaggerPhase1{
                 bam = correctBam.correctedBam,
                 bamIndex = correctBam.correctedBamIndex,
                 minMAPQ = 0,
-                includeSupplementary="True"
+                includeSupplementary="False"
         }
     }
    
