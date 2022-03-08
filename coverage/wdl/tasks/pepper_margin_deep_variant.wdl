@@ -42,7 +42,7 @@ task removeMultiplePrimary{
         Int threadCount=4
         Int diskSize=512
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
-        Int preemptible=2
+        Int preemptible=3
         String zones="us-west2-a"
     }
 
@@ -95,7 +95,7 @@ task pmdv{
         Int threadCount=64
         Int diskSize=512
         String dockerImage="kishwars/pepper_deepvariant:r0.7"
-        Int preemptible=2
+        Int preemptible=3
         String zones="us-west2-a"
     }
     command <<<
