@@ -26,7 +26,7 @@ workflow runPepperMarginDeepVariant{
             bamIndex = removeMultiplePrimary.correctedBai,
             includeSupplementary = includeSupplementary,
             minMAPQ = minMAPQ,
-            diskSize= 4 * ceil(size(bam, "GB")) + 64
+            diskSize= 4 * ceil(size(bam, "GB")) + 256
     }
     output{
         File vcfGz = pmdv.vcfGz
