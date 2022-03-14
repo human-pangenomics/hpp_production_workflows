@@ -14,6 +14,7 @@ task filterAltReads {
     input {
         File vcf
         File bam
+        String moreOptions
         # runtime configurations
         Int memSize=8
         Int threadCount=8
@@ -37,7 +38,7 @@ task filterAltReads {
         PREFIX=${FILENAME%.bam}
         bcftools view -Ov -f PASS -m2 -M2 -v snps ~{vcf} > bi_snps.passed.vcf
         mkdir output
-        filter_alt_reads -i ~{bam} -o output/$PREFIX.alt_filtered.bam -f output/$PREFIX.alt.bam -v bi_snps.passed.vcf -t~{threadCount}
+        filter_alt_reads -i ~{bam} -o output/$PREFIX.alt_filtered.bam -f output/$PREFIX.alt.bam -v bi_snps.passed.vcf -t~{threadCount} ~{moreOptions}
         samtools index -@{threadCount} output/$PREFIX.alt_filtered.bam
         samtools index -@{threadCount} output/$PREFIX.alt.bam
     >>> 
