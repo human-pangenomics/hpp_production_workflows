@@ -172,12 +172,12 @@ task combineBeds {
         FILENAME=~{firstBedsTarGz}
         PREFIX=$(basename ${FILENAME%.*.*.tar.gz})
         
-        cat second/*.bed | bedtools sort -i - | bedtools merge -i - > second_all.bed 
+        cat second/*.bed | sort -k1,1 -k2,2n | bedtools merge -i - > second_all.bed 
         mkdir first_minus_second ~{outputPrefix}
         for c in error duplicated haploid collapsed
         do
-            bedtools subtract -a first/${PREFIX}.~{firstPrefix}.${c}.bed -b second_all.bed > first_minus_second/${PREFIX}.${c}.bed
-            cat first_minus_second/*.${c}.bed second/*.${c}.bed | bedtools sort -i - | bedtools merge -i - > ~{outputPrefix}/${PREFIX}.~{outputPrefix}.${c}.bed
+            bedtools subtract -sorted -a first/${PREFIX}.~{firstPrefix}.${c}.bed -b second_all.bed > first_minus_second/${PREFIX}.${c}.bed
+            cat first_minus_second/*.${c}.bed second/*.${c}.bed | sort -k1,1 -k2,2n | bedtools merge -i - > ~{outputPrefix}/${PREFIX}.~{outputPrefix}.${c}.bed
         done
 
         tar -cf ${PREFIX}.beds.~{outputPrefix}.tar ~{outputPrefix}
@@ -236,9 +236,9 @@ task dupCorrectBeds {
         mkdir dup_corrected
 
         # do the correction
-        bedtools subtract -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b high_mapq.bed > dup_corrected/${PREFIX}.dup_corrected.duplicated.bed
-        bedtools intersect -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b high_mapq.bed > dup_to_hap.bed
-        cat dup_to_hap.bed ~{prefix}/${PREFIX}.~{prefix}.haploid.bed | bedtools sort -i - | bedtools merge -i - > dup_corrected/${PREFIX}.dup_corrected.haploid.bed
+        bedtools subtract -sorted -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b high_mapq.bed > dup_corrected/${PREFIX}.dup_corrected.duplicated.bed
+        bedtools intersect -sorted -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b high_mapq.bed > dup_to_hap.bed
+        cat dup_to_hap.bed ~{prefix}/${PREFIX}.~{prefix}.haploid.bed | sort -k1,1 -k2,2n | bedtools merge -i - > dup_corrected/${PREFIX}.dup_corrected.haploid.bed
         
         # just copy error and collapsed comps
         cp ~{prefix}/${PREFIX}.~{prefix}.error.bed dup_corrected/${PREFIX}.dup_corrected.error.bed
@@ -350,7 +350,7 @@ task mergeHsatBeds {
         done
  
         for comp in error haploid duplicated collapsed; do
-            cat hsat_unmerged/*.${comp}.bed | bedtools sort -i - | bedtools merge -i - > hsat_based/$PREFIX.hsat_based.${comp}.bed
+            cat hsat_unmerged/*.${comp}.bed | sort -k1,1 -k2,2n | bedtools merge -i - > hsat_based/$PREFIX.hsat_based.${comp}.bed
         done
          
         tar -cf ${PREFIX}.beds.hsat_based.tar hsat_based
