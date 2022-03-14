@@ -73,7 +73,7 @@ workflow runFlaggerPhase1{
             bam = correctBam.correctedBam,
             minMAPQ = 0,
             assemblyFastaGz = assemblyFastaGz,
-            diskSize = ceil(size(correctBam.correctedBam, "GB")) + 256
+            diskSize = ceil(size(correctBam.correctedBam, "GB"))  + 512
     }
     
     ## Calculate coverage for the corrected bam file in which the 
@@ -83,7 +83,7 @@ workflow runFlaggerPhase1{
             bam = filterAltReads.filteredBam,
             minMAPQ = 0,
             assemblyFastaGz = assemblyFastaGz,
-            diskSize = ceil(size(filterAltReads.filteredBam, "GB")) + 256
+            diskSize = ceil(size(filterAltReads.filteredBam, "GB"))  + 512
     }
 
     ## Calculate coverage of reads with high mapqs (20<) for the 
@@ -96,7 +96,7 @@ workflow runFlaggerPhase1{
             bam = correctBam.correctedBam,
             minMAPQ = 20,
             assemblyFastaGz = assemblyFastaGz,
-            diskSize = ceil(size(correctBam.correctedBam, "GB")) + 256
+            diskSize = ceil(size(correctBam.correctedBam, "GB"))  + 512
     }
 
     ## Calculate coverage of reads with high mapqs (20<) for the 
@@ -110,7 +110,7 @@ workflow runFlaggerPhase1{
             bam = filterAltReads.filteredBam,
             minMAPQ = 20,
             assemblyFastaGz = assemblyFastaGz,
-            diskSize = ceil(size(filterAltReads.filteredBam, "GB")) + 256
+            diskSize = ceil(size(filterAltReads.filteredBam, "GB")) + 512
     }
     output {
         File outputVcfGz = vcfGz
