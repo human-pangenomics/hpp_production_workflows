@@ -85,7 +85,7 @@ task removeMultiplePrimary{
 task pmdv{
     input{
         File bam
-        File bamIndex
+        File? bamIndex
         File assemblyFastaGz
         Int minMAPQ
         String includeSupplementary="False"
@@ -113,7 +113,13 @@ task pmdv{
         BAM_NAME=$(basename ~{bam})
         BAM_PREFIX=${BAM_NAME%%.bam}
         ln ~{bam} ${BAM_PREFIX}.bam
-        ln ~{bamIndex} ${BAM_PREFIX}.bam.bai
+
+        if [ -n "~{bamIndex}" ]
+        then
+            ln ~{bamIndex} ${BAM_PREFIX}.bam.bai
+        else
+            samtools index ${BAM_PREFIX}.bam
+        fi
 
         ## unzip the fasta file and produce its index
         gunzip -c ~{assemblyFastaGz} > asm.fa

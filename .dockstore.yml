@@ -240,6 +240,9 @@ workflows:
    -  name: PepperMarginDeepVariant
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/pepper_margin_deep_variant.wdl
+   -  name: PepperMarginDeepVariantSplit
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/tasks/pepper_margin_deep_variant_split.wdl
    -  name: SamtoolsView
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/samtools_view.wdl
