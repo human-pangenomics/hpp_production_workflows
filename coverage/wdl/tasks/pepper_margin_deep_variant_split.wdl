@@ -17,7 +17,7 @@ workflow runPepperMarginDeepVariantSplit{
         Int minMAPQ = 0
         String includeSupplementary="True"
         Int numberOfCallerNodes=16
-        Int nodeThreadCount=16 
+        Int nodeThreadCount=8 
     }
     call pmdv_t.removeMultiplePrimary{
         input:
@@ -41,7 +41,7 @@ workflow runPepperMarginDeepVariantSplit{
                 bam = part.left,
                 includeSupplementary = includeSupplementary,
                 minMAPQ = minMAPQ,
-                threadCount = 8,
+                threadCount = nodeThreadCount,
                 memSize = 16,
                 diskSize= 2 * ceil(size(part.left, "GB")) + 64
         }
