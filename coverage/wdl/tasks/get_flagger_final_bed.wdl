@@ -38,7 +38,7 @@ task getFinalBed {
             -b ~{altRemovedBedsTarGz} \
             -m /home/scripts/colors.txt \
             -t ~{sampleName} \
-            -o output/~{sampleName}.~{suffix}.copyval_final.bed
+            -o output/~{sampleName}.~{suffix}.flagger.bed
    
     >>> 
     runtime {
