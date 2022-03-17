@@ -98,6 +98,7 @@ workflow runFlaggerPhase2{
     }    
     call dupCorrectBeds {
         input:
+            covGz = coverageGz,
             highMapqCovGz = highMapqCoverageGz,
             bedsTarGz = combineHsatBased.combinedBedsTarGz,
             prefix="hsat_corrected"
@@ -199,10 +200,11 @@ task combineBeds {
 
 task dupCorrectBeds {
     input {
+        File covGz
         File highMapqCovGz
         File bedsTarGz
         String prefix
-        Int minCov=5
+        Int minCov=4
         # runtime configurations
         Int memSize=16
         Int threadCount=8
@@ -222,7 +224,7 @@ task dupCorrectBeds {
         # echo each line of the script to stdout so we can see what is happening
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
-        
+ 
         FILENAME=$(basename ~{highMapqCovGz})
         PREFIX=${FILENAME%.cov.gz}
 
@@ -233,20 +235,28 @@ task dupCorrectBeds {
             awk '{if(substr($1,1,1) == ">") {contig=substr($1,2,40)} else if($3 >= ~{minCov}) {print contig"\t"$1-1"\t"$2}}' | \
             bedtools merge -i - > high_mapq.bed
 
+
+        zcat ~{covGz} | \
+            awk '{if(substr($1,1,1) == ">") {contig=substr($1,2,40)} else if($3 < ~{minCov}) {print contig"\t"$1-1"\t"$2}}' | \
+            bedtools merge -i - > extremely_low.bed
+
         mkdir dup_corrected
 
+        cat high_mapq.bed extremely_low.bed | sort -k1,1 -k2,2n | bedtools merge -i - > exclude_dup.bed
+
         # do the correction
-        bedtools subtract -sorted -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b high_mapq.bed > dup_corrected/${PREFIX}.dup_corrected.duplicated.bed
+        bedtools subtract -sorted -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b exclude_dup > dup_corrected/${PREFIX}.dup_corrected.duplicated.bed
         bedtools intersect -sorted -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b high_mapq.bed > dup_to_hap.bed
+        bedtools intersect -sorted -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b extremely_low.bed > dup_to_err.bed
         cat dup_to_hap.bed ~{prefix}/${PREFIX}.~{prefix}.haploid.bed | sort -k1,1 -k2,2n | bedtools merge -i - > dup_corrected/${PREFIX}.dup_corrected.haploid.bed
+        cat extremely_low.bed ~{prefix}/${PREFIX}.~{prefix}.error.bed | sort -k1,1 -k2,2n | bedtools merge -i - > dup_corrected/${PREFIX}.dup_corrected.error.bed
         
-        # just copy error and collapsed comps
-        cp ~{prefix}/${PREFIX}.~{prefix}.error.bed dup_corrected/${PREFIX}.dup_corrected.error.bed
+        # just copy collapsed comp
         cp ~{prefix}/${PREFIX}.~{prefix}.collapsed.bed dup_corrected/${PREFIX}.dup_corrected.collapsed.bed
 
         tar -cf ${PREFIX}.beds.dup_corrected.tar dup_corrected
         gzip ${PREFIX}.beds.dup_corrected.tar
-        
+
     >>>
 
     runtime {
@@ -292,12 +302,24 @@ task filterBeds {
         FILENAME=~{dupCorrectedBedsTarGz}
         PREFIX=$(basename ${FILENAME%.*.*.tar.gz})
 
-        mkdir filtered
+        mkdir initial filtered
         for c in error duplicated haploid collapsed
         do
-            bedtools merge -d ~{mergeLength} -i dup_corrected/*.${c}.bed | awk '($3-$2) >= ~{minBlockLength}' > filtered/${PREFIX}.filtered.${c}.bed
+            bedtools merge -d ~{mergeLength} -i dup_corrected/*.${c}.bed | awk '($3-$2) >= ~{minBlockLength}' > initial/${PREFIX}.filtered.${c}.bed
         done
+
+        # Gather ambiguous overlaps
+        bedtools intersect -sorted -a initial/${PREFIX}.filtered.error.bed -b initial/${PREFIX}.filtered.haploid.bed > err_hap.overlap.bed
+        bedtools intersect -sorted -a initial/${PREFIX}.filtered.duplicated.bed -b initial/${PREFIX}.filtered.haploid.bed > dup_hap.overlap.bed
+        bedtools intersect -sorted -a initial/${PREFIX}.filtered.collapsed.bed -b initial/${PREFIX}.filtered.haploid.bed > col_hap.overlap.bed
+        bedtools intersect -sorted -a initial/${PREFIX}.filtered.error.bed -b initial/${PREFIX}.filtered.duplicated.bed > err_dup.overlap.bed
+        cat *.overlap.bed | sort -k1,1 -k2,2n | bedtools merge -i > filtered/${PREFIX}.filtered.unknown.bed
         
+        # Subtract unknown regions
+        for c in error duplicated haploid collapsed
+        do
+            bedtools subtract -sorted -a initial/${PREFIX}.filtered.${c}.bed -b filtered/${PREFIX}.filtered.unknown.bed > filtered/${PREFIX}.filtered.${c}.bed
+        done
 
         tar -cf ${PREFIX}.beds.filtered.tar filtered
         gzip ${PREFIX}.beds.filtered.tar
