@@ -198,7 +198,11 @@ static struct option long_options[] =
     {"minReadLen", required_argument, NULL, 'm'},
     {"minAlignmentLen", required_argument, NULL, 'a'},
     {"primaryOnly", 0, NULL, 'p'},
+    {"exclude", required_argument, NULL, 'e'},
+    {"threads", required_argument, NULL, 'n'},
     {"noTag", 0, NULL, 't'},
+    {"maxMapq", required_argument, NULL, 'x'},
+    {"minDiv", required_argument, NULL, 'd'},
     {NULL, 0, NULL, 0}
 };
 
@@ -213,11 +217,12 @@ int main(int argc, char *argv[]){
 	bool no_tag = false;
 	int min_read_length = 5000;
 	int min_alignment_length = 5000;
+	double min_divergence = 0.12;
 	int nthreads = 2;
 	int max_mapq = 60;
 	char *program;
         (program = strrchr(argv[0], '/')) ? ++program : (program = argv[0]);
-        while (~(c=getopt_long(argc, argv, "i:o:x:e:P:M:tpm:a:n:h", long_options, NULL))) {
+        while (~(c=getopt_long(argc, argv, "i:o:x:e:P:M:tpm:a:n:d:h", long_options, NULL))) {
                 switch (c) {
                         case 'i':
                                 input_path = optarg;
@@ -252,6 +257,9 @@ int main(int argc, char *argv[]){
 			case 'n':
 				nthreads = atoi(optarg);
 				break;
+			case 'd':
+				min_divergence = atof(optarg);
+				break;
                         default:
                                 if (c != 'h') fprintf(stderr, "[E::%s] undefined option %c\n", __func__, c);
                         help:
@@ -267,6 +275,7 @@ int main(int argc, char *argv[]){
                                 fprintf(stderr, "         --primaryOnly,\t-p         output only primary alignments\n");
 				fprintf(stderr, "         --minReadLen,\t-m         min read length [default: 5k]\n");
 				fprintf(stderr, "         --minAlignmentLen,\t-a         min alignment length [default: 5k]\n");
+				fprintf(stderr, "         --minDiv,\t-d         min gap-compressed divergence (\"de\" tag) [default: 0.12]\n");
 				fprintf(stderr, "         --threads,\t-n         number of threads (for bam I/O)[default: 2]\n");
 				return 1;
                 }
@@ -309,6 +318,7 @@ int main(int argc, char *argv[]){
 	}*/
 	//modify mapq and sec/pri tags based on given logs and tables
 	bam1_t* b = bam_init1();
+	double divergence = 0.0;
 	while(sam_read1(fp, sam_hdr, b) > -1) {
 		if (b->core.flag & BAM_FUNMAP) continue; // if unmapped
 		if (stSet_search(exclude_read_set, bam_get_qname(b)) != NULL) continue; //if read should be excluded
@@ -326,6 +336,8 @@ int main(int argc, char *argv[]){
 		}
 		b->core.qual = get_mapq(mapq_table, b, sam_hdr);
 		if(max_mapq < b->core.qual) continue;
+		divergence = bam_aux2f(bam_aux_get(b, "de"));
+		if( min_divergence < divergence) continue;
 		if(no_tag) b->l_data -= bam_get_l_aux(b);
 		if (sam_write1(fo, sam_hdr, b) == -1) {
 			fprintf(stderr, "Couldn't write %s\n", bam_get_qname(b));
