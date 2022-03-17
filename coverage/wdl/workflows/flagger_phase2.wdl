@@ -105,6 +105,7 @@ workflow runFlaggerPhase2{
     }
     call filterBeds {
         input:
+            fai = fai,
             dupCorrectedBedsTarGz = dupCorrectBeds.dupCorrectedBedsTarGz
     }
     output {
@@ -273,6 +274,7 @@ task dupCorrectBeds {
 
 task filterBeds {
     input {
+        File fai
         File dupCorrectedBedsTarGz
         Int mergeLength=100
         Int minBlockLength=1000
@@ -308,13 +310,20 @@ task filterBeds {
             bedtools merge -d ~{mergeLength} -i dup_corrected/*.${c}.bed | awk '($3-$2) >= ~{minBlockLength}' > initial/${PREFIX}.filtered.${c}.bed
         done
 
+        
         # Gather ambiguous overlaps
         bedtools intersect -sorted -a initial/${PREFIX}.filtered.error.bed -b initial/${PREFIX}.filtered.haploid.bed > err_hap.overlap.bed
         bedtools intersect -sorted -a initial/${PREFIX}.filtered.duplicated.bed -b initial/${PREFIX}.filtered.haploid.bed > dup_hap.overlap.bed
         bedtools intersect -sorted -a initial/${PREFIX}.filtered.collapsed.bed -b initial/${PREFIX}.filtered.haploid.bed > col_hap.overlap.bed
         bedtools intersect -sorted -a initial/${PREFIX}.filtered.error.bed -b initial/${PREFIX}.filtered.duplicated.bed > err_dup.overlap.bed
-        cat *.overlap.bed | sort -k1,1 -k2,2n | bedtools merge -i > filtered/${PREFIX}.filtered.unknown.bed
-        
+
+        # Gather small blocks and assign as unknown
+        cat initial/* | sort -k1,1 -k2,2n | bedtools merge -i - > initial/all.bed
+        cat ~{fai} | awk '{print $1"\t"0"\t"$2}' > asm.bed
+        bedtools subtract -sorted -a asm.bed -b initial/all.bed > initial/${PREFIX}.filtered.unknown.bed
+        # Add ambiguous overlaps as unknown
+        cat *.overlap.bed initial/${PREFIX}.filtered.unknown.bed | sort -k1,1 -k2,2n | bedtools merge -i - > filtered/${PREFIX}.filtered.unknown.bed         
+
         # Subtract unknown regions
         for c in error duplicated haploid collapsed
         do
