@@ -11,8 +11,9 @@ workflow runFlaggerPhase1{
         File bam
         File assemblyFastaGz
         File? phasingLogText
-        Int minReadLength 
-        Int minAlignmentLength
+        Int minReadLength = 5000
+        Int minAlignmentLength = 2000
+        Float minDivergence = 0.12
         String deepVariantModelType = "PACBIO"
         String pepperModelType = "ont_r9_guppy5_sup"
         String variantCaller = "dv"
@@ -24,7 +25,7 @@ workflow runFlaggerPhase1{
             bam = bam,
             phasingLogText = phasingLogText,
             suffix = "corrected",
-            options = "--primaryOnly --minReadLen ${minReadLength} --minAlignment ${minAlignmentLength}",
+            options = "--primaryOnly --minReadLen ${minReadLength} --minAlignment ${minAlignmentLength} --minDiv ${minDivergence}",
             diskSize = ceil(size(bam, "GB")) * 2 + 64
     }
     
