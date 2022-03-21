@@ -9,13 +9,15 @@ workflow runPepperMarginDeepVariantSplit{
         File assemblyFastaGz
         File bam
         File bamIndex
+        String dockerImage = "kishwars/pepper_deepvariant:r0.7"
         ## Model types can be:
         ##     "ont_r9_guppy5_sup"
         ##     "ont_r10_q20"
         ##     "hifi"
+        ##     For r0.4 model should be "ont"
         String pmdvModelType
         Int minMAPQ = 0
-        String includeSupplementary="True"
+        String includeSupplementary="False"
         Int numberOfCallerNodes=16
         Int nodeThreadCount=8 
     }
@@ -43,7 +45,8 @@ workflow runPepperMarginDeepVariantSplit{
                 minMAPQ = minMAPQ,
                 threadCount = nodeThreadCount,
                 memSize = 16,
-                diskSize= 2 * ceil(size(part.left, "GB")) + 64
+                diskSize= 2 * ceil(size(part.left, "GB")) + 64,
+                dockerImage = dockerImage
         }
     }
     call var_t.mergeVcf{

@@ -4,7 +4,7 @@ import "../tasks/correct_bam.wdl" as correct_bam_t
 import "../tasks/deep_variant.wdl" as deep_variant_t
 import "../tasks/filter_alt_reads.wdl" as filter_alt_reads_t
 import "../tasks/bam_coverage.wdl" as bam_coverage_t
-import "../tasks/pepper_margin_deep_variant.wdl" as pmdv_t
+import "../tasks/pepper_margin_deep_variant_split.wdl" as pmdv_split_t
 
 workflow runFlaggerPhase1{
     input {
@@ -47,7 +47,7 @@ workflow runFlaggerPhase1{
     ## If the user selected pepper-margin-deepvariant as the variant caller 
     if ("${variantCaller}" == "pmdv") {
         ## Call variants to be used for finding the reads with alternative alleles
-        call pmdv_t.runPepperMarginDeepVariant as pmdv {
+        call pmdv_split_t.runPepperMarginDeepVariantSplit as pmdv {
             input:
                 pmdvModelType = pepperModelType,
                 assemblyFastaGz = assemblyFastaGz,
