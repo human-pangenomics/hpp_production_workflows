@@ -248,7 +248,7 @@ task dupCorrectBeds {
         # do the correction
         bedtools subtract -sorted -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b exclude_dup.bed > dup_corrected/${PREFIX}.dup_corrected.duplicated.bed
         bedtools intersect -sorted -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b high_mapq.bed > dup_to_hap.bed
-        bedtools intersect -sorted -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b extremely_low.bed > dup_to_err.bed
+        ##bedtools intersect -sorted -a ~{prefix}/${PREFIX}.~{prefix}.duplicated.bed -b extremely_low.bed > dup_to_err.bed
         cat dup_to_hap.bed ~{prefix}/${PREFIX}.~{prefix}.haploid.bed | sort -k1,1 -k2,2n | bedtools merge -i - > dup_corrected/${PREFIX}.dup_corrected.haploid.bed
         cat extremely_low.bed ~{prefix}/${PREFIX}.~{prefix}.error.bed | sort -k1,1 -k2,2n | bedtools merge -i - > dup_corrected/${PREFIX}.dup_corrected.error.bed
         
