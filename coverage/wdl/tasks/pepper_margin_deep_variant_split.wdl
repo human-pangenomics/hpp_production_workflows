@@ -18,19 +18,26 @@ workflow runPepperMarginDeepVariantSplit{
         String pmdvModelType
         Int minMAPQ = 0
         String includeSupplementary="False"
+        Boolean flagRemoveMultiplePrimary = true
         Int numberOfCallerNodes=16
         Int nodeThreadCount=8 
     }
-    call pmdv_t.removeMultiplePrimary{
-        input:
-            bam = bam,
-            diskSize = 2 * ceil(size(bam, "GB")) + 64
+    if (flagRemoveMultiplePrimary) {
+        call pmdv_t.removeMultiplePrimary{
+            input:
+                bam = bam,
+                diskSize = 2 * ceil(size(bam, "GB")) + 64
+        }
     }
+   
+    File bamForCalling =  select_first([removeMultiplePrimary.correctedBam, bam])
+    File baiForCalling =  select_first([removeMultiplePrimary.correctedBai, bamIndex]) 
+
     call dv_t.splitBamContigWise {
         input:
             assemblyFastaGz = assemblyFastaGz,
-            bam = removeMultiplePrimary.correctedBam,
-            bamIndex = removeMultiplePrimary.correctedBai,
+            bam = bamForCalling,
+            bamIndex = baiForCalling,
             splitNumber = numberOfCallerNodes,
             threadCount = numberOfCallerNodes,
             diskSize = 2 * ceil(size(bam, "GB")) + 64

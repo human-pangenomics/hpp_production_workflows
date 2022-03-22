@@ -15,6 +15,7 @@ task correctBam {
         File bam
         String? options
         String suffix
+        Boolean flagRemoveMultiplePrimary = false
         # runtime configurations
         Int memSize=8
         Int threadCount=8
@@ -49,8 +50,14 @@ task correctBam {
         then
             OPTIONS="${OPTIONS} --mapqTable ~{mapqTableText}"
         fi
-        
-        correct_bam ${OPTIONS} -i ~{bam} -o output/$PREFIX.~{suffix}.bam -n~{threadCount}
+
+        if [ -n ~{true="REMOVE" false="" flagRemoveMultiplePrimary}]
+        then
+            samtools view -F 0x904 ~{bam} | cut -f 1 | sort | uniq -c | awk '$1 > 1' | cut -f2 > read_ids_multiple_primary.txt 
+            OPTIONS="${OPTIONS} --exclude read_ids_multiple_primary.txt"
+        fi
+ 
+        correct_bam ${OPTIONS} -i ~{bam} -o output/$PREFIX.~{suffix}.bam -n~{threadCount} 
         samtools index -@~{threadCount} output/$PREFIX.~{suffix}.bam
     >>> 
     runtime {

@@ -11,19 +11,26 @@ workflow runPepperMarginDeepVariant{
         ##     "hifi"
         String pmdvModelType
         Int minMAPQ = 0
-        String includeSupplementary="True"
+        String includeSupplementary="False"
+        Boolean flagRemoveMultiplePrimary = true
     }
-    call removeMultiplePrimary{
-        input:
-            bam = bam,
-            diskSize= 2 * ceil(size(bam, "GB")) + 64
+    if (flagRemoveMultiplePrimary) { 
+        call removeMultiplePrimary{
+            input:
+                bam = bam,
+                diskSize= 2 * ceil(size(bam, "GB")) + 64
+        }
     }
+
+    File bamForCalling =  select_first([removeMultiplePrimary.correctedBam, bam])
+    File baiForCalling =  select_first([removeMultiplePrimary.correctedBai, bamIndex])
+ 
     call pmdv{
         input:
             modelType = pmdvModelType,
             assemblyFastaGz = assemblyFastaGz,
-            bam = removeMultiplePrimary.correctedBam,
-            bamIndex = removeMultiplePrimary.correctedBai,
+            bam = bamForCalling,
+            bamIndex = baiForCalling,
             includeSupplementary = includeSupplementary,
             minMAPQ = minMAPQ,
             diskSize= 4 * ceil(size(bam, "GB")) + 256
@@ -39,7 +46,7 @@ task removeMultiplePrimary{
         File bam
         # runtime configurations
         Int memSize=8
-        Int threadCount=4
+        Int threadCount=8
         Int diskSize=512
         String dockerImage="quay.io/masri2019/hpp_coverage:latest"
         Int preemptible=3

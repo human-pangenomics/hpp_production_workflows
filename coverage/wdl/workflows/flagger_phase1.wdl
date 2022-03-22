@@ -26,6 +26,7 @@ workflow runFlaggerPhase1{
             phasingLogText = phasingLogText,
             suffix = "corrected",
             options = "--primaryOnly --minReadLen ${minReadLength} --minAlignment ${minAlignmentLength} --minDiv ${minDivergence}",
+            flagRemoveMultiplePrimary = true,
             diskSize = ceil(size(bam, "GB")) * 2 + 64
     }
     
@@ -40,7 +41,7 @@ workflow runFlaggerPhase1{
                 bamIndex = correctBam.correctedBamIndex,
                 minMAPQ = 0,
                 includeSecondary="False",
-                includeSupplementary="True"
+                includeSupplementary="False"
         }
     }
 
@@ -54,7 +55,8 @@ workflow runFlaggerPhase1{
                 bam = correctBam.correctedBam,
                 bamIndex = correctBam.correctedBamIndex,
                 minMAPQ = 0,
-                includeSupplementary="False"
+                includeSupplementary="False",
+                flagRemoveMultiplePrimary = false
         }
     }
    
