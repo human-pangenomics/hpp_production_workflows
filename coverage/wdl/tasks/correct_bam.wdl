@@ -52,7 +52,7 @@ task correctBam {
             OPTIONS="${OPTIONS} --mapqTable ~{mapqTableText}"
         fi
 
-        if [ -n ~{true="REMOVE" false="" flagRemoveMultiplePrimary}]
+        if [ -n "~{true="REMOVE" false="" flagRemoveMultiplePrimary}" ]
         then
             samtools view -F 0x904 ~{bam} | cut -f 1 | sort | uniq -c | awk '$1 > 1' | cut -f2 > read_ids_multiple_primary.txt 
             OPTIONS="${OPTIONS} --exclude read_ids_multiple_primary.txt"
