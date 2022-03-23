@@ -26,7 +26,7 @@ workflow runFlaggerPhase1{
             phasingLogText = phasingLogText,
             suffix = "corrected",
             options = "--primaryOnly --minReadLen ${minReadLength} --minAlignment ${minAlignmentLength} --minDiv ${minDivergence}",
-            flagRemoveMultiplePrimary = true,
+            flagRemoveSupplementary = true,
             diskSize = ceil(size(bam, "GB")) * 2 + 64
     }
     

@@ -16,6 +16,7 @@ task correctBam {
         String? options
         String suffix
         Boolean flagRemoveMultiplePrimary = false
+        Boolean flagRemoveSupplementary = false
         # runtime configurations
         Int memSize=8
         Int threadCount=8
@@ -55,6 +56,12 @@ task correctBam {
         then
             samtools view -F 0x904 ~{bam} | cut -f 1 | sort | uniq -c | awk '$1 > 1' | cut -f2 > read_ids_multiple_primary.txt 
             OPTIONS="${OPTIONS} --exclude read_ids_multiple_primary.txt"
+        fi
+        
+        if [ -n ~{true="REMOVE" false="" flagRemoveSupplementary}]
+        then
+            samtools view -f 0x800 ~{bam} | cut -f 1 | sort -u > read_ids_supp.txt
+            OPTIONS="${OPTIONS} --exclude read_ids_supp.txt"
         fi
  
         correct_bam ${OPTIONS} -i ~{bam} -o output/$PREFIX.~{suffix}.bam -n~{threadCount} 
