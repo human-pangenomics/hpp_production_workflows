@@ -13,7 +13,7 @@ workflow runFlaggerPhase1{
         File? phasingLogText
         Int minReadLength = 5000
         Int minAlignmentLength = 2000
-        Float minDivergence = 0.12
+        Float maxDivergence = 0.12
         String deepVariantModelType = "PACBIO"
         String pepperModelType = "ont_r9_guppy5_sup"
         String variantCaller = "dv"
@@ -21,11 +21,11 @@ workflow runFlaggerPhase1{
     
     ## Correct the bam file by swapping pri/sec tags for the wrongly phased reads
     call correct_bam_t.correctBam {
-        input:        
+        input:
             bam = bam,
             phasingLogText = phasingLogText,
             suffix = "corrected",
-            options = "--primaryOnly --minReadLen ${minReadLength} --minAlignment ${minAlignmentLength} --minDiv ${minDivergence}",
+            options = "--primaryOnly --minReadLen ${minReadLength} --minAlignment ${minAlignmentLength} --maxDiv ${maxDivergence}",
             flagRemoveSupplementary = true,
             diskSize = ceil(size(bam, "GB")) * 2 + 64
     }
