@@ -58,7 +58,7 @@ task correctBam {
             OPTIONS="${OPTIONS} --exclude read_ids_multiple_primary.txt"
         fi
         
-        if [ -n ~{true="REMOVE" false="" flagRemoveSupplementary}]
+        if [ -n "~{true="REMOVE" false="" flagRemoveSupplementary}" ]
         then
             samtools view -f 0x800 ~{bam} | cut -f 1 | sort -u > read_ids_supp.txt
             OPTIONS="${OPTIONS} --exclude read_ids_supp.txt"
