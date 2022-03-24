@@ -110,7 +110,7 @@ cat ${UNKNOWN_BED_2} | awk '{print $0"\tUnk"}' > simplified/unk.bed
 cat simplified/*.bed | sort -k1,1 -k2,2n > simplified/all.sorted.bed
 
 
-simplifiedOutputBed=$(basename ${outputBed%.bed}).simplified.bed
+simplifiedOutputBed=${outputBed%.bed}.simplified.bed
 echo "track name=\"${trackName}\" visibility=1 itemRgb=\"On\"" > ${simplifiedOutputBed}
 awk 'FNR==NR{c[$1]=$2;next}{print $0"\t0\t+\t"$2"\t"$3"\t"c[$4]}' \
     ${mapColorsText} \
