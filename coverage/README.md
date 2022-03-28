@@ -3,7 +3,7 @@
 ### Overview
 Here is a description of a read-based pipeline that can detect different types of mis-assemblies in a draft diploid assembly. One core component of this pipeline is another pipeline named [**Flagger**](https://github.com/human-pangenomics/hpp_production_workflows/edit/asset/coverage/docs/coverage/README.md). Flagger recieves the read alignments to the draft assembly and partition the assembly into 4 main components; erroneous, (falsely) duplicated, haploid and collapsed.
 
-Flagger has 7 steps:
+This evaluation has 7 steps:
 - Align reads to the diploid assembly
 - Phase the ambiguous alignments using [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/README.md) (Optional)
 - Run Flagger on the assembly using the alignments
@@ -46,7 +46,7 @@ More information about SecPhase is available [here](https://github.com/human-pan
 ### 3. Run Flagger on the alignments
 The corrected bam file is then given as input to Flagger. Flagger outputs a bed file for each of the 4 components; 
 erroneous, duplicated, haploid and collapsed. Any component other than the haploid one is pointing to unreliable blocks in
-assembly. The 4 components are explained in detail [here](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/coverage). 
+assembly. The 4 components are explained in detail [here](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/coverage#2-coverage-distribution-and-fitting-the-mixture-model). 
 
 More information about Flagger is available [here](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/coverage)
 
@@ -165,9 +165,9 @@ https://github.com/human-pangenomics/HPP_Year1_Assemblies
 
 We have used the Genbank version of the HPRC-Y1 assemblies.
 
-The Python scripts, C source codes and the binary files are available in
+The Python scripts, C source codes are available in
 
-https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docker/coverage/scripts
+https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docker/coverage/programs
 
 The wdl files that have been used for this analysis are available in
 
@@ -178,42 +178,5 @@ https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverag
 ### ATTENTION: These Results ARE OLD! Will be updated soon.
 
 The results are available in 
-
-https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=submissions/e9ad8022-1b30-11ec-ab04-0a13c5208311--COVERAGE_ANALYSIS_Y1_GENBANK/
-
-The most updated results are under the `V1` directory. It includes the results of the HiFi-based coverage analysis.
-The directory structure for the results of each sample is as below:
-
-````
-HG002
-├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.cov_dist.pdf
-├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.table
-├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.tables.tar.gz
-├── combined
-├── contig_based
-├── filtered
-├── dup_corrected
-└── whole_genome_based
-````
-
-The pdf file contains the plots of the coverage distributions for the whole assembly and the contigs longer than 5Mb which has been used for the contig-based analysis. Different model components are also drawn with different colors.
-
-The table files contain the models fit to the distributions. These models are used for finding the thresholds and categorizing the regions into one of the four components; error, duplicated, haploid and collapsed.
-
-The four subdirectories are having the categorized blocks. They are the results of different parts of the pipeline and named based on this.
-For example `combined` directory contains the combination of `contig_based` and `whole_genome_based` blocks (section 6) and `dup_corrected` contains the corrections explained in section 7.
-Each directory has four bed files and they are named based on the component they are pointing to.
-
-````
-filtered/
-├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.filtered.collapsed.bed
-├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.filtered.duplicated.bed
-├── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.filtered.error.bed
-└── HG002.diploid.f1_assembly_v2_genbank.hifi.winnowmap_v2.03.filtered.haploid.bed
-````
-
-For example the bed file that ends with `.haploid.bed` is pointing to the haploid blocks.
-
-It is recommended to use the bed files in the `filtered` subdirectory.
-
+https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=submissions/e9ad8022-1b30-11ec-ab04-0a13c5208311--COVERAGE_ANALYSIS_Y1_GENBANK/FLAGGER/
 
