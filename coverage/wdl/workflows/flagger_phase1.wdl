@@ -27,6 +27,7 @@ workflow runFlaggerPhase1{
             suffix = "corrected",
             options = "--primaryOnly --minReadLen ${minReadLength} --minAlignment ${minAlignmentLength} --maxDiv ${maxDivergence}",
             flagRemoveSupplementary = true,
+            flagRemoveMultiplePrimary = true,
             diskSize = ceil(size(bam, "GB")) * 2 + 64
     }
     
@@ -125,5 +126,6 @@ workflow runFlaggerPhase1{
         File altRemovedCovGz = bam2cov_altRemoved.coverageGz
         File correctedHighMapqCovGz = bam2cov_corrected_highMapq.coverageGz
         File altRemovedHighMapqCovGz = bam2cov_altRemoved_highMapq.coverageGz
+        File excludedReadIdsText = correctBam.excludedReadIdsText
     }
 }

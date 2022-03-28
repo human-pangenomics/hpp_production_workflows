@@ -5,6 +5,7 @@ workflow runCorrectBam{
     output {
         File correctedBam = correctBam.correctedBam
         File correctedBamIndex = correctBam.correctedBamIndex
+        File excludedReadIdsText = correctBam.excludedReadIdsText
     }
 }
 
@@ -54,15 +55,19 @@ task correctBam {
 
         if [ -n "~{true="REMOVE" false="" flagRemoveMultiplePrimary}" ]
         then
-            samtools view -F 0x904 ~{bam} | cut -f 1 | sort | uniq -c | awk '$1 > 1' | cut -f2 > read_ids_multiple_primary.txt 
-            OPTIONS="${OPTIONS} --exclude read_ids_multiple_primary.txt"
+            samtools view -F 0x904 ~{bam} | cut -f 1 | sort | uniq -c | awk '$1 > 1' | cut -f2 > ${PREFIX}.excluded_read_ids.txt 
         fi
         
         if [ -n "~{true="REMOVE" false="" flagRemoveSupplementary}" ]
         then
-            samtools view -f 0x800 ~{bam} | cut -f 1 | sort -u > read_ids_supp.txt
-            OPTIONS="${OPTIONS} --exclude read_ids_supp.txt"
+            samtools view -f 0x800 ~{bam} | cut -f 1 | sort -u >> ${PREFIX}.excluded_read_ids.txt
         fi
+ 
+        if [ -n "~{true="REMOVE" false="" flagRemoveSupplementary || flagRemoveMultiplePrimary}" ]
+        then
+            OPTIONS="${OPTIONS} --exclude ${PREFIX}.excluded_read_ids.txt"
+        fi
+
  
         correct_bam ${OPTIONS} -i ~{bam} -o output/$PREFIX.~{suffix}.bam -n~{threadCount} 
         samtools index -@~{threadCount} output/$PREFIX.~{suffix}.bam
@@ -77,6 +82,7 @@ task correctBam {
     output {
         File correctedBam = glob("output/*.bam")[0]
         File correctedBamIndex = glob("output/*.bam.bai")[0]
+        File excludedReadIdsText = glob("*.excluded_read_ids.txt")[0]
     }
 }
 
