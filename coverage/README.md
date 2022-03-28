@@ -46,7 +46,7 @@ More information about SecPhase is available [here](https://github.com/human-pan
 ### 3. Run Flagger on the alignments
 The corrected bam file is then given as input to Flagger. Flagger outputs a bed file for each of the 4 components; 
 erroneous, duplicated, haploid and collapsed. Any component other than the haploid one is pointing to unreliable blocks in
-assembly. The 4 components are explained in detail [here](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/coverage). 
+assembly. The 4 components are explained in detail [here](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/coverage#2-coverage-distribution-and-fitting-the-mixture-model). 
 
 More information about Flagger is available [here](https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docs/coverage)
 
@@ -165,9 +165,9 @@ https://github.com/human-pangenomics/HPP_Year1_Assemblies
 
 We have used the Genbank version of the HPRC-Y1 assemblies.
 
-The Python scripts, C source codes and the binary files are available in
+The Python scripts, C source codes are available in
 
-https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docker/coverage/scripts
+https://github.com/human-pangenomics/hpp_production_workflows/tree/asset/coverage/docker/coverage/programs
 
 The wdl files that have been used for this analysis are available in
 
