@@ -3,7 +3,7 @@
 ### Overview
 Here is a description of a read-based pipeline that can detect different types of mis-assemblies in a draft diploid assembly. One core component of this pipeline is another pipeline named [**Flagger**](https://github.com/human-pangenomics/hpp_production_workflows/edit/asset/coverage/docs/coverage/README.md). Flagger recieves the read alignments to the draft assembly and partition the assembly into 4 main components; erroneous, (falsely) duplicated, haploid and collapsed.
 
-Flagger has 7 steps:
+This evaluation has 7 steps:
 - Align reads to the diploid assembly
 - Phase the ambiguous alignments using [the phasing pipeline](https://github.com/human-pangenomics/hpp_production_workflows/blob/asset/coverage/docs/phasing/README.md) (Optional)
 - Run Flagger on the assembly using the alignments
