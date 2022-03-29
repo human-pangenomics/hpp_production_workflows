@@ -10,14 +10,14 @@
 #include "thread_pool.h"
 
 typedef struct {
-	char*	contig_name;
+	char	contig_name[50];
         int32_t start;
 	uint8_t mapq;
 }Location;
 
 Location* location_construct(char* contig_name, int start, uint8_t mapq){
 	Location* loc = malloc(sizeof(Location));
-	loc->contig_name = contig_name;
+	strcpy(loc->contig_name, contig_name);
 	loc->start = start;
 	loc->mapq = mapq;
 	return loc;
@@ -25,7 +25,6 @@ Location* location_construct(char* contig_name, int start, uint8_t mapq){
 
 void location_destruct(void* location){
 	Location* loc = location;
-	free(loc->contig_name);
 	free(loc);
 }
 
@@ -37,8 +36,10 @@ stHash* get_phased_read_table(char* phased_reads_path){
 	size_t len;
 	char* line = NULL;
 	char* read_name;
-	char* contig_name;
-	int start;
+	char contig_name_new[50];
+	char contig_name_old[50];
+	int start_new;
+	int start_old;
 	char* token;
 	Location* loc;
 	while((read = getline(&line, &len, fp)) != -1){
@@ -48,18 +49,39 @@ stHash* get_phased_read_table(char* phased_reads_path){
 			token = strtok(NULL, "\t");
 			read_name = malloc(strlen(token) + 1);
 			strcpy(read_name, token);
+			start_new = -1;
+			start_old = -1;
 		}
 		else if (line[0] == '@'){
 			token = strtok(line, "\t");
                         token = strtok(NULL, "\t");
 			token = strtok(NULL, "\t");
-			contig_name = malloc(strlen(token) + 1);
-			strcpy(contig_name, token);
+			strcpy(contig_name_new, token);
 			token = strtok(NULL, "\t");
-			start = atoi(token); // 0-based
-			loc = location_construct(contig_name, start, -1);
-			stHash_insert(phased_read_table, read_name, loc);
+			start_new = atoi(token); // 0-based
+			loc = location_construct(contig_name_new, start_new, -1);
+			// if pri (old) and sec (new) start exactly at the same place ignore it
+			if (start_old != -1 
+			    && (start_old != start_new 
+			        || strcmp(contig_name_old, contig_name_new) != 0)){
+				stHash_insert(phased_read_table, read_name, loc);
+			}
 		}
+		else if(line[0] == '*'){
+			token = strtok(line, "\t");
+                        token = strtok(NULL, "\t");
+                        token = strtok(NULL, "\t");
+                        strcpy(contig_name_old, token);
+                        token = strtok(NULL, "\t");
+                        start_old = atoi(token); // 0-based
+			// if pri (old) and sec (new) start exactly at the same place ignore it
+                        if (start_new != -1 
+                            && (start_old != start_new
+                                || strcmp(contig_name_old, contig_name_new) != 0)){
+                                stHash_insert(phased_read_table, read_name, loc);
+                        }
+		}
+
 	}
 	return phased_read_table;
 }
