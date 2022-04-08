@@ -25,7 +25,6 @@ task Filter{
         File inputVcf
         String outputName
         String dockerImage = "kishwars/t2t_polishing:0.1"
-        # String dockerImage = "https://github.com/kishwarshafin/T2T_polishing_scripts/blob/master/docker/Dockerfile"
 
     }
     # python3 filter.py "${OUTPUT_DIR}"/"${HIFI_SVS_SNIFFLES}" > "${OUTPUT_DIR}"/"${HIFI_SVS_SNIFFLES_FILTERED}"
