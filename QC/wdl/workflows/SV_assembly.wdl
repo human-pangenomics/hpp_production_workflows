@@ -13,17 +13,19 @@ workflow sv_assembly{
         File GenomeIn
         File ReadsIn
         String HifiSnifflesOutputName
-        String SnifflesDockerImage
+        String? SnifflesDockerImage
         String OntSnifflesOutputName
         String HifiFilterOutputName
         String OntFilterOutputName
-        String FilterDockerImage
+        String? FilterDockerImage
         String HiFiIrisOutputName
         String IrisOut
-        String IrisDockerImage
+        String? IrisDockerImage
         String JasmineOutputName
-        String FileList
-        String JasmineDockerImage
+        String? JasmineDockerImage
+        Int? maxDist
+        Float? minSeqID
+        Int? specReads
     }
 
     # Run SNIFFLES on HIFI data
@@ -76,12 +78,20 @@ workflow sv_assembly{
         input:
             HiFiFile = Iris.outputFile,
             OntFile = OntFilter.outputFile,
-            FileList = FileList,
             SV_like_errors = JasmineOutputName,
-            dockerImage = JasmineDockerImage
+            dockerImage = JasmineDockerImage,
+            maxDist = maxDist,
+            minSeqID = minSeqID,
+            specReads = specReads
     }
 
     output{
+        File SnifflesHiFiOutput = HiFiSniffles.outputFile
+        File SnifflesOntOutput = OntSniffles.outputFile
+        File FilterHiFiOutput = HiFiFilter.outputFile
+        File FilterOntOutput = OntFilter.outputFile
+        File IrisHiFiOutput = Iris.outputFile
+        File SV_filelist = Jasmine.SV_filelist
         File SV_like_errors = Jasmine.outputFile
     }
 }
