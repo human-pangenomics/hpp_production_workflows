@@ -6,7 +6,7 @@ workflow runSniffles {
   input{
     File inputBam
     String outputName
-    String dockerImage
+    String? dockerImage
 
   }
   call Sniffles{
@@ -29,15 +29,8 @@ task Sniffles{
   }
   # sniffles -m "${INPUT_DIR}"/chm13.draft_v0.9.hifi_20k.wm_1.11.pri.chr20.bam -v "${OUTPUT_DIR}"/"${HIFI_SVS_SNIFFLES}" -d 500 -n -1 -s 3
   command <<<
-      # Set the exit code of a pipeline to that of the rightmost command
-        # to exit with a non-zero status, or zero if all commands of the pipeline exit
-        set -o pipefail
-        # cause a bash script to exit immediately when a command fails
-        set -e
-        # cause the bash shell to treat unset variables as an error and exit immediately
-        set -u
-        # echo each line of the script to stdout so we can see what is happening
-        # to turn off echo do 'set +o xtrace'
+      # exit when a command fails, fail with unset variables, print commands before execution
+        set -eux -o pipefail
         set -o xtrace
 
         sniffles -m ~{inputBam} -v ~{outputName} -d 500 -n -1 -s 3
