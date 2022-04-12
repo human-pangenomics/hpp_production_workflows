@@ -105,7 +105,7 @@ task subset {
         FILENAME=$(basename ~{fastq})
         mkdir output
         # -A3 is for grepping sequences and base qualities
-        grep -F -f whole_list.txt ~{fastq} -A3 > output/${FILENAME}
+        grep -F -f whole_list.txt ~{fastq} -A3 | grep -v "\-\-" > output/${FILENAME}
 
     >>>
     runtime {
