@@ -25,9 +25,11 @@ task Sniffles{
     File inputBam
     String outputName
     String dockerImage = "quay.io/biocontainers/sniffles:1.0.12--h8b12597_1"
+    Int memSizeGB = 64
+    Int threadCount = 32
+    Int diskSizeGB = 64
 
   }
-  # sniffles -m "${INPUT_DIR}"/chm13.draft_v0.9.hifi_20k.wm_1.11.pri.chr20.bam -v "${OUTPUT_DIR}"/"${HIFI_SVS_SNIFFLES}" -d 500 -n -1 -s 3
   command <<<
       # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
@@ -40,6 +42,10 @@ task Sniffles{
     File outputFile = glob("*.vcf")[0]
   }
   runtime{
+    memory: memSizeGB + " GB"
+    cpu: threadCount
+    disks: "local-disk " + diskSizeGB + " SSD"
     docker: dockerImage
+    preemptible: 1
   }
 }
