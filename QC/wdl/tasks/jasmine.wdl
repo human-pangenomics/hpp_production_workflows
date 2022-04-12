@@ -38,6 +38,9 @@ task Jasmine{
         Int? maxDist = 500
         Float? minSeqID = 0.3
         Int? specReads = 3
+        Int memSizeGB = 64
+        Int threadCount = 32
+        Int diskSizeGB = 64
 
     }
     # jasmine max_dist=500 min_seq_id=0.3 spec_reads=3 --output_genotypes file_list="${OUTPUT_DIR}"/SV_filelist.txt out_file="${OUTPUT_DIR}"/"SV_like_errors.vcf"
@@ -58,6 +61,10 @@ task Jasmine{
         File outputFile = glob("SV_like_errors.vcf")[0]
     }
     runtime{
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }
