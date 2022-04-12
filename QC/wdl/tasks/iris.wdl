@@ -34,11 +34,11 @@ task Iris{
         String vcfOut
         String IrisOut
         String dockerImage = "quay.io/biocontainers/irissv:1.0.4--hdfd78af_2"
+        Int memSizeGB = 64
+        Int threadCount = 32
+        Int diskSizeGB = 64
 
     }
-    # iris --hifi --keep_long_variants --keep_files genome_in="${INPUT_DIR}"/chm13.draft_v0.9.chr20.fasta 
-    # reads_in="${INPUT_DIR}"/chm13.draft_v0.9.hifi_20k.wm_1.11.pri.chr20.bam vcf_in="${OUTPUT_DIR}"/"${HIFI_SVS_SNIFFLES_FILTERED}" 
-    # vcf_out="${OUTPUT_DIR}"/"${HIFI_SVS_SNIFFLES_FILTERED_IRIS}"
     command <<<
         # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
@@ -51,6 +51,10 @@ task Iris{
         File outputFile = glob("*.iris.vcf")[0]
     }
     runtime{
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }
