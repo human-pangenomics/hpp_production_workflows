@@ -255,3 +255,6 @@ workflows:
    -  name: PepperMarginDeepVariantSplit
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/pepper_margin_deep_variant_split.wdl
+   -  name: AlignSubetReads
+      subclass: WDL
+      primaryDescriptorPath: /coverage/wdl/workflows/align_subset_reads.wdl
