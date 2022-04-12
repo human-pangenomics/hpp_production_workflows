@@ -25,9 +25,10 @@ task Filter{
         File inputVcf
         String outputName
         String dockerImage = "kishwars/t2t_polishing:0.1"
-
+        Int memSizeGB = 64
+        Int threadCount = 32
+        Int diskSizeGB = 64
     }
-    # python3 filter.py "${OUTPUT_DIR}"/"${HIFI_SVS_SNIFFLES}" > "${OUTPUT_DIR}"/"${HIFI_SVS_SNIFFLES_FILTERED}"
     command <<<
         # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
@@ -41,6 +42,10 @@ task Filter{
         File outputFile = glob("*filtered.vcf")[0]
     }
     runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
         docker: dockerImage
+        preemptible: 1
     }
 }
