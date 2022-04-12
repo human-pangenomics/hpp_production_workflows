@@ -1,6 +1,6 @@
 version 1.0
 
-# This is a task level wdl workflow to run Kishwar's python script to filter SV calls
+# This is a task level wdl workflow to run a python script to filter SV calls
 
 workflow runFilterSV {
     input {
