@@ -152,8 +152,8 @@ task getHapBed {
         PREFIX=$(basename ${FILENAME%.bed})
 
         
-        cat ~{bed} | grep ~{patKeyword} > ${PREFIX}.pat.bed || true
-        cat ~{bed} | grep ~{matKeyword} > ${PREFIX}.mat.bed || true
+        cat ~{bed} | grep "~{patKeyword}" > ${PREFIX}.pat.bed || true
+        cat ~{bed} | grep "~{matKeyword}" > ${PREFIX}.mat.bed || true
     >>>
 
     runtime {
