@@ -111,6 +111,7 @@ task mergeVCF {
         set -eux -o pipefail
         set -o xtrace
 
+        ln -s /opt/vcf_merge_t2t.py .
 
         python3 vcf_merge_t2t.py \
             -v1 ~{VCF1} \
