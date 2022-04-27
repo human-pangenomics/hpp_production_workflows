@@ -5,7 +5,9 @@ workflow runDeepVariant {
     call DeepVariant
 
     output{
-        File deepVariantVCF = DeepVariant.vcfOut
+        File deepVariantVCF    = DeepVariant.vcfOut
+        File deepVariantVCFTBI = DeepVariant.vcfIdxOut
+        File deepVariantHTML   = DeepVariant.visualReport
     }
 }
 
@@ -37,7 +39,7 @@ task DeepVariant{
     }
 
 
-    String outputVCF = "~{sample}_deepvariant.vcf.gz"
+    String outputVCF    = "~{sample}_deepvariant.vcf.gz"
 
     command <<<
         # exit when a command fails, fail with unset variables, print commands before execution
@@ -52,7 +54,7 @@ task DeepVariant{
         ln -s ~{assemblyIndex} ./$REF_IDX
 
         
-        ## Soft link fasta and index so they are in the same directory
+        ## Soft link reads and index so they are in the same directory
         READS=$(basename ~{inputReads})
         READS_IDX=$(basename ~{inputReadsIdx}) 
 
@@ -80,7 +82,9 @@ task DeepVariant{
 
     >>>
     output{
-        File vcfOut = outputVCF
+        File vcfOut        = outputVCF
+        File vcfIdxOut     = "~{outputVCF}.tbi"
+        File visualReport  = glob("*visual_report.html")
     }
 
     runtime{
