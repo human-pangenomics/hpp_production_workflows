@@ -84,7 +84,7 @@ task DeepVariant{
     output{
         File vcfOut        = outputVCF
         File vcfIdxOut     = "~{outputVCF}.tbi"
-        File visualReport  = glob("*visual_report.html")
+        File visualReport  = glob("*visual_report.html")[0]
     }
 
     runtime{
