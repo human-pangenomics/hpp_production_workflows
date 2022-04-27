@@ -145,23 +145,27 @@ task createVCFStats {
 
     }
 
-    String outputPrefix = basename(inputVCF, ".vcf.gz")
-    String vcfTBI       = "~{outputPrefix}.vcf.gz.tbi"
-    String statsFile    = "~{outputPrefix}.stats.txt"
+    String filePrefix   = basename(inputVCF, ".vcf.gz")
+    String statsFile    = "~{filePrefix}.stats.txt"
 
     command <<<
         # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
         set -o xtrace
 
+        
+        ## copy file so index is in local directory (easier for delocalization)
+        INPUT_VCF="~{filePrefix}.vcf.gz"
+        cp ~{inputVCF} $INPUT_VCF
+        
         ## Index VCF (not related to stats, just nice to have)
-        tabix -p vcf ~{inputVCF}
+        tabix -p vcf $INPUT_VCF
 
         ## call bcftools stats
-        bcftools stats ~{inputVCF} > ~{statsFile}
+        bcftools stats $INPUT_VCF > ~{statsFile}
     >>>
     output{
-        File vcfTBIOut    = vcfTBI
+        File vcfTBIOut    = glob("~{filePrefix}*.tbi")[0]
         File statsFileOut = statsFile
     }
 
