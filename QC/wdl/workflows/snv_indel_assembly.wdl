@@ -140,7 +140,7 @@ task createVCFStats {
         Int memSizeGB = 8
         Int threadCount = 2
         Int diskSizeGB = 128
-        String dockerImage = "kishwars/t2t_polishing@sha256:418486a1e88c48555ad4f7158c0a9923762182e7c9cd883342ffe0a161d89de6" # v0.1
+        String dockerImage = "kishwars/pepper_deepvariant@sha256:70908591ad67e8567a6e4551119b2cfc33d957ad39701c8af51b36b516214645" # r0.8
 
 
     }
