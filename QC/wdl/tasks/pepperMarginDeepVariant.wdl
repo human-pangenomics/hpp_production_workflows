@@ -4,10 +4,16 @@ workflow runpepperMarginDeepVariant {
 
     call pepperMarginDeepVariant
 
+    call bcftoolsFilter {
+        input:
+            inputVCF = pepperMarginDeepVariant.vcfOut
+    }
     output {
-        File pepperMarginDeepVariantVCF = pepperMarginDeepVariant.vcfOut
-        File pepperMarginDeepVariantVCFIdx = pepperMarginDeepVariant.vcfIdxOut
-        File pepperMarginDeepVariantHTML   = pepperMarginDeepVariant.visualReport
+        File pepperMarginDeepVariantVCF     = pepperMarginDeepVariant.vcfOut
+        File pepperMarginDeepVariantVCFIdx  = pepperMarginDeepVariant.vcfIdxOut
+        File pepperMarginDeepVariantHTML    = pepperMarginDeepVariant.visualReport
+
+        File filtPepperMarginDeepVariantVCF = bcftoolsFilter.vcfOut
     }
 }
 
@@ -88,6 +94,75 @@ task pepperMarginDeepVariant {
         File vcfOut        = glob("pepper_deepvariant_output/~{outputPrefix}*")[0]
         File vcfIdxOut     = glob("pepper_deepvariant_output/~{outputPrefix}*.tbi")[0]
         File visualReport  = glob("pepper_deepvariant_output/~{outputPrefix}*visual_report.html")[0]
+    }
+
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: dockerImage
+        preemptible: 2
+    }
+}
+
+
+task bcftoolsFilter {
+    input {
+        File inputVCF
+
+        String excludeExpr   = "'FORMAT/VAF<=0.5 | FORMAT/GQ<=30'"
+        String applyFilters  = "PASS"
+        String exludeTypes   = ""
+
+        Int memSizeGB = 8
+        Int threadCount = 4
+        Int diskSizeGB = 50
+        String dockerImage = "kishwars/pepper_deepvariant@sha256:70908591ad67e8567a6e4551119b2cfc33d957ad39701c8af51b36b516214645" # r0.8
+    
+    }
+
+    parameter_meta {
+        inputVCF: "VCF to filter. Must be gzipped."
+    }
+
+    String inputPrefix = basename(inputVCF, ".vcf.gz")
+    String outputFile  = "~{inputPrefix}.filtered.vcf.gz"
+
+    command <<<
+        # exit when a command fails, fail with unset variables, print commands before execution
+        set -eux -o pipefail
+        set -o xtrace
+
+
+        ## Pass optional argument if applyFilters is set, if not just pass empty string
+        if [ -z "~{applyFilters}" ]
+        then
+            APPLY_FILTERS_TOKEN=""
+        else
+            APPLY_FILTERS_TOKEN="--apply-filters ~{applyFilters}"
+        fi
+
+        ## Pass optional argument if exludeTypes is set, if not just pass empty string
+        if [ -z "~{exludeTypes}" ]
+        then
+            EXCLUDE_TYPES_TOKEN=""
+        else
+            EXCLUDE_TYPES_TOKEN="--exclude-types ~{exludeTypes}"
+        fi
+        
+
+        ## Call bcftools
+        bcftools view \
+            $APPLY_FILTERS_TOKEN \
+            $EXCLUDE_TYPES_TOKEN \
+            -e ~{excludeExpr} \
+            -Oz \
+            ~{inputVCF} \
+            > ~{outputFile}
+    >>>
+
+    output {
+        File vcfOut = outputFile
     }
 
     runtime {
