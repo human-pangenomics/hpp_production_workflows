@@ -110,4 +110,4 @@ workflows:
       primaryDescriptorPath: /QC/wdl/tasks/misjoinCheck.wdl
    -  name: snvInDelAssembly
       subclass: WDL
-      primaryDescriptorPath: QC/wdl/workflows/snv_indel_assembly.wdl
+      primaryDescriptorPath: /QC/wdl/workflows/snv_indel_assembly.wdl
