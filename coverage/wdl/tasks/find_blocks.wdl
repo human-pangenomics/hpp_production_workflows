@@ -39,11 +39,23 @@ task findBlocks {
         if [ -z ~{suffix} ]; then
             mkdir blocks
             find_blocks_from_table -c $PREFIX.cov -t ~{table} -p blocks/${PREFIX}
+            for bed in $(ls ~{suffix})
+            do
+                sort -k1,1 -k2,2n blocks/${bed} > tmp.bed
+                mv tmp.bed blocks/${bed}
+                rm -rf tmp.bed
+            done
             tar -cf ${PREFIX}.beds.tar blocks
             gzip ${PREFIX}.beds.tar
         else
             mkdir ~{suffix}
             find_blocks_from_table -c $PREFIX.cov -t ~{table} -p ~{suffix}/${PREFIX}.~{suffix}
+            for bed in $(ls ~{suffix}) 
+            do
+                sort -k1,1 -k2,2n ~{suffix}/${bed} > tmp.bed
+                mv tmp.bed ~{suffix}/${bed}
+                rm -rf tmp.bed 
+            done
             tar -cf ${PREFIX}.beds.~{suffix}.tar ~{suffix}
             gzip ${PREFIX}.beds.~{suffix}.tar
         fi
