@@ -234,11 +234,13 @@ task dupCorrectBeds {
 
         zcat ~{highMapqCovGz} | \
             awk '{if(substr($1,1,1) == ">") {contig=substr($1,2,40)} else if($3 >= ~{minCov}) {print contig"\t"$1-1"\t"$2}}' | \
+            sort -k1,1 -k2,2n | \
             bedtools merge -i - > high_mapq.bed
 
 
         zcat ~{covGz} | \
             awk '{if(substr($1,1,1) == ">") {contig=substr($1,2,40)} else if($3 < ~{minCov}) {print contig"\t"$1-1"\t"$2}}' | \
+            sort -k1,1 -k2,2n | \
             bedtools merge -i - > extremely_low.bed
 
         mkdir dup_corrected
