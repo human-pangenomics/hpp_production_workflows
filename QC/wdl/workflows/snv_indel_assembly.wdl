@@ -7,12 +7,19 @@ import "../tasks/hapDotPy.wdl" as runHappy
 
 workflow snv_indel_assembly {
 
+    meta {
+        author: "Julian Lucas"
+        email: "juklucas@ucsc.edu"
+        description: "WDL implementation of the small variant calling section of the [T2T Polishing Case Study](https://github.com/arangrhie/T2T-Polish/blob/master/doc/T2T_polishing_case_study.md)."
+    }
+
     input {
         File assembly
         File assemblyIndex
         String sample
     }
 
+    ## Call DeepVariant (recommended input of HiFi + Ilmn data)
     call runDeepVariant.DeepVariant as deepVariant_t {
         input:
             assembly      = assembly,
@@ -20,6 +27,7 @@ workflow snv_indel_assembly {
             sample        = sample
     }
 
+    ## Call PepperMarginDeepVariant (ONT data)
     call runPepperMarginDeepVariant.pepperMarginDeepVariant as pmdv_t {
         input:
             assembly      = assembly,
@@ -44,6 +52,7 @@ workflow snv_indel_assembly {
             exludeTypes   = "indels"
     }
 
+    ## Compare filtered callsets (DeepVariant & PMDV) to see where they agree
     call runHappy.hapDotPy as happy_t {
         input:    
             truthVCF      = filt_1.vcfOut,
@@ -53,6 +62,7 @@ workflow snv_indel_assembly {
             sample        = sample        
     }
 
+    ## Output the union of the two filtered callsets (DeepVariant & PMDV)
     call mergeVCF {
         input:
             VCF1     = filt_1.vcfOut,
@@ -61,6 +71,7 @@ workflow snv_indel_assembly {
             sample   = sample
     }
 
+    ## create text file w/ stats of final output from the last step
     call createVCFStats {
         input:
             inputVCF = mergeVCF.vcfOut
