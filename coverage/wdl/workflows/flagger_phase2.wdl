@@ -321,7 +321,7 @@ task filterBeds {
 
         # Gather small blocks and assign as unknown
         cat initial/* | sort -k1,1 -k2,2n | bedtools merge -i - > initial/all.bed
-        cat ~{fai} | awk '{print $1"\t"0"\t"$2}' > asm.bed
+        cat ~{fai} | awk '{print $1"\t"0"\t"$2}' | sort -k1,1 -k2,2n > asm.bed
         bedtools subtract -sorted -a asm.bed -b initial/all.bed > initial/${PREFIX}.filtered.unknown.bed
         # Add ambiguous overlaps as unknown
         cat *.overlap.bed initial/${PREFIX}.filtered.unknown.bed | sort -k1,1 -k2,2n | bedtools merge -i - > filtered/${PREFIX}.filtered.unknown.bed         
