@@ -6,6 +6,7 @@ workflow runJasmine {
     input{
         File HiFiFile
         File OntFile
+        File IlluminaFile
         String SV_like_errors
         String? dockerImage
         Int? maxDist = 500
@@ -17,6 +18,7 @@ workflow runJasmine {
         input:
             HiFiFile = HiFiFile,
             OntFile = OntFile,
+            IlluminaFile = IlluminaFile,
             SV_like_errors = SV_like_errors,
             dockerImage = dockerImage,
             maxDist = maxDist,
@@ -33,6 +35,7 @@ task Jasmine{
     input{
         File HiFiFile
         File OntFile
+        File IlluminaFile
         String SV_like_errors
         String dockerImage = "quay.io/biocontainers/jasminesv:1.1.4--hdfd78af_0"
         Int? maxDist = 500
@@ -52,6 +55,7 @@ task Jasmine{
 
         echo ~{OntFile} >> SV_filelist.txt
         echo ~{HiFiFile} >> SV_filelist.txt
+        echo ~{IlluminaFile} >> SV_filelist.txt
 
         jasmine max_dist=~{maxDist} min_seq_id=~{minSeqID} spec_reads=~{specReads} --output_genotypes file_list=SV_filelist.txt out_file=~{SV_like_errors}
 
