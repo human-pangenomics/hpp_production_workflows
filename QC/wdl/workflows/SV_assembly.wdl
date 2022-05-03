@@ -1,5 +1,6 @@
 version 1.0
 
+import "../tasks/parliament.wdl" as runParliament
 import "../tasks/sniffles.wdl" as runSniffles
 import "../tasks/filterSV.wdl" as runFilterSV
 import "../tasks/iris.wdl" as runIris
@@ -8,6 +9,14 @@ import "../tasks/jasmine.wdl" as runJasmine
 workflow sv_assembly{
     
     input{
+        File ParlInputBam
+        File ParlRefGenome
+        File ParlIndexBam
+        File ParlIndexGenome
+        String? ParlPrefix
+        Boolean? ParlFilterShortContigs
+        String? ParlOtherArgs
+        String? ParlDockerImage
         File HifiInputBam
         File OntInputBam
         File GenomeIn
@@ -26,6 +35,20 @@ workflow sv_assembly{
         Int? maxDist
         Float? minSeqID
         Int? specReads
+    }
+
+    # Run PARLIAMENT on Illumina data
+
+    call runParliament.Parliament as Parl{
+        input:
+            inputBam = ParlInputBam,
+            refGenome = ParlRefGenome,
+            indexBam = ParlIndexBam,
+            indexGenome = ParlIndexGenome,
+            prefix = ParlPrefix,
+            filterShortContigs = ParlFilterShortContigs,
+            otherArgs = ParlOtherArgs,
+            dockerImage = ParlDockerImage
     }
 
     # Run SNIFFLES on HIFI data
@@ -78,6 +101,7 @@ workflow sv_assembly{
         input:
             HiFiFile = Iris.outputFile,
             OntFile = OntFilter.outputFile,
+            IlluminaFile = Parl.ParliamentVCF,
             SV_like_errors = JasmineOutputName,
             dockerImage = JasmineDockerImage,
             maxDist = maxDist,
@@ -86,6 +110,7 @@ workflow sv_assembly{
     }
 
     output{
+        File ParlOutput = Parl.ParliamentVCF
         File SnifflesHiFiOutput = HiFiSniffles.outputFile
         File SnifflesOntOutput = OntSniffles.outputFile
         File FilterHiFiOutput = HiFiFilter.outputFile
