@@ -1,10 +1,10 @@
 version 1.0
 
-import "../tasks/parliament.wdl" as runParliament
-import "../tasks/sniffles.wdl" as runSniffles
-import "../tasks/filterSV.wdl" as runFilterSV
-import "../tasks/iris.wdl" as runIris
-import "../tasks/jasmine.wdl" as runJasmine
+import "parliament.wdl" as runParliament
+import "sniffles.wdl" as runSniffles
+import "filterSV.wdl" as runFilterSV
+import "iris.wdl" as runIris
+import "jasmine.wdl" as runJasmine
 
 workflow sv_assembly{
     
@@ -15,6 +15,7 @@ workflow sv_assembly{
         File ParlIndexGenome
         String? ParlPrefix
         Boolean? ParlFilterShortContigs
+        Boolean? RunParl = false
         String? ParlOtherArgs
         String? ParlDockerImage
         File HifiInputBam
@@ -37,18 +38,20 @@ workflow sv_assembly{
         Int? specReads
     }
 
-    # Run PARLIAMENT on Illumina data
+    # Run PARLIAMENT on Illumina data if user has chosen to
 
-    call runParliament.Parliament as Parl{
-        input:
-            inputBam = ParlInputBam,
-            refGenome = ParlRefGenome,
-            indexBam = ParlIndexBam,
-            indexGenome = ParlIndexGenome,
-            prefix = ParlPrefix,
-            filterShortContigs = ParlFilterShortContigs,
-            otherArgs = ParlOtherArgs,
-            dockerImage = ParlDockerImage
+    if (RunParl == true){
+        call runParliament.Parliament as Parl{
+            input:
+                inputBam = ParlInputBam,
+                refGenome = ParlRefGenome,
+                indexBam = ParlIndexBam,
+                indexGenome = ParlIndexGenome,
+                prefix = ParlPrefix,
+                filterShortContigs = ParlFilterShortContigs,
+                otherArgs = ParlOtherArgs,
+                dockerImage = ParlDockerImage
+        }
     }
 
     # Run SNIFFLES on HIFI data
@@ -99,9 +102,7 @@ workflow sv_assembly{
 
     call runJasmine.Jasmine as Jasmine{
         input:
-            HiFiFile = Iris.outputFile,
-            OntFile = OntFilter.outputFile,
-            IlluminaFile = Parl.ParliamentVCF,
+            InputVCFs = select_all([Iris.outputFile, OntFilter.outputFile, Parl.ParliamentVCF]),
             SV_like_errors = JasmineOutputName,
             dockerImage = JasmineDockerImage,
             maxDist = maxDist,
@@ -110,7 +111,6 @@ workflow sv_assembly{
     }
 
     output{
-        File ParlOutput = Parl.ParliamentVCF
         File SnifflesHiFiOutput = HiFiSniffles.outputFile
         File SnifflesOntOutput = OntSniffles.outputFile
         File FilterHiFiOutput = HiFiFilter.outputFile
