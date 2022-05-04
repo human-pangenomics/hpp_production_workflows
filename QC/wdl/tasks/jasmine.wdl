@@ -4,9 +4,7 @@ version 1.0
 
 workflow runJasmine {
     input{
-        File HiFiFile
-        File OntFile
-        File IlluminaFile
+        Array[File] InputVCFs
         String SV_like_errors
         String? dockerImage
         Int? maxDist = 500
@@ -16,9 +14,7 @@ workflow runJasmine {
 
     call Jasmine{
         input:
-            HiFiFile = HiFiFile,
-            OntFile = OntFile,
-            IlluminaFile = IlluminaFile,
+            InputVCFs = InputVCFs,
             SV_like_errors = SV_like_errors,
             dockerImage = dockerImage,
             maxDist = maxDist,
@@ -33,9 +29,7 @@ workflow runJasmine {
 
 task Jasmine{
     input{
-        File HiFiFile
-        File OntFile
-        File IlluminaFile
+        Array[File] InputVCFs
         String SV_like_errors
         String dockerImage = "quay.io/biocontainers/jasminesv:1.1.4--hdfd78af_0"
         Int? maxDist = 500
@@ -46,16 +40,17 @@ task Jasmine{
         Int diskSizeGB = 64
 
     }
-    # jasmine max_dist=500 min_seq_id=0.3 spec_reads=3 --output_genotypes file_list="${OUTPUT_DIR}"/SV_filelist.txt out_file="${OUTPUT_DIR}"/"SV_like_errors.vcf"
     
     command <<<
         # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
-        set -o xtrace
+        
+        VCFS=(~{sep=' ' InputVCFs})
 
-        echo ~{OntFile} >> SV_filelist.txt
-        echo ~{HiFiFile} >> SV_filelist.txt
-        echo ~{IlluminaFile} >> SV_filelist.txt
+        for VCF in "${VCFS[@]}"
+        do
+                echo "$VCF" > SV_filelist.txt
+        done
 
         jasmine max_dist=~{maxDist} min_seq_id=~{minSeqID} spec_reads=~{specReads} --output_genotypes file_list=SV_filelist.txt out_file=~{SV_like_errors}
 
