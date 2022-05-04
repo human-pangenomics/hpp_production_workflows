@@ -26,7 +26,7 @@ workflow runParliament{
             dockerImage = dockerImage
     }
   output{
-    File ParliamentVCF = Parliament.outputVCF
+    File ParliamentVCF = Parliament.ParliamentVCF
   }
 }
 
@@ -53,7 +53,7 @@ task Parliament{
     refGenome: "Reference file that matches the reference used to map the Illumina inputs."
     indexGenome: "Corresponding index for the reference genome file."
     prefix: "If provided, all output files will start with this. If absent, the base of the BAM file name will be used."
-    filterShortContigs: "If true, contigs shorter than 1 MB will be filtered out. Default is true. Enter "false" to keep short contigs "
+    filterShortContigs: "If true, contigs shorter than 1 MB will be filtered out. Default is true. Enter false to keep short contigs."
     otherArgs: "Other optional arguments can be defined here. Refer to https://github.com/dnanexus/parliament2#help for more details."
     }
 
@@ -78,7 +78,7 @@ task Parliament{
         cp /home/dnanexus/out/~{prefix}.combined.genotyped.vcf .
   >>>
   output{
-    File outputVCF = "~{prefix}.combined.genotyped.vcf"
+    File ParliamentVCF = "~{prefix}.combined.genotyped.vcf"
   }
   runtime{
     memory: memSizeGB + " GB"
