@@ -1,10 +1,10 @@
 version 1.0
 
-import "parliament.wdl" as runParliament
-import "sniffles.wdl" as runSniffles
-import "filterSV.wdl" as runFilterSV
-import "iris.wdl" as runIris
-import "jasmine.wdl" as runJasmine
+import "../tasks/parliament.wdl" as runParliament
+import "../tasks/sniffles.wdl" as runSniffles
+import "../tasks/filterSV.wdl" as runFilterSV
+import "../tasks/iris.wdl" as runIris
+import "../tasks/jasmine.wdl" as runJasmine
 
 workflow sv_assembly{
     
