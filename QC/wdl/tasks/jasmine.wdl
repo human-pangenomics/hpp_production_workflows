@@ -44,13 +44,12 @@ task Jasmine{
     command <<<
         # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
-        
+
+        echo "${InputVCFs[*]}"
+
         VCFS=(~{sep=' ' InputVCFs})
 
-        for VCF in "${VCFS[@]}"
-        do
-                echo "$VCF" > SV_filelist.txt
-        done
+        printf "%s\n" "${VCFS[@]}" > SV_filelist.txt
 
         jasmine max_dist=~{maxDist} min_seq_id=~{minSeqID} spec_reads=~{specReads} --output_genotypes file_list=SV_filelist.txt out_file=~{SV_like_errors}
 
