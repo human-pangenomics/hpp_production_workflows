@@ -9,10 +9,10 @@ import "../tasks/jasmine.wdl" as runJasmine
 workflow sv_assembly{
     
     input{
-        File ParlInputBam
-        File ParlRefGenome
-        File ParlIndexBam
-        File ParlIndexGenome
+        File? ParlInputBam
+        File? ParlRefGenome
+        File? ParlIndexBam
+        File? ParlIndexGenome
         String? ParlPrefix
         Boolean? ParlFilterShortContigs
         Boolean? RunParl = false
