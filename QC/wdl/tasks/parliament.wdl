@@ -69,10 +69,13 @@ task Parliament{
         
         # pass filter_short_contigs argument based on user input, default being true and Run PARLIAMENT
         if ["~{filterShortContigs}" = "false"]; then
-            python /home/dnanexus/parliament2.py --bam ~{basename(inputBam)} -r ~{basename(refGenome)} --prefix ~{prefix} --bai ~{basename(indexBam)} --fai ~{basename(indexGenome)} ~{otherArgs}
+            FILTER_SHORT_CONTIGS = ""
         else
-            python /home/dnanexus/parliament2.py --bam ~{basename(inputBam)} -r ~{basename(refGenome)} --prefix ~{prefix} --bai ~{basename(indexBam)} --fai ~{basename(indexGenome)} --filter_short_contigs ~{otherArgs}
+            FILTER_SHORT_CONTIGS = "--filter_short_contigs "
         fi
+        
+        python /home/dnanexus/parliament2.py --bam ~{basename(inputBam)} -r ~{basename(refGenome)} \
+        --prefix ~{prefix} --bai ~{basename(indexBam)} --fai ~{basename(indexGenome)} ${FILTER_SHORT_CONTIGS}~{otherArgs}
 
         # copy output files to output folder
         cp /home/dnanexus/out/~{prefix}.combined.genotyped.vcf .
