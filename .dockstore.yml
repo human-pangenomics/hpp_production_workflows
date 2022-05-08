@@ -111,3 +111,6 @@ workflows:
    -  name: snvInDelAssembly
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/snv_indel_assembly.wdl
+   -  name: svAssembly
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/workflows/SV_assembly.wdl
