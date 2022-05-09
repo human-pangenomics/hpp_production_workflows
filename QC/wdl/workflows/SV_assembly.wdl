@@ -23,7 +23,7 @@ workflow sv_assembly{
         File IndexGenome
         String SampleName
         
-        Boolean? ParlFilterShortContigs
+        Boolean? ParlFilterShortContigs = true
         Boolean? RunParl = false
         String? ParlOtherArgs
         Int? maxDist
@@ -46,6 +46,7 @@ workflow sv_assembly{
                 refGenome = RefGenome,
                 indexBam = IlluminaIndexBam,
                 indexGenome = IndexGenome,
+                SampleName = SampleName,
                 filterShortContigs = ParlFilterShortContigs,
                 otherArgs = ParlOtherArgs,
                 dockerImage = ParlDockerImage
