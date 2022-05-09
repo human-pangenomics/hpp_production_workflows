@@ -33,7 +33,7 @@ task Parliament{
     indexBam: "Corresponding index for the Illumina BAM file."
     refGenome: "Genome reference file that matches the reference used to map the Illumina inputs."
     indexGenome: "Corresponding index for the reference genome file."
-    prefix: "If provided, all output files will start with this. If absent, SampleName will be used"
+    SampleName: "Sample name. Will be used in output VCF file."
     filterShortContigs: "If true, contigs shorter than 1 MB will be filtered out. Default is true. Enter false to keep short contigs."
     otherArgs: "Other optional arguments can be defined here. Refer to https://github.com/dnanexus/parliament2#help for more details."
     }
