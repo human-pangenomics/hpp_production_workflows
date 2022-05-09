@@ -15,7 +15,7 @@ workflow runJasmine {
 task Jasmine{
     input{
         Array[File] InputVCFs
-        String sampleName
+        String SampleName
         
         Int? maxDist = 500
         Float? minSeqID = 0.3
@@ -30,13 +30,13 @@ task Jasmine{
     
     parameter_meta{
         InputVCFs: "Array of VCF files of each sample to be used."
-        sampleName: "Sample name. Will be used in output VCF file."
+        SampleName: "Sample name. Will be used in output VCF file."
         maxDist: "A constant integer value such that the distance threshold for every variant will be equal to this value."
         minSeqID: "The sequence identity threshold required for two insertions to be merged."
         specReads: "The minimum number of reads required to support a variant for it to be considered a specific call."
     }
     
-    String SV_like_errors = "~{sampleName}_SV_like_errors.vcf"
+    String SV_like_errors = "~{SampleName}_SV_like_errors.vcf"
     
     command <<<
         # exit when a command fails, fail with unset variables, print commands before execution
