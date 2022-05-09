@@ -7,7 +7,7 @@ workflow runParliament{
     call Parliament
   
   output{
-    File ParliamentVCF = Parliament.ParliamentVCF
+    File ParliamentVCF = Parliament.vcfOut
   }
 }
 
@@ -63,7 +63,7 @@ task Parliament{
         cp /home/dnanexus/out/~{prefix}.combined.genotyped.vcf .
   >>>
   output{
-    File ParliamentVCF = "~{prefix}.combined.genotyped.vcf"
+    File vcfOut = "~{prefix}.combined.genotyped.vcf"
   }
   runtime{
     memory: memSizeGB + " GB"
