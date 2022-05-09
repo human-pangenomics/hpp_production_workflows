@@ -56,52 +56,63 @@ workflow sv_assembly{
 
     call runSniffles.Sniffles as HiFiSniffles{
         input:
-            inputBam = HifiInputBam
+            inputBam = HifiInputBam,
+            SampleName = SampleName,
+            outputFileTag = "HiFi"
     }
     
     # Run SNIFFLES on ONT data
 
     call runSniffles.Sniffles as OntSniffles{
         input:
-            inputBam = OntInputBam
+            inputBam = OntInputBam,
+            SampleName = SampleName,
+            outputFileTag = "Ont"
     }
 
     # Run filter.py on HiFi Sniffles Output
 
     call runFilterSV.Filter as HiFiFilter{
         input:
-            inputVcf = HiFiSniffles.outputFile
+            inputVcf = HiFiSniffles.vcfOut,
+            SampleName = SampleName,
+            outputFileTag = "HiFi"
     }
 
     # Run filter.py on Ont Sniffles Output
 
     call runFilterSV.Filter as OntFilter{
         input:
-            inputVcf = OntSniffles.outputFile
+            inputVcf = OntSniffles.vcfOut,
+            SampleName = SampleName,
+            outputFileTag = "Ont"
     }
 
     call runIris.Iris as Iris{
         input:
             genomeIn = RefGenome,
             readsIn = HifiInputBam,
-            vcfIn = HiFiFilter.outputFile
+            vcfIn = HiFiFilter.vcfOut,
+            SampleName = SampleName
     }
 
     call runJasmine.Jasmine as Jasmine{
         input:
-            InputVCFs = select_all([Iris.outputFile, OntFilter.outputFile, Parl.ParliamentVCF]),
+            InputVCFs = select_all([Iris.vcfOut, OntFilter.vcfOut, Parl.vcfOut]),
+            SampleName = SampleName,
             maxDist = maxDist,
             minSeqID = minSeqID,
             specReads = specReads
     }
 
     output{
-        File SnifflesHiFiOutput = HiFiSniffles.outputFile
-        File SnifflesOntOutput = OntSniffles.outputFile
-        File FilterHiFiOutput = HiFiFilter.outputFile
-        File FilterOntOutput = OntFilter.outputFile
-        File IrisHiFiOutput = Iris.outputFile
+        File ParlOutput = Parl.vcfOut
+        File SnifflesHiFiOutput = HiFiSniffles.vcfOut
+        File SnifflesOntOutput = OntSniffles.vcfOut
+        File FilterHiFiOutput = HiFiFilter.vcfOut
+        File FilterOntOutput = OntFilter.vcfOut
+        File IrisHiFiOutput = Iris.vcfOut
         File SV_filelist = Jasmine.SV_filelist
-        File SV_like_errors = Jasmine.outputFile
+        File SV_like_errors = Jasmine.vcfOut
     }
 }
