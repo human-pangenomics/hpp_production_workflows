@@ -16,7 +16,7 @@ task Iris{
         File genomeIn
         File readsIn
         File vcfIn
-        String sampleName
+        String SampleName
         String? IrisOut = "IRISOutputDir"
         
         String dockerImage = "quay.io/biocontainers/irissv@sha256:e854b554b11377b9b47f32d1c33b13d84b9fde2c5b99045d946f1e01568ec6a1" # 1.0.4--hdfd78af_2
@@ -29,11 +29,11 @@ task Iris{
         genomeIn: "FASTA file containing the reference genome."
         readsIn: "BAM file containing the reads."
         vcfIn: "VCF file with variant calls/supporting reads determined by Sniffles."
-        vcfOut: "Sample name. Will be used in output VCF file."
+        SampleName: "Sample name. Will be used in output VCF file."
         IrisOut: "Name of the output directory to store output VCF file produced. If not provided, default value will be used."
     }
     
-    String vcfOut = "~{sampleName}_~{vcfIn}_IrisOutput.vcf"
+    String vcfOut = "~{sampleName}_Iris.vcf"
     
     command <<<
         # exit when a command fails, fail with unset variables, print commands before execution
