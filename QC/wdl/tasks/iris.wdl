@@ -3,26 +3,11 @@ version 1.0
 # This is a task level wdl workflow to run IRIS to filter HIFI SV calls
 
 workflow runIris {
-    input{
-        File genomeIn
-        File readsIn
-        File vcfIn
-        String vcfOut
-        String IrisOut
-        String? dockerImage
 
-    }
-    call Iris{
-        input:
-            genomeIn = genomeIn,
-            readsIn = readsIn,
-            vcfIn = vcfIn,
-            vcfOut = vcfOut,
-            IrisOut = IrisOut,
-            dockerImage = dockerImage
-    }
+    call Iris
+    
     output{
-        File outputFile = Iris.outputFile
+        File outputFile = Iris.vcfOut
     }
 }
 
@@ -31,13 +16,22 @@ task Iris{
         File genomeIn
         File readsIn
         File vcfIn
+        
         String vcfOut
-        String IrisOut
-        String dockerImage = "quay.io/biocontainers/irissv:1.0.4--hdfd78af_2"
-        Int memSizeGB = 64
-        Int threadCount = 32
-        Int diskSizeGB = 64
+        String? IrisOut = "IRISOutputDir"
+        
+        String dockerImage = "quay.io/biocontainers/irissv@sha256:e854b554b11377b9b47f32d1c33b13d84b9fde2c5b99045d946f1e01568ec6a1" # 1.0.4--hdfd78af_2
+        Int memSizeGB = 128
+        Int threadCount = 64
+        Int diskSizeGB = 128
 
+    }
+    parameter_meta{
+        genomeIn: "FASTA file containing the reference genome."
+        readsIn: "BAM file containing the reads."
+        vcfIn: "VCF file with variant calls/supporting reads determined by Sniffles."
+        vcfOut: "Name of the refined VCF file to be produced. If not provided, sampleName will be used."
+        IrisOut: "Name of the output directory to store output VCF file produced. If not provided, default value will be used."
     }
     command <<<
         # exit when a command fails, fail with unset variables, print commands before execution
@@ -48,7 +42,7 @@ task Iris{
 
     >>>
     output{
-        File outputFile = glob("*.iris.vcf")[0]
+        File vcfOut = glob("*.iris.vcf")[0]
     }
     runtime{
         memory: memSizeGB + " GB"
