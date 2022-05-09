@@ -48,7 +48,8 @@ task Jasmine{
 
         printf "%s\n" "${VCFS[@]}" > SV_filelist.txt
 
-        jasmine max_dist=~{maxDist} min_seq_id=~{minSeqID} spec_reads=~{specReads} --output_genotypes file_list=SV_filelist.txt out_file=~{SV_like_errors}
+        jasmine max_dist=~{maxDist} min_seq_id=~{minSeqID} spec_reads=~{specReads} --output_genotypes \
+        file_list=SV_filelist.txt out_file=~{SV_like_errors}
 
     >>>
     output{
