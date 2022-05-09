@@ -3,28 +3,9 @@ version 1.0
 # This is a task level wdl workflow to run the program PARLIAMENT
 
 workflow runParliament{
-    input{
-        File inputBam
-        File refGenome
-        File indexBam
-        File indexGenome
 
-        String? prefix
-        Boolean? filterShortContigs
-        String? otherArgs
-        String? dockerImage
-      }
-    call Parliament{
-        input:
-            inputBam = inputBam,
-            refGenome = refGenome,
-            indexBam = indexBam,
-            indexGenome = indexGenome,
-            prefix = prefix,
-            filterShortContigs = filterShortContigs,
-            otherArgs = otherArgs,
-            dockerImage = dockerImage
-    }
+    call Parliament
+  
   output{
     File ParliamentVCF = Parliament.ParliamentVCF
   }
@@ -36,8 +17,9 @@ task Parliament{
     File indexBam
     File refGenome
     File indexGenome
+    String SampleName = SampleName
 
-    String? prefix
+    String? prefix = SampleName
     Boolean? filterShortContigs
     String? otherArgs = "--breakdancer --breakseq --manta --cnvnator --lumpy --delly_deletion --genotype --svviz_only_validated_candidates"
 
@@ -52,7 +34,7 @@ task Parliament{
     indexBam: "Corresponding index for the Illumina BAM file."
     refGenome: "Reference file that matches the reference used to map the Illumina inputs."
     indexGenome: "Corresponding index for the reference genome file."
-    prefix: "If provided, all output files will start with this. If absent, the base of the BAM file name will be used."
+    prefix: "If provided, all output files will start with this. If absent, SampleName will be used"
     filterShortContigs: "If true, contigs shorter than 1 MB will be filtered out. Default is true. Enter false to keep short contigs."
     otherArgs: "Other optional arguments can be defined here. Refer to https://github.com/dnanexus/parliament2#help for more details."
     }
