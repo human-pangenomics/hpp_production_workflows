@@ -14,7 +14,8 @@ workflow runSniffles {
 task Sniffles{
   input{
     File inputBam
-    String outputName
+    String SampleName
+    String? outputFileTag
     
     String dockerImage = "quay.io/biocontainers/sniffles@sha256:a403144dc9aad093a6aca476ec3eea40e27d82efaba682b753e944264f5e512d" # 1.0.12--h8b12597_1
     Int memSizeGB = 128
@@ -25,7 +26,11 @@ task Sniffles{
   
  parameter_meta{
      inputBam: "PacBio and Oxford Nanopore read data. Must be in BAM format."
+     SampleName: "Sample name. Will be used in output VCF file."
+     outputFileTag: "Output file tag to tag files by type of read data (HiFi/Ont)."
  }
+ 
+ String outputName = "~{sampleName}.~{outputFileTag}_sniffles.vcf"
  
   command <<<
       # exit when a command fails, fail with unset variables, print commands before execution
