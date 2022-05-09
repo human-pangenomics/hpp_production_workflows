@@ -40,7 +40,8 @@ task Iris{
         set -eux -o pipefail
         set -o xtrace
 
-        iris --hifi --keep_long_variants --keep_files genome_in=~{genomeIn} reads_in=~{readsIn} vcf_in=~{vcfIn} vcf_out=~{vcfOut} out_dir=~{IrisOut}
+        iris --hifi --keep_long_variants --keep_files genome_in=~{genomeIn} reads_in=~{readsIn} \
+        vcf_in=~{vcfIn} vcf_out=~{vcfOut} out_dir=~{IrisOut}
 
     >>>
     output{
