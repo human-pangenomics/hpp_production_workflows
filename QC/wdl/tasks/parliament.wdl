@@ -18,7 +18,7 @@ task Parliament{
     File refGenome
     File indexGenome
 
-    String? prefix = SampleName
+    String SampleName = SampleName
     Boolean? filterShortContigs
     String? otherArgs = "--breakdancer --breakseq --manta --cnvnator --lumpy --delly_deletion --genotype --svviz_only_validated_candidates"
 
@@ -37,6 +37,8 @@ task Parliament{
     filterShortContigs: "If true, contigs shorter than 1 MB will be filtered out. Default is true. Enter false to keep short contigs."
     otherArgs: "Other optional arguments can be defined here. Refer to https://github.com/dnanexus/parliament2#help for more details."
     }
+    
+    String prefix = "~{SampleName}.Parl"
 
   command <<<
       # exit when a command fails, fail with unset variables, print commands before execution
