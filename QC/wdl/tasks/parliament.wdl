@@ -13,8 +13,8 @@ workflow runParliament{
 
 task Parliament{
   input{
-    File inputBam
-    File indexBam
+    File? inputBam
+    File? indexBam
     File refGenome
     File indexGenome
 
