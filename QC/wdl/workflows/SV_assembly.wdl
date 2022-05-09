@@ -29,12 +29,6 @@ workflow sv_assembly{
         Int? maxDist
         Float? minSeqID
         Int? specReads
-        
-        String? ParlDockerImage
-        String? SnifflesDockerImage
-        String? FilterDockerImage
-        String? IrisDockerImage
-        String? JasmineDockerImage
     }
 
     # Run PARLIAMENT on Illumina data if user has chosen to
