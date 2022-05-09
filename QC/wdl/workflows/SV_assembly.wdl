@@ -15,8 +15,8 @@ workflow sv_assembly{
     }
     
     input{
-        File? IlluminaInputBam
-        File? IlluminaIndexBam
+        File IlluminaInputBam
+        File IlluminaIndexBam
         File HifiInputBam
         File OntInputBam
         File RefGenome
@@ -100,7 +100,7 @@ workflow sv_assembly{
     }
 
     output{
-        File ParlOutput = Parl.vcfOut
+        File? ParlOutput = Parl.vcfOut
         File SnifflesHiFiOutput = HiFiSniffles.vcfOut
         File SnifflesOntOutput = OntSniffles.vcfOut
         File FilterHiFiOutput = HiFiFilter.vcfOut
