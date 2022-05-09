@@ -8,34 +8,33 @@ import "../tasks/jasmine.wdl" as runJasmine
 
 workflow sv_assembly{
     
+    meta{
+        author: "Avani Khadilkar"
+        email: "akhadilk@ucsc.edu"
+        description: "WDL implementation of the small variant like errors calling section of the [T2T Polishing Case Study](https://github.com/arangrhie/T2T-Polish/blob/master/doc/T2T_polishing_case_study.md)."
+    }
+    
     input{
-        File? ParlInputBam
-        File? ParlRefGenome
-        File? ParlIndexBam
-        File? ParlIndexGenome
-        String? ParlPrefix
+        File? IlluminaInputBam
+        File? IlluminaIndexBam
+        File HifiInputBam
+        File OntInputBam
+        File RefGenome
+        File IndexGenome
+        String SampleName
+        
         Boolean? ParlFilterShortContigs
         Boolean? RunParl = false
         String? ParlOtherArgs
-        String? ParlDockerImage
-        File HifiInputBam
-        File OntInputBam
-        File GenomeIn
-        File ReadsIn
-        String HifiSnifflesOutputName
-        String? SnifflesDockerImage
-        String OntSnifflesOutputName
-        String HifiFilterOutputName
-        String OntFilterOutputName
-        String? FilterDockerImage
-        String HiFiIrisOutputName
-        String IrisOut
-        String? IrisDockerImage
-        String JasmineOutputName
-        String? JasmineDockerImage
         Int? maxDist
         Float? minSeqID
         Int? specReads
+        
+        String? ParlDockerImage
+        String? SnifflesDockerImage
+        String? FilterDockerImage
+        String? IrisDockerImage
+        String? JasmineDockerImage
     }
 
     # Run PARLIAMENT on Illumina data if user has chosen to
@@ -43,11 +42,10 @@ workflow sv_assembly{
     if (RunParl == true){
         call runParliament.Parliament as Parl{
             input:
-                inputBam = ParlInputBam,
-                refGenome = ParlRefGenome,
-                indexBam = ParlIndexBam,
-                indexGenome = ParlIndexGenome,
-                prefix = ParlPrefix,
+                inputBam = IlluminaInputBam,
+                refGenome = RefGenome,
+                indexBam = IlluminaIndexBam,
+                indexGenome = IndexGenome,
                 filterShortContigs = ParlFilterShortContigs,
                 otherArgs = ParlOtherArgs,
                 dockerImage = ParlDockerImage
@@ -58,53 +56,40 @@ workflow sv_assembly{
 
     call runSniffles.Sniffles as HiFiSniffles{
         input:
-            inputBam = HifiInputBam,
-            outputName = HifiSnifflesOutputName,
-            dockerImage = SnifflesDockerImage
+            inputBam = HifiInputBam
     }
     
     # Run SNIFFLES on ONT data
 
     call runSniffles.Sniffles as OntSniffles{
         input:
-            inputBam = OntInputBam,
-            outputName = OntSnifflesOutputName,
-            dockerImage = SnifflesDockerImage
+            inputBam = OntInputBam
     }
 
     # Run filter.py on HiFi Sniffles Output
 
     call runFilterSV.Filter as HiFiFilter{
         input:
-            inputVcf = HiFiSniffles.outputFile,
-            outputName = HifiFilterOutputName,
-            dockerImage = FilterDockerImage
+            inputVcf = HiFiSniffles.outputFile
     }
 
     # Run filter.py on Ont Sniffles Output
 
     call runFilterSV.Filter as OntFilter{
         input:
-            inputVcf = OntSniffles.outputFile,
-            outputName = OntFilterOutputName,
-            dockerImage = FilterDockerImage
+            inputVcf = OntSniffles.outputFile
     }
 
     call runIris.Iris as Iris{
         input:
-            genomeIn = GenomeIn,
-            readsIn = ReadsIn,
-            vcfIn = HiFiFilter.outputFile,
-            vcfOut = HiFiIrisOutputName,
-            IrisOut = IrisOut,
-            dockerImage = IrisDockerImage
+            genomeIn = RefGenome,
+            readsIn = HifiInputBam,
+            vcfIn = HiFiFilter.outputFile
     }
 
     call runJasmine.Jasmine as Jasmine{
         input:
             InputVCFs = select_all([Iris.outputFile, OntFilter.outputFile, Parl.ParliamentVCF]),
-            SV_like_errors = JasmineOutputName,
-            dockerImage = JasmineDockerImage,
             maxDist = maxDist,
             minSeqID = minSeqID,
             specReads = specReads
