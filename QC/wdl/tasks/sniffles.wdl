@@ -30,7 +30,7 @@ task Sniffles{
      outputFileTag: "Output file tag to tag files by type of read data (HiFi/Ont)."
  }
  
- String outputName = "~{sampleName}.~{outputFileTag}_sniffles.vcf"
+ String outputName = "~{SampleName}.~{outputFileTag}_sniffles.vcf"
  
   command <<<
       # exit when a command fails, fail with unset variables, print commands before execution
