@@ -19,7 +19,7 @@ task Parliament{
     File indexGenome
 
     String SampleName = SampleName
-    Boolean? filterShortContigs
+    Boolean? filterShortContigs = true
     String? otherArgs = "--breakdancer --breakseq --manta --cnvnator --lumpy --delly_deletion --genotype --svviz_only_validated_candidates"
 
     String dockerImage = "dnanexus/parliament2@sha256:9076e0cb48f1b0703178778865a6f95df48a165fbea8d107517d36b23970a3d3" # latest
@@ -33,7 +33,6 @@ task Parliament{
     indexBam: "Corresponding index for the Illumina BAM file."
     refGenome: "Genome reference file that matches the reference used to map the Illumina inputs."
     indexGenome: "Corresponding index for the reference genome file."
-    SampleName: "Sample name. Will be used in output VCF file."
     filterShortContigs: "If true, contigs shorter than 1 MB will be filtered out. Default is true. Enter false to keep short contigs."
     otherArgs: "Other optional arguments can be defined here. Refer to https://github.com/dnanexus/parliament2#help for more details."
     }
@@ -50,16 +49,24 @@ task Parliament{
         cp ~{refGenome} /home/dnanexus/in
         cp ~{indexBam} /home/dnanexus/in
         cp ~{indexGenome} /home/dnanexus/in
+
+        # initialize command
+        
+        cmd=(python /home/dnanexus/parliament2.py --bam ~{basename(inputBam)} -r ~{basename(refGenome)})
+        cmd+=( --prefix ~{prefix} --bai ~{basename(indexBam)} --fai ~{basename(indexGenome)} )
         
         # pass filter_short_contigs argument based on user input, default being true and Run PARLIAMENT
-        if ["~{filterShortContigs}" = "false"]; then
-            FILTER_SHORT_CONTIGS = ""
+        if ["~{filterShortContigs}" == "false"];
+        then
+            cmd+=(~{otherArgs})
         else
-            FILTER_SHORT_CONTIGS = "--filter_short_contigs "
+            cmd+=(--filter_short_contigs ~{otherArgs})
         fi
         
-        python /home/dnanexus/parliament2.py --bam ~{basename(inputBam)} -r ~{basename(refGenome)} \
-        --prefix ~{prefix} --bai ~{basename(indexBam)} --fai ~{basename(indexGenome)} ${FILTER_SHORT_CONTIGS}~{otherArgs}
+        # run command
+
+        "${cmd[@]}"
+
 
         # copy output files to output folder
         cp /home/dnanexus/out/~{prefix}.combined.genotyped.vcf .
