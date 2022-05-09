@@ -41,6 +41,7 @@ task Parliament{
   command <<<
       # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
+        set -o xtrace
 
         # copy input files to the /in folder to make them accessible to the parliament2.py script
         cp ~{inputBam} /home/dnanexus/in
