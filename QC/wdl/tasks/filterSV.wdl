@@ -23,7 +23,7 @@ task Filter{
         Int diskSizeGB = 128
     }
     parameter_meta{
-     inputBam: "Reads aligned to assembly. Must be in BAM format."
+     inputVcf: "Reads aligned to assembly. Must be in BAM format."
      SampleName: "Sample name. Will be used in output VCF file."
      outputFileTag: "Output file tag to tag files by type of read data (HiFi/Ont)."
     }
