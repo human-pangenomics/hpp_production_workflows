@@ -17,7 +17,6 @@ task Parliament{
     File indexBam
     File refGenome
     File indexGenome
-    String SampleName = SampleName
 
     String? prefix = SampleName
     Boolean? filterShortContigs
