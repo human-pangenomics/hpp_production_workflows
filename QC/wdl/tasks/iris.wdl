@@ -33,7 +33,7 @@ task Iris{
         IrisOut: "Name of the output directory to store output VCF file produced. If not provided, default value will be used."
     }
     
-    String vcfOut = "~{sampleName}_Iris.vcf"
+    String vcfOut = "~{SampleName}_Iris.vcf"
     
     command <<<
         # exit when a command fails, fail with unset variables, print commands before execution
