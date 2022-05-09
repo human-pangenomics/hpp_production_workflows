@@ -48,8 +48,7 @@ workflow sv_assembly{
                 indexGenome = IndexGenome,
                 SampleName = SampleName,
                 filterShortContigs = ParlFilterShortContigs,
-                otherArgs = ParlOtherArgs,
-                dockerImage = ParlDockerImage
+                otherArgs = ParlOtherArgs
         }
     }
 
