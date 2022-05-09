@@ -3,18 +3,9 @@ version 1.0
 # This is a task level wdl workflow to run the program SNIFFLES
 
 workflow runSniffles {
-  input{
-    File inputBam
-    String outputName
-    String? dockerImage
 
-  }
-  call Sniffles{
-    input:
-      inputBam = inputBam,
-      outputName = outputName,
-      dockerImage = dockerImage
-  }
+  call Sniffles
+  
   output{
     File outputFile = Sniffles.outputFile
   }
@@ -24,6 +15,7 @@ task Sniffles{
   input{
     File inputBam
     String outputName
+    
     String dockerImage = "quay.io/biocontainers/sniffles:1.0.12--h8b12597_1"
     Int memSizeGB = 64
     Int threadCount = 32
