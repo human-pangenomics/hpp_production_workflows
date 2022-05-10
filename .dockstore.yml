@@ -111,3 +111,6 @@ workflows:
    -  name: snvInDelAssembly
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/snv_indel_assembly.wdl
+   -  name: Guppy
+      subclass: WDL
+      primaryDescriptorPath: /data_processing/wdl/guppy.wdl
