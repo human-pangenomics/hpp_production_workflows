@@ -106,14 +106,14 @@ task guppyGPU {
 
 	runtime {
 		memory: memSizeGB + " GB"
-        	cpu: threadCount
-        	disks: "local-disk " + diskSizeGB + " SSD"
-       		gpuCount: gpuCount
-        	gpuType: gpuType
-        	maxRetries : maxRetries
-        	nvidiaDriverVersion: nvidiaDriverVersion
-        	docker: dockerImage
-        	zones: zones
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+       	gpuCount: gpuCount
+        gpuType: gpuType
+        maxRetries : maxRetries
+        nvidiaDriverVersion: nvidiaDriverVersion
+        docker: dockerImage
+        zones: zones
 		preemptible: preempts
 	}
 
