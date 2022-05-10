@@ -3,33 +3,35 @@ version 1.0
 # This is a task level wdl workflow to run the program SNIFFLES
 
 workflow runSniffles {
-  input{
-    File inputBam
-    String outputName
-    String? dockerImage
 
-  }
-  call Sniffles{
-    input:
-      inputBam = inputBam,
-      outputName = outputName,
-      dockerImage = dockerImage
-  }
+  call Sniffles
+  
   output{
-    File outputFile = Sniffles.outputFile
+    File outputFile = Sniffles.vcfOut
   }
 }
 
 task Sniffles{
   input{
     File inputBam
-    String outputName
-    String dockerImage = "quay.io/biocontainers/sniffles:1.0.12--h8b12597_1"
-    Int memSizeGB = 64
-    Int threadCount = 32
-    Int diskSizeGB = 64
+    String SampleName
+    String? outputFileTag
+    
+    String dockerImage = "quay.io/biocontainers/sniffles@sha256:a403144dc9aad093a6aca476ec3eea40e27d82efaba682b753e944264f5e512d" # 1.0.12--h8b12597_1
+    Int memSizeGB = 128
+    Int threadCount = 64
+    Int diskSizeGB = 128
 
   }
+  
+ parameter_meta{
+     inputBam: "PacBio and Oxford Nanopore read data. Must be in BAM format."
+     SampleName: "Sample name. Will be used in output VCF file."
+     outputFileTag: "Output file tag to tag files by type of read data (HiFi/Ont)."
+ }
+ 
+ String outputName = "~{SampleName}.~{outputFileTag}_sniffles.vcf"
+ 
   command <<<
       # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
@@ -39,7 +41,7 @@ task Sniffles{
 
   >>>
   output{
-    File outputFile = glob("*.vcf")[0]
+    File vcfOut = glob("*.vcf")[0]
   }
   runtime{
     memory: memSizeGB + " GB"
