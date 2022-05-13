@@ -57,24 +57,6 @@ workflows:
    -  name: Asset
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/asset.wdl
-   -  name: AssetBamInput
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/workflows/asset_bam_input.wdl
-   -  name: AssetBamInputOntHiFi
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/workflows/asset_bam_input_ont_hifi.wdl
-   -  name: AssetBamInputHiFi
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/workflows/asset_bam_input_hifi.wdl
-   -  name: AssetBamInputOntHiFiBionano
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/workflows/asset_bam_input_ont_hifi_bionano.wdl
-   -  name: BionanoAlignment
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/tasks/bionano.wdl
-   -  name: FullAlignmentForAsset
-      subclass: WDL
-      primaryDescriptorPath: /asset/wdl/workflows/full_alignment_for_asset.wdl
    -  name: DnaBrnn
       subclass: WDL
       primaryDescriptorPath: /asset/wdl/tasks/dna_brnn.wdl
@@ -105,18 +87,6 @@ workflows:
    -  name: ProjectBlocks
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/project_blocks.wdl
-   -  name: ProjectBlocksMale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/project_blocks_male.wdl
-   -  name: ProjectBlocksFemale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/project_blocks_female.wdl
-   -  name: ProduceAutosomalBed 
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/produce_autosomal_bed.wdl
-   -  name: ProduceSexBed
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/produce_sex_bed.wdl
    -  name: SubsetCoverage
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/subset_coverage.wdl
@@ -132,45 +102,9 @@ workflows:
    -  name: SubtractBedFiles
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/subtract_bed_files.wdl
-   -  name: ExclusionStepMale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/exclusion_step_male.wdl
-   -  name: ExclusionStepFemale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/exclusion_step_female.wdl
-   -  name: FillGapsMale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/fill_gaps_male.wdl
-   -  name: FillGapsFemale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/fill_gaps_female.wdl
-   -  name: SubsetCoverageMale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/subset_coverage_male.wdl
-   -  name: SubsetCoverageFemale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/subset_coverage_female.wdl
    -  name: Cov2Counts
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/cov2counts.wdl
-   -  name: Cov2CountsMale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/cov2counts_male.wdl
-   -  name: Cov2CountsFemale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/cov2counts_female.wdl
-   -  name: FitModelMale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/fit_model_male.wdl
-   -  name: FitModelFemale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/fit_model_female.wdl
-   -  name: FindBlocksMale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/find_blocks_male.wdl
-   -  name: FindBlocksFemale
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/find_blocks_female.wdl
    -  name: FindBlocks
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/find_blocks.wdl
@@ -195,9 +129,9 @@ workflows:
    -  name: ConcatAssemblies
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/concat_assemblies.wdl
-   -  name: PhaseReads
+   -  name: SecPhase
       subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/phase_reads.wdl
+      primaryDescriptorPath: /coverage/wdl/tasks/secphase.wdl
    -  name: GetPhasedReadIds
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/get_phased_read_ids.wdl

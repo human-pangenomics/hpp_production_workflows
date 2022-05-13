@@ -1,8 +1,8 @@
 version 1.0 
 
-import "merge_bams.wdl" as mergeBams_t
+import "../tasks/merge_bams.wdl" as mergeBams_t
 
-workflow runPhaseReads{
+workflow runSecPhase{
     input {
         File inputBam
         File diploidAssemblyFastaGz
@@ -19,7 +19,7 @@ workflow runPhaseReads{
              diskSize = 2 * ceil(size(sortByName.outputBam, "GB")) + 64
     }
     scatter (splitBam in splitByName.splitBams) { 
-        call phaseReads{
+        call secphase{
             input:
                 bamFile = splitBam,
                 diploidAssemblyFastaGz = diploidAssemblyFastaGz,
@@ -29,13 +29,13 @@ workflow runPhaseReads{
     }
     call concatLogs as concatErrLogs{
         input:
-            logs = phaseReads.errLog,
+            logs = secphase.errLog,
             filename = basename("${inputBam}", ".bam") + ".phasing_err",
             diskSize = 256
     }
     call concatLogs as concatOutLogs{
         input:
-            logs = phaseReads.outLog,
+            logs = secphase.outLog,
             filename = basename("${inputBam}", ".bam") + ".phasing_out"
     }
 
@@ -45,7 +45,7 @@ workflow runPhaseReads{
     }
 }
 
-task phaseReads {
+task secphase {
     input {
         File bamFile
         File diploidAssemblyFastaGz
@@ -78,7 +78,7 @@ task phaseReads {
         samtools faidx asm.fa
 
         mkdir output
-        COMMAND=~{true="phase_reads_debug" false="phase_reads" debugMode}
+        COMMAND=~{true="secphase_debug" false="phase_reads" debugMode}
         ${COMMAND} ~{options} -i ~{bamFile} -f asm.fa 2> err.log > out.log || true
     >>>
     runtime {
