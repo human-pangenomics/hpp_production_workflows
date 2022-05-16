@@ -176,7 +176,7 @@ task splitFast5s {
 		do
 			size=$(du -s -BG $OUTPUT_DIR | sed 's/G.*//')
 			echo $size
-			if [[ $(( size )) > ~{desired_size_GB} ]]
+			if (( $size > ~{desired_size_GB} ))
 			then
 				tar -czvf fast5_tarball_$OUTPUT_IDX.tar.gz $OUTPUT_DIR/*
 				rm -r $OUTPUT_DIR
