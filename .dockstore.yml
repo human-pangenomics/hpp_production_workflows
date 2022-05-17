@@ -111,12 +111,9 @@ workflows:
    -  name: snvInDelAssembly
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/snv_indel_assembly.wdl
-<<<<<<< HEAD
    -  name: svAssembly
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/SV_assembly.wdl
-=======
    -  name: Guppy
       subclass: WDL
       primaryDescriptorPath: /data_processing/wdl/concatenateGuppyGPU.wdl
->>>>>>> 43bd28b420ebbc37f3feed63e6ebbd537f87d95d
