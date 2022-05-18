@@ -31,7 +31,7 @@ workflow parallelGuppyGPU {
 				file_type = "bam"
 		}
 
-		call concatenateFiles as fastqFile {
+		call concatenateFastq as fastqFile {
 			input:
 				files = guppyGPU.pass_fastq,
 				file_type = "fastq"
@@ -48,7 +48,7 @@ workflow parallelGuppyGPU {
 	# gather??
 	output {
 		Array[File] bams = bamFile.concatenatedFile
-		Array[File] fastqs = fastqFile.concatenatedFile
+		Array[File] fastqs = fastqFile.concatenatedFastq
 		Array[File] summaries = summaryFile.concatenatedFile
 	}
 	
@@ -77,10 +77,6 @@ task concatenateFiles {
 		then
 			samtools merge -o "${sample_name}_${guppy_version}.${file_type}" ${sep=" " files}
 
-		elif [[ ${file_type} == "fastq" ]]
-		then
-			cat ${sep=" " files} | gzip -c > "${sample_name}_${guppy_version}.${file_type}.gz"
-
 		else 
 			cat ${sep=" " files} > "tmp.${file_type}"
 			# remove duplicate headers
@@ -89,7 +85,46 @@ task concatenateFiles {
 	}
 
 	output {
-		File concatenatedFile = "${sample_name}_${guppy_version}.${file_type}*"
+		File concatenatedFile = "${sample_name}_${guppy_version}.${file_type}"
+	}
+
+	runtime {
+		memory: memSizeGB + " GB"
+		cpu: threadCount
+		disks: "local-disk " + diskSizeGB + " SSD"
+		docker: dockerImage
+		preemptible : preempts
+	}
+}
+
+
+task concatenateFastq {
+	input {
+		Array[File] files
+		String file_type
+		String sample_name
+		String guppy_version
+
+
+		String dockerImage = "tpesout/megalodon:latest"
+
+		# runtime
+		Int preempts = 3
+		Int memSizeGB = 8
+		Int threadCount = 3
+		Int diskSizeGB = 500
+	}
+	
+
+	command {
+		
+		cat ${sep=" " files} | gzip -c > "${sample_name}_${guppy_version}.${file_type}.gz"
+
+		
+	}
+
+	output {
+		File concatenatedFastq = "${sample_name}_${guppy_version}.${file_type}.gz"
 	}
 
 	runtime {
