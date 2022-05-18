@@ -146,7 +146,7 @@ task splitFast5s {
 			echo $size
 			if (( $size > ~{desired_size_GB} ))
 			then
-				tar -cvf fast5_tarball_$OUTPUT_IDX.tar.gz $OUTPUT_DIR/*
+				tar -cvf fast5_tarball_$OUTPUT_IDX.tar $OUTPUT_DIR/*
 				rm -r $OUTPUT_DIR
 				OUTPUT_IDX=$(($OUTPUT_IDX + 1))
 				OUTPUT_DIR=fast5_tar_$OUTPUT_IDX
@@ -155,13 +155,13 @@ task splitFast5s {
 			echo $(du -s -BG $OUTPUT_DIR | sed 's/G.*//')
 			mv input/$FILE $OUTPUT_DIR
 		done
-		tar -cvf fast5_tarball_$OUTPUT_IDX.tar.gz $OUTPUT_DIR/*
+		tar -cvf fast5_tarball_$OUTPUT_IDX.tar $OUTPUT_DIR/*
 		rm -r $OUTPUT_DIR
 
 	>>>
 
 	output {
-		Array[File] split_fast5_tar = glob("*tar.gz")
+		Array[File] split_fast5_tar = glob("*tar")
 	}
 
 	runtime {
