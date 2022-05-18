@@ -4,7 +4,17 @@ workflow parallelGuppyGPU {
 	input {
 		# input must be tar files
 		Array[File] fast5_tar_files
+		String sample_name
+		String guppy_version
+		Int desired_size_GB
 		
+	}
+
+	parameter_meta {
+		fast5_tar_files: "Input fast5 tar, files must be in .tar format"
+		sample_name: "Name of sample, used for output file names"
+		guppy_version: "Guppy version, used for output file names"
+		desired_size_GB: "Choose size to split input tar file by. With a 300GB fast5_tar_file and 30GB desired_size_GB, the fast5_tar_file will be split in 10 pieces."
 	}
 
 
@@ -12,11 +22,12 @@ workflow parallelGuppyGPU {
 	scatter (fast5_tar in fast5_tar_files) {
 		call splitFast5s {
 			input:
-				file_to_split_tar = fast5_tar
+				file_to_split_tar = fast5_tar,
+				desired_size_GB = desired_size_GB
 
 		}
 
-		# call guppyGPU on each of the smaller "proportioned" tar files
+		# call guppyGPU on each of the smaller "split" tar files
 		scatter (split_fast5_tar in splitFast5s.split_fast5_tar) {
 			call guppyGPU {
 				input:
@@ -24,28 +35,32 @@ workflow parallelGuppyGPU {
 			}
 		}
 
-		# ?????
 		call concatenateFiles as bamFile {
 			input:
 				files = guppyGPU.pass_bam,
-				file_type = "bam"
+				file_type = "bam",
+				sample_name = sample_name,
+				guppy_version = guppy_version
 		}
 
 		call concatenateFastq as fastqFile {
 			input:
 				files = guppyGPU.pass_fastq,
-				file_type = "fastq"
+				file_type = "fastq",
+				sample_name = sample_name,
+				guppy_version = guppy_version
 		}
 
 		call concatenateFiles as summaryFile {
 			input:
 				files = guppyGPU.summary,
-				file_type = "txt"
+				file_type = "txt",
+				sample_name = sample_name,
+				guppy_version = guppy_version
 		}
 
 	}
 
-	# gather??
 	output {
 		Array[File] bams = bamFile.concatenatedFile
 		Array[File] fastqs = fastqFile.concatenatedFastq
@@ -58,13 +73,12 @@ task concatenateFiles {
 	input {
 		Array[File] files
 		String file_type
+		
 		String sample_name
 		String guppy_version
 
-
 		String dockerImage = "tpesout/megalodon:latest"
 
-		# runtime
 		Int preempts = 3
 		Int memSizeGB = 8
 		Int threadCount = 3
@@ -80,7 +94,7 @@ task concatenateFiles {
 		else 
 			cat ${sep=" " files} > "tmp.${file_type}"
 			# remove duplicate headers
-			awk 'NR==1 || !/^filename/' "tmp.${file_type}" > "${sample_name}_${guppy_version}.${file_type}"
+			awk 'NR==1 || !/^filename/' "tmp.${file_type}" > "${sample_name}_${guppy_version}_sequencing_summary.${file_type}"
 		fi
 	}
 
@@ -117,10 +131,7 @@ task concatenateFastq {
 	
 
 	command {
-		
 		cat ${sep=" " files} | gzip -c > "${sample_name}_${guppy_version}.${file_type}.gz"
-
-		
 	}
 
 	output {
@@ -144,7 +155,6 @@ task splitFast5s {
 
 		String dockerImage = "jiminpark/guppy-wdl:latest" 
 
-		# runtime
 		Int preempts = 3
 		Int memSizeGB = 8
 		Int extraDisk = 5
@@ -172,6 +182,8 @@ task splitFast5s {
 		done
 
 
+		# move files into folder until exceeds desired_size_GB
+		# then tar contents of folder
 		OUTPUT_IDX=0
 		OUTPUT_DIR=fast5_tar_$OUTPUT_IDX
 		mkdir $OUTPUT_DIR
@@ -206,8 +218,6 @@ task splitFast5s {
 		docker: dockerImage
 		preemptible : preempts
 	}
-
-
 }
 
 task guppyGPU {
@@ -220,7 +230,6 @@ task guppyGPU {
 		Int READ_BATCH_SIZE = 250000
 		Int q = 250000
 
-		
 		String dockerImage = "jiminpark/guppy-wdl:latest" 
 
 		String? additionalArgs
@@ -236,6 +245,7 @@ task guppyGPU {
 		String zones = "us-west1-b"
 	}
 
+	# calculate needed disk size
 	Int file_size = ceil(size(fast5_tar_file, "GB"))
 	Int diskSizeGB = 3 * file_size + extraDisk
 
@@ -302,6 +312,12 @@ task guppyGPU {
 		preemptible : preempts
 		docker: dockerImage
 		zones: zones
+	}
+
+	meta {
+		author: "Jimin Park"
+		email: "jpark621@ucsc.edu"
+		description: "Calls guppy_basecaller with GPUs. Takes in fast5 tar file and outputs unaligned bam with methylation calls, fastq and sequencing summary text file."
 	}
 
 
