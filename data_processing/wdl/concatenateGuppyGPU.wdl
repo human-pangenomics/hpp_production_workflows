@@ -84,6 +84,7 @@ task concatenateFiles {
 
 		else 
 			cat ${sep=" " files} > "tmp.${file_type}"
+			# remove duplicate headers
 			awk 'NR==1 || !/^filename/' "tmp.${file_type}" > "${sample_name}_${guppy_version}.${file_type}"
 		fi
 	}
