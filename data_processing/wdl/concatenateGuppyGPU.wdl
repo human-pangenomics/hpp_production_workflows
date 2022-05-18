@@ -79,8 +79,7 @@ task concatenateFiles {
 
 		elif [[ ${file_type} == "fastq" ]]
 		then
-			cat ${sep=" " files} > "${sample_name}_${guppy_version}.${file_type}"
-			gzip "${sample_name}_${guppy_version}.${file_type}"
+			cat ${sep=" " files} | gzip -c > "${sample_name}_${guppy_version}.${file_type}.gz"
 
 		else 
 			cat ${sep=" " files} > "tmp.${file_type}"
@@ -147,7 +146,7 @@ task splitFast5s {
 			echo $size
 			if (( $size > ~{desired_size_GB} ))
 			then
-				tar -czvf fast5_tarball_$OUTPUT_IDX.tar.gz $OUTPUT_DIR/*
+				tar -cvf fast5_tarball_$OUTPUT_IDX.tar.gz $OUTPUT_DIR/*
 				rm -r $OUTPUT_DIR
 				OUTPUT_IDX=$(($OUTPUT_IDX + 1))
 				OUTPUT_DIR=fast5_tar_$OUTPUT_IDX
@@ -156,7 +155,7 @@ task splitFast5s {
 			echo $(du -s -BG $OUTPUT_DIR | sed 's/G.*//')
 			mv input/$FILE $OUTPUT_DIR
 		done
-		tar -czvf fast5_tarball_$OUTPUT_IDX.tar.gz $OUTPUT_DIR/*
+		tar -cvf fast5_tarball_$OUTPUT_IDX.tar.gz $OUTPUT_DIR/*
 		rm -r $OUTPUT_DIR
 
 	>>>
