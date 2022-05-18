@@ -35,26 +35,23 @@ workflow scatterGuppyGPU {
 			}
 		}
 
-		call concatenateFiles as bamFile {
+		call concatenateBam {
 			input:
 				files = guppyGPU.pass_bam,
-				file_type = "bam",
 				sample_name = sample_name,
 				guppy_version = guppy_version
 		}
 
-		call concatenateFastq as fastqFile {
+		call concatenateFastq {
 			input:
 				files = guppyGPU.pass_fastq,
-				file_type = "fastq",
 				sample_name = sample_name,
 				guppy_version = guppy_version
 		}
 
-		call concatenateFiles as summaryFile {
+		call concatenateSummary {
 			input:
 				files = guppyGPU.summary,
-				file_type = "txt",
 				sample_name = sample_name,
 				guppy_version = guppy_version
 		}
@@ -62,17 +59,16 @@ workflow scatterGuppyGPU {
 	}
 
 	output {
-		Array[File] bams = bamFile.concatenatedFile
-		Array[File] fastqs = fastqFile.concatenatedFastq
-		Array[File] summaries = summaryFile.concatenatedFile
+		Array[File] bams = concatenateBam.concatenatedBam
+		Array[File] fastqs = concatenateFastq.concatenatedFastq
+		Array[File] summaries = concatenateSummary.concatenatedSummary
 	}
 	
 }
 
-task concatenateFiles {
+task concatenateBam {
 	input {
 		Array[File] files
-		String file_type
 		
 		String sample_name
 		String guppy_version
@@ -87,19 +83,11 @@ task concatenateFiles {
 	
 
 	command {
-		if [[ ${file_type} == "bam" ]]
-		then
-			samtools merge -o "${sample_name}_${guppy_version}.${file_type}" ${sep=" " files}
-
-		else 
-			cat ${sep=" " files} > "tmp.${file_type}"
-			# remove duplicate headers
-			awk 'NR==1 || !/^filename/' "tmp.${file_type}" > "${sample_name}_${guppy_version}.${file_type}"
-		fi
+		samtools merge -o "${sample_name}_${guppy_version}.bam" ${sep=" " files}
 	}
 
 	output {
-		File concatenatedFile = "${sample_name}_${guppy_version}.${file_type}"
+		File concatenatedBam = "${sample_name}_${guppy_version}.bam"
 	}
 
 	runtime {
@@ -115,7 +103,6 @@ task concatenateFiles {
 task concatenateFastq {
 	input {
 		Array[File] files
-		String file_type
 		String sample_name
 		String guppy_version
 
@@ -131,11 +118,47 @@ task concatenateFastq {
 	
 
 	command {
-		cat ${sep=" " files} | gzip -c > "${sample_name}_${guppy_version}.${file_type}.gz"
+		cat ${sep=" " files} | gzip -c > "${sample_name}_${guppy_version}.fastq.gz"
 	}
 
 	output {
-		File concatenatedFastq = "${sample_name}_${guppy_version}.${file_type}.gz"
+		File concatenatedFastq = "${sample_name}_${guppy_version}.fastq.gz"
+	}
+
+	runtime {
+		memory: memSizeGB + " GB"
+		cpu: threadCount
+		disks: "local-disk " + diskSizeGB + " SSD"
+		docker: dockerImage
+		preemptible : preempts
+	}
+}
+
+task concatenateSummary {
+	input {
+		Array[File] files
+		String sample_name
+		String guppy_version
+
+
+		String dockerImage = "tpesout/megalodon:latest"
+
+		# runtime
+		Int preempts = 3
+		Int memSizeGB = 8
+		Int threadCount = 3
+		Int diskSizeGB = 500
+	}
+	
+
+	command {
+		cat ${sep=" " files} > "tmp.txt"
+		# remove duplicate headers
+		awk 'NR==1 || !/^filename/' "tmp.txt" > "${sample_name}_${guppy_version}_sequencing_summary.txt"
+	}
+
+	output {
+		File concatenatedSummary = "${sample_name}_${guppy_version}_sequencing_summary.txt"
 	}
 
 	runtime {
