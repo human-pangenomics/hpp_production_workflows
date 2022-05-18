@@ -31,7 +31,7 @@ workflow parallelGuppyGPU {
 				file_type = "bam"
 		}
 
-		call concatenateFastq as fastqFile {
+		call concatenateFiles as fastqFile {
 			input:
 				files = guppyGPU.pass_fastq,
 				file_type = "fastq"
@@ -48,7 +48,7 @@ workflow parallelGuppyGPU {
 	# gather??
 	output {
 		Array[File] bams = bamFile.concatenatedFile
-		Array[File] fastqs = fastqFile.concatenatedFastq
+		Array[File] fastqs = fastqFile.concatenatedFile
 		Array[File] summaries = summaryFile.concatenatedFile
 	}
 	
@@ -69,21 +69,26 @@ task concatenateFiles {
 		Int memSizeGB = 8
 		Int threadCount = 3
 		Int diskSizeGB = 500
-		String zones = "us-west1-b"
 	}
 	
 
 	command {
 		if [[ ${file_type} == "bam" ]]
 		then
-			samtools merge -o "${sample_name}_${guppy_version}.${file_type}" ${sep=" " files} 
+			samtools merge -o "${sample_name}_${guppy_version}.${file_type}" ${sep=" " files}
+
+		elif [[ ${file_type} == "fastq" ]]
+		then
+			cat ${sep=" " files} > "${sample_name}_${guppy_version}.${file_type}"
+			gzip "${sample_name}_${guppy_version}.${file_type}"
+
 		else 
 			cat ${sep=" " files} > "${sample_name}_${guppy_version}.${file_type}"
 		fi
 	}
 
 	output {
-		File concatenatedFile = "${sample_name}_${guppy_version}.${file_type}"
+		File concatenatedFile = "${sample_name}_${guppy_version}.${file_type}*"
 	}
 
 	runtime {
@@ -92,44 +97,6 @@ task concatenateFiles {
 		disks: "local-disk " + diskSizeGB + " SSD"
 		docker: dockerImage
 		preemptible : preempts
-		zones: zones
-	}
-}
-
-# separate task to concatenate fastq files
-task concatenateFastq {
-	input {
-		Array[File] files
-		String file_type
-		String sample_name
-		String guppy_version
-
-
-		String dockerImage = "tpesout/megalodon:latest"
-
-		# runtime
-		Int preempts = 3
-		Int memSizeGB = 8
-		Int threadCount = 3
-		Int diskSizeGB = 500
-		String zones = "us-west1-b"
-	}
-
-	command {
-		tar -czvf "${sample_name}_${guppy_version}.${file_type}.tar.gz" ${sep=" " files}
-	}
-
-	output {
-		File concatenatedFastq = "${sample_name}_${guppy_version}.${file_type}.tar.gz"
-	}
-
-	runtime {
-		memory: memSizeGB + " GB"
-		cpu: threadCount
-		disks: "local-disk " + diskSizeGB + " SSD"
-		docker: dockerImage
-		preemptible : preempts
-		zones: zones
 	}
 }
 
