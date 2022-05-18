@@ -83,7 +83,8 @@ task concatenateFiles {
 			gzip "${sample_name}_${guppy_version}.${file_type}"
 
 		else 
-			cat ${sep=" " files} > "${sample_name}_${guppy_version}.${file_type}"
+			cat ${sep=" " files} > "tmp.${file_type}"
+			awk 'NR==1 || !/^filename/' "tmp.${file_type}" > "${sample_name}_${guppy_version}.${file_type}"
 		fi
 	}
 
