@@ -111,7 +111,7 @@ task splitFast5s {
                 OUTPUT_DIR=fast5_tar_$OUTPUT_IDX
                 mkdir $OUTPUT_DIR
             fi
-            mv tmp/$FILE $OUTPUT_DIR
+            mv $FILE $OUTPUT_DIR
         done
         tar -cvf fast5_tarball_$OUTPUT_IDX.tar $OUTPUT_DIR/*
         rm -r $OUTPUT_DIR
