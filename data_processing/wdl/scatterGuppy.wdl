@@ -312,7 +312,7 @@ task concatenateSummary {
         Int preempts = 3
         Int memSizeGB = 8
         Int threadCount = 3
-        Int diskSizeGB = 500
+        Int diskSizeGB = 50
     }
     
     command {
