@@ -36,14 +36,14 @@ workflow scatterGuppyGPU {
 
         call concatenateBam {
             input:
-                files = guppyGPU.pass_bam,
+                files = flatten(guppyGPU.pass_bam),
                 sample_name = sample_name,
                 guppy_version = guppy_version
         }
 
         call concatenateFastq {
             input:
-                files = guppyGPU.pass_fastq,
+                files = flatten(guppyGPU.pass_fastq),
                 sample_name = sample_name,
                 guppy_version = guppy_version
         }
@@ -206,10 +206,9 @@ task guppyGPU {
     >>>
 
     output {
-        File pass_bam = glob("output/pass/*.bam")[0]
-        File pass_fastq = glob("output/pass/*.fastq")[0]
+        Array[File] pass_bam = glob("output/pass/*.bam")
+        Array[File] pass_fastq = glob("output/pass/*.fastq")
         File summary = glob("output/sequencing_summary.txt")[0]
-
     }
 
     runtime {
