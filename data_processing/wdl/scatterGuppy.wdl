@@ -2,7 +2,6 @@ version 1.0
 
 workflow scatterGuppyGPU {
     input {
-        # input must be tar files
         Array[File] fast5_tar_files
         String sample_name
         String guppy_version
