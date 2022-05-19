@@ -87,7 +87,6 @@ task splitFast5s {
     Int file_size = ceil(size(file_to_split_tar, "GB"))
     Int diskSizeGB = 3 * file_size + extraDisk
 
-
     command <<<
         ## Extract tar file to 
         mkdir tmp
@@ -95,7 +94,6 @@ task splitFast5s {
         # place all extracted files into directory tmp
         tar xvf "~{file_to_split_tar}" --directory tmp
         rm ~{file_to_split_tar}
-
 
         # move files into folder until exceeds desired_size_GB
         # then tar contents of folder
@@ -207,7 +205,6 @@ task guppyGPU {
 
     >>>
 
-
     output {
         File pass_bam = glob("output/pass/*.bam")[0]
         File pass_fastq = glob("output/pass/*.fastq")[0]
@@ -269,7 +266,6 @@ task concatenateFastq {
         String sample_name
         String guppy_version
 
-
         String dockerImage = "tpesout/megalodon:latest"
 
         # runtime
@@ -279,7 +275,6 @@ task concatenateFastq {
         Int diskSizeGB = 500
     }
     
-
     command {
         cat ${sep=" " files} | gzip -c > "${sample_name}_${guppy_version}.fastq.gz"
     }
@@ -303,7 +298,6 @@ task concatenateSummary {
         Array[File] files
         String sample_name
         String guppy_version
-
 
         String dockerImage = "tpesout/megalodon:latest"
 
