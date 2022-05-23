@@ -131,7 +131,7 @@ workflows:
       primaryDescriptorPath: /coverage/wdl/tasks/concat_assemblies.wdl
    -  name: SecPhase
       subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/secphase.wdl
+      primaryDescriptorPath: /coverage/wdl/workflows/secphase.wdl
    -  name: GetPhasedReadIds
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/tasks/get_phased_read_ids.wdl
