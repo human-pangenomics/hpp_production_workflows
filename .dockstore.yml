@@ -114,3 +114,6 @@ workflows:
    -  name: svAssembly
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/SV_assembly.wdl
+   -  name: Guppy
+      subclass: WDL
+      primaryDescriptorPath: /data_processing/wdl/scatterGuppy.wdl
