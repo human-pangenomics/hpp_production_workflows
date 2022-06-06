@@ -45,7 +45,7 @@ task Iris{
 
     >>>
     output{
-        File vcfOut = glob("*.iris.vcf")[0]
+        File vcfOut = glob("*iris.vcf")[0]
     }
     runtime{
         memory: memSizeGB + " GB"
