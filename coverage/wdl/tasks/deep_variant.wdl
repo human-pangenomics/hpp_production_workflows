@@ -170,7 +170,7 @@ task deepVariant{
         Int memSize=32
         Int threadCount=16
         Int diskSize=64
-        String dockerImage="google/deepvariant:latest"
+        String dockerImage="google/deepvariant:1.3.0"
         Int preemptible=2
         String zones="us-west2-a"
     }
