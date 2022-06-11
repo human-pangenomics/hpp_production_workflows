@@ -45,7 +45,7 @@ task subsetBam {
         Int memSize=16
         Int threadCount=8
         Int diskSize=128
-        String dockerImage="mobinasri/bio_base:v0.1"
+        String dockerImage="mobinasri/bio_base:latest"
         Int preemptible=2
     }
     command <<<
