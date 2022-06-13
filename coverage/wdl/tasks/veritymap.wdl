@@ -83,7 +83,7 @@ task subsetBam {
         ln ~{bam} input/${PREFIX}.bam
         ln ~{bamIndex} input/${PREFIX}.bam.bai
 
-        REGION=$(cat ${oneLineBed} | awk '{printf $1":"$2"-"$3}')
+        REGION=$(cat ~{oneLineBed} | awk '{printf $1":"$2"-"$3}')
         mkdir output
         samtools view -hb input/${PREFIX}.bam ${REGION} > output/${PREFIX}.bam
         samtools index output/${PREFIX}.bam
