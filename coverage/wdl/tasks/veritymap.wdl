@@ -81,7 +81,7 @@ task subsetBam {
 
         mkdir input
         ln ~{bam} input/${PREFIX}.bam
-        ln ~{bamIndex} output/${PREFIX}.bam.bai
+        ln ~{bamIndex} input/${PREFIX}.bam.bai
 
         REGION=$(cat ${oneLineBed} | awk '{printf $1":"$2"-"$3}')
         mkdir output
