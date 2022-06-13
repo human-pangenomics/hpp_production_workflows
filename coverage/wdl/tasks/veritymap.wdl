@@ -1,6 +1,7 @@
 version 1.0 
 
 import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
+import "correct_bam.wdl" as correct_bam_t
 
 workflow runVerityMap{
     input {
@@ -8,6 +9,10 @@ workflow runVerityMap{
         File bamIndex
         File oneLineHorBed
         File assemblyFastaGz
+        File? phasingLogText
+        Int minReadLength = 5000
+        Int minAlignmentLength = 2000
+        Float maxDivergence = 0.01
     }
     call subsetBam{
         input:
@@ -15,9 +20,20 @@ workflow runVerityMap{
             bamIndex = bamIndex,
             oneLineBed = oneLineHorBed
     }
+    ## Correct the bam file by swapping pri/sec tags for the wrongly phased reads
+    call correct_bam_t.correctBam {
+        input:
+            bam = subsetBam.subsetBam,
+            phasingLogText = phasingLogText,
+            suffix = "corrected",
+            options = "--primaryOnly --minReadLen ${minReadLength} --minAlignment ${minAlignmentLength} --maxDiv ${maxDivergence}",
+            flagRemoveSupplementary = true,
+            flagRemoveMultiplePrimary = true,
+            diskSize = ceil(size(subsetBam.subsetBam, "GB")) * 2 + 64
+    }
     call extractReads_t.extractReads as extractReads {
         input:
-            readFile=subsetBam.subsetBam,
+            readFile=correctBam.correctedBam,
             referenceFasta=assemblyFastaGz,
             memSizeGB=4,
             threadCount=4,
