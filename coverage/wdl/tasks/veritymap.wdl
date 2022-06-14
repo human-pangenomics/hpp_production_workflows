@@ -14,32 +14,39 @@ workflow runVerityMap{
         Int minAlignmentLength = 2000
         Float maxDivergence = 0.01
     }
-    call subsetBam{
-        input:
-            bam = bam,
-            bamIndex = bamIndex,
-            oneLineBed = oneLineHorBed
-    }
+
     ## Correct the bam file by swapping pri/sec tags for the wrongly phased reads
     call correct_bam_t.correctBam {
         input:
-            bam = subsetBam.subsetBam,
+            bam = bam,
             phasingLogText = phasingLogText,
             suffix = "corrected",
             options = "--primaryOnly --minReadLen ${minReadLength} --minAlignment ${minAlignmentLength} --maxDiv ${maxDivergence}",
             flagRemoveSupplementary = true,
             flagRemoveMultiplePrimary = true,
-            diskSize = ceil(size(subsetBam.subsetBam, "GB")) * 2 + 64
+            diskSize = ceil(size(bam, "GB")) * 2 + 64
     }
+
+    # subset the bam file to include only the alignments to the HOR array
+    call subsetBam{
+        input:
+            bam = correctBam.correctedBam,
+            bamIndex = bamIndex,
+            oneLineBed = oneLineHorBed
+    }
+
+    # Extract reads in fastq format
     call extractReads_t.extractReads as extractReads {
         input:
-            readFile=correctBam.correctedBam,
+            readFile=subsetBam.subsetBam,
             referenceFasta=assemblyFastaGz,
             memSizeGB=4,
             threadCount=4,
             diskSizeGB=2 * ceil(size(subsetBam.subsetBam, "GB")) + 64,
             dockerImage="tpesout/hpp_base:latest"
     }
+
+    # Run VerityMap to evaluate the HOR array
     call verityMap{
         input:
             assemblyFastaGz = assemblyFastaGz,
@@ -130,7 +137,7 @@ task verityMap {
         # extract HOR assembly
         FILENAME=$(basename ~{assemblyFastaGz})
         PREFIX=${FILENAME%%.fa*.gz}
-        gunzip -c ${FILENAME} > ${PREFIX}.fa
+        gunzip -c ~{assemblyFastaGz} > ${PREFIX}.fa
         # make .genome file for 'bedtools getfasta'
         samtools faidx ${PREFIX}.fa
         cat ${PREFIX}.fa.fai | cut -f1-2 > ${PREFIX}.fa.genome
