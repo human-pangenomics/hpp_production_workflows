@@ -138,11 +138,9 @@ task verityMap {
         FILENAME=$(basename ~{assemblyFastaGz})
         PREFIX=${FILENAME%%.fa*.gz}
         gunzip -c ~{assemblyFastaGz} > ${PREFIX}.fa
-        # make .genome file for 'bedtools getfasta'
         samtools faidx ${PREFIX}.fa
-        cat ${PREFIX}.fa.fai | cut -f1-2 > ${PREFIX}.fa.genome
 
-        bedtools getfasta -fi ${PREFIX}.fa -fo ${PREFIX}.~{suffix}.fa -bed ~{horBed} -g ${PREFIX}.fa.genome
+        bedtools getfasta -fi ${PREFIX}.fa -fo ${PREFIX}.~{suffix}.fa -bed ~{horBed}
 
         # run VerityMap
         python3 ${VERITY_MAP_PY} --reads ~{readsFastq} -o output -t~{threadCount} -d hifi --careful ${PREFIX}.~{suffix}.fa
