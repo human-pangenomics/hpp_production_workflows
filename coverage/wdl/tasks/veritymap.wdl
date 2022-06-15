@@ -31,7 +31,7 @@ workflow runVerityMap{
     call subsetBam{
         input:
             bam = correctBam.correctedBam,
-            bamIndex = bamIndex,
+            bamIndex = correctBam.correctedBamIndex,
             oneLineBed = oneLineHorBed
     }
 
