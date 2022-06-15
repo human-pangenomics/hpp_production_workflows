@@ -146,7 +146,8 @@ task verityMap {
         python3 ${VERITY_MAP_PY} --reads ~{readsFastq} -o output -t~{threadCount} -d hifi --careful ${PREFIX}.~{suffix}.fa
 
         # convert sam to bam, sort and index bam file
-        SAM_FILENAME=$(ls output/*.sam)
+        SAM_PATH=$(ls output/*.sam)
+        SAM_FILENAME=$(basename ${SAM_PATH})
         SAM_PREFIX=${SAM_FILENAME%%.sam} 
         samtools view -hb output/${SAM_PREFIX}.sam > output/${SAM_PREFIX}.bam
         samtools sort output/${SAM_PREFIX}.bam > output/${SAM_PREFIX}.sorted.bam
