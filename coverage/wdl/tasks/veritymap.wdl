@@ -7,7 +7,8 @@ workflow runVerityMap{
     input {
         File bam
         File bamIndex
-        File oneLineHorBed
+        Array[File] oneLineHorBedArray
+        Array[File] suffixArray
         File assemblyFastaGz
         File? phasingLogText
         Int minReadLength = 5000
@@ -27,35 +28,41 @@ workflow runVerityMap{
             diskSize = ceil(size(bam, "GB")) * 2 + 64
     }
 
-    # subset the bam file to include only the alignments to the HOR array
-    call subsetBam{
-        input:
-            bam = correctBam.correctedBam,
-            bamIndex = correctBam.correctedBamIndex,
-            oneLineBed = oneLineHorBed
-    }
+    scatter (bedAndSuffix in zip(oneLineHorBedArray, suffixArray)) {
+        File bed = bedAndSuffix.left
+        File suffix = bedAndSuffix.right
 
-    # Extract reads in fastq format
-    call extractReads_t.extractReads as extractReads {
-        input:
-            readFile=subsetBam.subsetBam,
-            referenceFasta=assemblyFastaGz,
-            memSizeGB=4,
-            threadCount=4,
-            diskSizeGB=2 * ceil(size(subsetBam.subsetBam, "GB")) + 64,
-            dockerImage="tpesout/hpp_base:latest"
-    }
+        # subset the bam file to include only the alignments to the HOR array
+        call subsetBam{
+            input:
+                bam = correctBam.correctedBam,
+                bamIndex = correctBam.correctedBamIndex,
+                oneLineBed = bed
+        }
 
-    # Run VerityMap to evaluate the HOR array
-    call verityMap{
-        input:
-            assemblyFastaGz = assemblyFastaGz,
-            horBed=oneLineHorBed,
-            readsFastq = extractReads.extractedRead,
-            diskSize = 2 * ceil(size(extractReads.extractedRead, "GB")) + 64,
+        # Extract reads in fastq format
+        call extractReads_t.extractReads as extractReads {
+            input:
+                readFile=subsetBam.subsetBam,
+                referenceFasta=assemblyFastaGz,
+                memSizeGB=4,
+                threadCount=4,
+                diskSizeGB=2 * ceil(size(subsetBam.subsetBam, "GB")) + 64,
+                dockerImage="tpesout/hpp_base:latest"
+        }
+
+        # Run VerityMap to evaluate the HOR array
+        call verityMap{
+            input:
+                assemblyFastaGz = assemblyFastaGz,
+                horBed = bed,
+                readsFastq = extractReads.extractedRead,
+                suffix = suffix,
+                diskSize = 2 * ceil(size(extractReads.extractedRead, "GB")) + 64,
+        }
     }
     output{
-        File outputTarGz = verityMap.outputTarGz
+        Array[File] outputTarGzArray = verityMap.outputTarGz
     }
 }
 
