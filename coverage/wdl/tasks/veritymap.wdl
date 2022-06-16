@@ -160,6 +160,10 @@ task verityMap {
         samtools sort output/${SAM_PREFIX}.bam > output/${SAM_PREFIX}.sorted.bam
         samtools index output/${SAM_PREFIX}.sorted.bam
 
+        # Copy fasta
+        cp ${PREFIX}.~{suffix}.fa output/${SAM_PREFIX}.fa
+        samtools faidx output/${SAM_PREFIX}.fa
+        
         # Rename output folder
         mv output ${PREFIX}.~{suffix}
         tar cvzf ${PREFIX}.~{suffix}.tar.gz ${PREFIX}.~{suffix}
