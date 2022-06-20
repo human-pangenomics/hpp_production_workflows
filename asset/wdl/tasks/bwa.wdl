@@ -49,7 +49,6 @@ workflow bwaPairedAlignment{
                 referenceFasta = referenceFasta,
                 pairedFastq_1 = extractReads_1.extractedRead,
                 pairedFastq_2 = extractReads_2.extractedRead,
-                pairedSuffix_1="_R1_001",
                 indexTar = buildBwaIndex.indexTar,
                 diskSize = extractReads_1.fileSizeGB * 6,
                 preemptible = preemptible,
