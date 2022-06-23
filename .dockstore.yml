@@ -117,3 +117,9 @@ workflows:
    -  name: Guppy
       subclass: WDL
       primaryDescriptorPath: /data_processing/wdl/scatterGuppy.wdl
+   -  name: VerityMap
+      subclass: WDL
+      primaryDescriptorPath: /centromere/wdl/veritymap.wdl
+   -  name: StainedGlass
+      subclass: WDL
+      primaryDescriptorPath: /centromere/wdl/stained_glass.wdl
