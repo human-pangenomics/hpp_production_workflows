@@ -34,19 +34,34 @@ workflow scatterGuppyGPU {
             }
         }
 
-        call concatenateBam {
+        call concatenateBam as passBam {
             input:
                 files = flatten(guppyGPU.pass_bam),
                 sample_name = sample_name,
                 guppy_version = guppy_version
         }
 
-        call concatenateFastq {
+        call concatenateFastq as passFastq {
             input:
                 files = flatten(guppyGPU.pass_fastq),
                 sample_name = sample_name,
                 guppy_version = guppy_version
         }
+
+        call concatenateBam as failBam {
+            input:
+                files = flatten(guppyGPU.fail_bam),
+                sample_name = sample_name,
+                guppy_version = guppy_version
+        }
+
+        call concatenateFastq as failFastq {
+            input:
+                files = flatten(guppyGPU.fail_fastq),
+                sample_name = sample_name,
+                guppy_version = guppy_version
+        }
+
 
         call concatenateSummary {
             input:
@@ -58,8 +73,10 @@ workflow scatterGuppyGPU {
     }
 
     output {
-        Array[File] bams = concatenateBam.concatenatedBam
-        Array[File] fastqs = concatenateFastq.concatenatedFastq
+        Array[File] bams_pass = passBam.concatenatedBam
+        Array[File] fastqs_pass = passFastq.concatenatedFastq
+        Array[File] bams_fail = failBam.concatenatedBam
+        Array[File] fastqs_fail = failFastq.concatenatedFastq
         Array[File] summaries = concatenateSummary.concatenatedSummary
     }
     
@@ -208,9 +225,9 @@ task guppyGPU {
     output {
         Array[File] pass_bam = glob("output/*.bam")
         Array[File] pass_fastq = glob("output/*.fastq")
-        
-        #Array[File] fail_bam = glob("output/fail/*bam")
-        #Array[File] fail_fastq = glob("output/fail/*fastq")
+
+        Array[File] fail_bam = glob("output/fail/*bam")
+        Array[File] fail_fastq = glob("output/fail/*fastq")
         File summary = glob("output/sequencing_summary.txt")[0]
     }
 
