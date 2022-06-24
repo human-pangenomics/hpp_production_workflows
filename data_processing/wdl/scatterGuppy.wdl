@@ -38,28 +38,32 @@ workflow scatterGuppyGPU {
             input:
                 files = flatten(guppyGPU.pass_bam),
                 sample_name = sample_name,
-                guppy_version = guppy_version
+                guppy_version = guppy_version,
+                pass_fail = "pass"
         }
 
         call concatenateFastq as passFastq {
             input:
                 files = flatten(guppyGPU.pass_fastq),
                 sample_name = sample_name,
-                guppy_version = guppy_version
+                guppy_version = guppy_version,
+                pass_fail = "pass"
         }
 
         call concatenateBam as failBam {
             input:
                 files = flatten(guppyGPU.fail_bam),
                 sample_name = sample_name,
-                guppy_version = guppy_version
+                guppy_version = guppy_version,
+                pass_fail = "fail"
         }
 
         call concatenateFastq as failFastq {
             input:
                 files = flatten(guppyGPU.fail_fastq),
                 sample_name = sample_name,
-                guppy_version = guppy_version
+                guppy_version = guppy_version,
+                pass_fail = "fail"
         }
 
 
@@ -252,6 +256,7 @@ task concatenateBam {
         
         String sample_name
         String guppy_version
+        String pass_fail
 
         String dockerImage = "tpesout/megalodon:latest"
 
@@ -262,7 +267,7 @@ task concatenateBam {
     }
     
     command {
-        samtools merge -o "${sample_name}_${guppy_version}.bam" ${sep=" " files}
+        samtools merge -o "${sample_name}_${guppy_version}_${pass_fail}.bam" ${sep=" " files}
     }
 
     output {
@@ -284,6 +289,7 @@ task concatenateFastq {
         Array[File] files
         String sample_name
         String guppy_version
+        String pass_fail
 
         String dockerImage = "tpesout/megalodon:latest"
 
@@ -295,11 +301,11 @@ task concatenateFastq {
     }
     
     command {
-        cat ${sep=" " files} | gzip -c > "${sample_name}_${guppy_version}.fastq.gz"
+        cat ${sep=" " files} | gzip -c > "${sample_name}_${guppy_version}_${pass_fail}.fastq.gz"
     }
 
     output {
-        File concatenatedFastq = "${sample_name}_${guppy_version}.fastq.gz"
+        File concatenatedFastq = "${sample_name}_${guppy_version}_${pass_fail}.fastq.gz"
     }
 
     runtime {
