@@ -271,7 +271,7 @@ task concatenateBam {
     }
 
     output {
-        File concatenatedBam = "${sample_name}_${guppy_version}.bam"
+        File concatenatedBam = "${sample_name}_${guppy_version}_${pass_fail}.bam"
     }
 
     runtime {
