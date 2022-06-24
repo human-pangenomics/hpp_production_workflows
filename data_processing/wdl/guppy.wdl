@@ -2,7 +2,7 @@ version 1.0
 
 workflow fast5GuppyGPU {
     input {
-        Array[File] fast5_files
+        File fast5_list
         String sample_name
         String guppy_version
         Int desired_size_GB
@@ -10,19 +10,22 @@ workflow fast5GuppyGPU {
     }
 
     parameter_meta {
-        fast5_files: "Input fast5s, not tarred."
+        fast5_list: "List of gs path to fast5 files"
         sample_name: "Name of sample, used for output file names"
         guppy_version: "Guppy version, used for output file names"
         desired_size_GB: "Choose size to split input tar file by. With a 300GB fast5_tar_file and 30GB desired_size_GB, the fast5_tar_file will be split in 10 pieces."
     }
 
+    Array[File] fast5_paths = read_lines(fast5_list)
 
-    # scatter in case multiple tar files are given
-
+    call localizeData {
+        input:
+            paths = fast5_paths
+    }
 
     call splitFast5s {
         input:
-            files_to_split = fast5_files,
+            files_to_split = localizeData.all_fast5s,
             desired_size_GB = desired_size_GB
     }
 
@@ -91,6 +94,35 @@ workflow fast5GuppyGPU {
 
 }
 
+
+task localizeData {
+    input {
+        Array[File] paths
+
+        String dockerImage = "google/cloud-sdk:latest"
+        Int preempts = 3
+        Int memSizeGB = 8
+        Int extraDisk = 5
+        Int threadCount = 2
+        Int diskSizeGB = 900
+    }
+
+
+    command <<<
+        mkdir tmp
+        cd tmp
+
+        for PATH in ~{paths}
+        do
+            gsutil cp $PATH .
+        done
+
+    >>>
+
+    output {
+        Array[File] all_fast5s = glob("*.fast5")
+    }
+}
 
 task splitFast5s {
     input {
@@ -264,7 +296,7 @@ task concatenateBam {
     }
 
     output {
-        File concatenatedBam = "${sample_name}_${guppy_version}.bam"
+        File concatenatedBam = "${sample_name}_${guppy_version}_${pass_fail}.bam"
     }
 
     runtime {
