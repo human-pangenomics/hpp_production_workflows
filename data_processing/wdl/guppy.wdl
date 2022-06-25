@@ -2,7 +2,7 @@ version 1.0
 
 workflow fast5GuppyGPU {
     input {
-        File fast5_folder_path
+        String fast5_folder_path
         String sample_name
         String guppy_version
         Int desired_size_GB
