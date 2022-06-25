@@ -23,14 +23,10 @@ workflow fast5GuppyGPU {
 
     Array[File] fast5_paths = read_lines(pathToList.path_list)
 
-    call localizeData {
-        input:
-            paths = fast5_paths
-    }
 
     call splitFast5s {
         input:
-            files_to_split = localizeData.all_fast5s,
+            files_to_split = fast5_paths,
             desired_size_GB = desired_size_GB
     }
 
@@ -127,42 +123,6 @@ task pathToList {
     }
 }
 
-task localizeData {
-    input {
-        Array[File] paths
-
-        String dockerImage = "google/cloud-sdk:latest"
-        Int preempts = 3
-        Int memSizeGB = 8
-        Int extraDisk = 5
-        Int threadCount = 2
-        Int diskSizeGB = 900
-    }
-
-
-    command <<<
-        mkdir tmp
-        cd tmp
-
-        for PATH in ~{sep=' ' paths}
-        do
-            gsutil cp $PATH .
-        done
-
-    >>>
-
-    output {
-        Array[File] all_fast5s = glob("*.fast5")
-    }
-
-    runtime {
-        memory: memSizeGB + " GB"
-        cpu: threadCount
-        disks: "local-disk " + diskSizeGB + " SSD"
-        docker: dockerImage
-        preemptible : preempts
-    }
-}
 
 task splitFast5s {
     input {
