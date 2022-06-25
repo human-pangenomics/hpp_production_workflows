@@ -117,6 +117,14 @@ task pathToList {
     output {
         File path_list = "fast5.list"
     }
+
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: dockerImage
+        preemptible : preempts
+    }
 }
 
 task localizeData {
@@ -133,8 +141,6 @@ task localizeData {
 
 
     command <<<
-        
-
         mkdir tmp
         cd tmp
 
@@ -147,6 +153,14 @@ task localizeData {
 
     output {
         Array[File] all_fast5s = glob("*.fast5")
+    }
+
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: dockerImage
+        preemptible : preempts
     }
 }
 
