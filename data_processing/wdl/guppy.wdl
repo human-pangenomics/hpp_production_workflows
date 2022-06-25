@@ -2,7 +2,7 @@ version 1.0
 
 workflow fast5GuppyGPU {
     input {
-        File fast5_list
+        File fast5_folder_path
         String sample_name
         String guppy_version
         Int desired_size_GB
@@ -16,7 +16,12 @@ workflow fast5GuppyGPU {
         desired_size_GB: "Choose size to split input tar file by. With a 300GB fast5_tar_file and 30GB desired_size_GB, the fast5_tar_file will be split in 10 pieces."
     }
 
-    Array[File] fast5_paths = read_lines(fast5_list)
+    call pathToList {
+        input:
+            folder_path = fast5_folder_path
+    }
+
+    Array[File] fast5_paths = read_lines(pathToList.path_list)
 
     call localizeData {
         input:
@@ -94,6 +99,25 @@ workflow fast5GuppyGPU {
 
 }
 
+task pathToList {
+    input {
+        String folder_path
+        String dockerImage = "google/cloud-sdk:latest"
+        Int preempts = 3
+        Int memSizeGB = 8
+        Int extraDisk = 5
+        Int threadCount = 2
+        Int diskSizeGB = 5
+    }
+
+    command <<<
+        gsutil ls gs://fc-secure-9ac4c4ac-25e3-4d94-a8ba-f2b7344e2106/Reference_cell_lines/HG_GM24385_CELL_modified_protocol/GM24385/20220124_1542_2A_PAI80251_aad798d1/fast5/ > fast5.list
+    >>>
+
+    output {
+        File path_list = "fast5.list"
+    }
+}
 
 task localizeData {
     input {
@@ -109,6 +133,8 @@ task localizeData {
 
 
     command <<<
+        
+
         mkdir tmp
         cd tmp
 
