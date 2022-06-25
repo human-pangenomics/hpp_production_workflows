@@ -111,7 +111,7 @@ task pathToList {
     }
 
     command <<<
-        gsutil ls gs://fc-secure-9ac4c4ac-25e3-4d94-a8ba-f2b7344e2106/Reference_cell_lines/HG_GM24385_CELL_modified_protocol/GM24385/20220124_1542_2A_PAI80251_aad798d1/fast5/ > fast5.list
+        gsutil ls ~{folder_path} > "fast5.list"
     >>>
 
     output {
