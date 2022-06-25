@@ -144,7 +144,7 @@ task localizeData {
         mkdir tmp
         cd tmp
 
-        for PATH in ~{paths}
+        for PATH in ~{sep=' ' paths}
         do
             gsutil cp $PATH .
         done
