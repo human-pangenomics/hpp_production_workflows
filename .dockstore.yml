@@ -117,3 +117,6 @@ workflows:
    -  name: Guppy
       subclass: WDL
       primaryDescriptorPath: /data_processing/wdl/scatterGuppy.wdl
+   -  name: GuppyFast5s
+      subclass: WDL
+      primaryDescriptorPath: /data_processing/wdl/guppy.wdl
