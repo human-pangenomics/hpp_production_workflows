@@ -6,23 +6,23 @@ workflow fast5GuppyGPU {
         String sample_name
         String guppy_version
         Int desired_size_GB
-        
     }
 
     parameter_meta {
-        fast5_list: "List of gs path to fast5 files"
+        fast5_folder_path: "gs bucket path to fast5s"
         sample_name: "Name of sample, used for output file names"
         guppy_version: "Guppy version, used for output file names"
         desired_size_GB: "Choose size to split input tar file by. With a 300GB fast5_tar_file and 30GB desired_size_GB, the fast5_tar_file will be split in 10 pieces."
     }
 
+    # create list of all fast5 gs bucket paths
     call pathToList {
         input:
             folder_path = fast5_folder_path
     }
 
+    # read lines in list file to Array
     Array[File] fast5_paths = read_lines(pathToList.path_list)
-
 
     call splitFast5s {
         input:
