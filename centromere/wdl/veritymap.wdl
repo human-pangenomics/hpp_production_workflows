@@ -63,6 +63,7 @@ workflow runVerityMap{
     }
     output{
         Array[File] outputTarGzArray = verityMap.outputTarGz
+        Array[File] horAssemblyFastaArray = verityMap.horAssemblyFasta
     }
 }
 
@@ -164,8 +165,10 @@ task verityMap {
         cp ${PREFIX}.~{suffix}.fa output/${SAM_PREFIX}.fa
         samtools faidx output/${SAM_PREFIX}.fa
         
-        # Rename output folder
+        # Rename output folder and separate fasta file
         mv output ${PREFIX}.~{suffix}
+        mkdir output
+        cp ${PREFIX}.~{suffix}/*.fa output/
         tar cvzf ${PREFIX}.~{suffix}.tar.gz ${PREFIX}.~{suffix}
     >>> 
     runtime {
@@ -177,6 +180,7 @@ task verityMap {
     }
     output {
         File outputTarGz = glob("*.tar.gz")[0]
+        File horAssemblyFasta = glob("output/*.fa")[0]
     }
 }
 

@@ -2,22 +2,14 @@ version 1.0
 
 workflow runStainedGlass{
     input {
-        Array[File] veritymapTarGzArray
+        Array[File] horAssemblyFastaArray
     }
 
-    scatter (veritymapTarGz in veritymapTarGzArray) {
-
-        # extract Fasta file
-        call pullOutFasta{
-            input:
-                veritymapTarGz = veritymapTarGz
-        }
-
+    scatter (fasta in horAssemblyFastaArray) {
         # Run StainedGlass for visualization
         call stainedGlass{
             input:
-                cenFasta = pullOutFasta.fasta,
-                cenFai = pullOutFasta.fai
+                cenFasta = fasta
         }
     }
     output{
@@ -25,52 +17,10 @@ workflow runStainedGlass{
     }
 }
 
-task pullOutFasta {
-    input {
-        File veritymapTarGz
-        # runtime configurations
-        Int memSize=4
-        Int threadCount=2
-        Int diskSize=128
-        String dockerImage="mobinasri/bio_base:latest"
-        Int preemptible=2
-    }
-    command <<<
-        # Set the exit code of a pipeline to that of the rightmost command
-        # to exit with a non-zero status, or zero if all commands of the pipeline exit
-        set -o pipefail
-        # cause a bash script to exit immediately when a command fails
-        set -e
-        # cause the bash shell to treat unset variables as an error and exit immediately
-        set -u
-        # echo each line of the script to stdout so we can see what is happening
-        # to turn off echo do 'set +o xtrace'
-        set -o xtrace
-        
-        FILENAME=$(basename ~{veritymapTarGz})
-        PREFIX=${FILENAME%%.tar.gz}
-
-        mkdir output
-        tar --strip-components 1 -xvzf ~{veritymapTarGz} --directory output
-    >>>
-
-    runtime {
-        docker: dockerImage
-        memory: memSize + " GB"
-        cpu: threadCount
-        disks: "local-disk " + diskSize + " SSD"
-        preemptible : preemptible
-    }
-    output {
-        File fasta = glob("output/*.fa")[0]
-        File fai = glob("output/*.fai")[0]
-    }
-}
 
 task stainedGlass {
     input {
        	File cenFasta
-        File cenFai
         Int window = 2000
         Int mm_f = 10000
         # runtime configurations
@@ -96,16 +46,21 @@ task stainedGlass {
         PREFIX=${FILENAME%%.fa*}
 
 
+        # save work dir to move the results here
         WORK_DIR=$PWD
         cd /home/apps/StainedGlass
-        ln -s ~{cenFasta} ${PREFIX}.fa
-        ln -s ~{cenFai} ${PREFIX}.fa.fai
+        ln ~{cenFasta} ${PREFIX}.fa
+        # index fasta
+        samtools faidx ${PREFIX}.fa
+        # configure inputs for running StainedGlass
         printf "sample: ${PREFIX}\nfasta: ${PREFIX}.fa\nwindow: ~{window}\nnbatch: 1\nalnthreads: ~{threadCount}\nmm_f: ~{mm_f}\ntempdir: temp\n" > config/config.yaml
         conda config --set channel_priority strict
+        # run StainedGlass
         conda run -n snakemake snakemake --use-conda --cores ~{threadCount} make_figures
           
-        # Rename output folder
+        # rename output folder
         mv results ${PREFIX}
+        # move results
         tar cvzf ${PREFIX}.tar.gz ${PREFIX}
         mv ${PREFIX}.tar.gz ${WORK_DIR}/
     >>> 
