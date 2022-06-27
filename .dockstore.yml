@@ -192,6 +192,3 @@ workflows:
    -  name: AlignSubetReads
       subclass: WDL
       primaryDescriptorPath: /coverage/wdl/workflows/align_subset_reads.wdl
-   -  name: VerityMap 
-      subclass: WDL
-      primaryDescriptorPath: /coverage/wdl/tasks/veritymap.wdl
