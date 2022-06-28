@@ -49,7 +49,7 @@ task stainedGlass {
         # save work dir to move the results here
         WORK_DIR=$PWD
         cd /home/apps/StainedGlass
-        ln ~{cenFasta} ${PREFIX}.fa
+        cp ~{cenFasta} ${PREFIX}.fa
         # index fasta
         samtools faidx ${PREFIX}.fa
         # configure inputs for running StainedGlass
