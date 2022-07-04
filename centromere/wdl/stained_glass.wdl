@@ -59,10 +59,10 @@ task stainedGlass {
         conda run -n snakemake snakemake --use-conda --cores ~{threadCount} make_figures
           
         # rename output folder
-        mv results ${PREFIX}
+        mv results ${WORK_DIR}/${PREFIX}
+        cd ${WORK_DIR}
         # move results
         tar cvzf ${PREFIX}.tar.gz ${PREFIX}
-        mv ${PREFIX}.tar.gz ${WORK_DIR}/
     >>> 
     runtime {
         docker: dockerImage
