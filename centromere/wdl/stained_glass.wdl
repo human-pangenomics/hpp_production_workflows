@@ -47,7 +47,7 @@ task stainedGlass {
 
 
         # copy StainedGlass dir to the working dir
-        cp /home/apps/StainedGlass .
+        cp -r /home/apps/StainedGlass .
         cd StainedGlass
         cp ~{cenFasta} ${PREFIX}.fa
         # index fasta
