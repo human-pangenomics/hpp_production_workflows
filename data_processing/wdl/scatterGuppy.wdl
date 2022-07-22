@@ -228,8 +228,8 @@ task guppyGPU {
     >>>
 
     output {
-        Array[File] pass_bam = glob("output/*.bam")
-        Array[File] pass_fastq = glob("output/*.fastq")
+        Array[File] pass_bam = glob("output/pass/*.bam")
+        Array[File] pass_fastq = glob("output/pass/*.fastq")
 
         Array[File] fail_bam = glob("output/fail/*bam")
         Array[File] fail_fastq = glob("output/fail/*fastq")
