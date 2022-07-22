@@ -213,6 +213,13 @@ task guppyGPU {
             ADDITIONAL_ARGS="~{additionalArgs}"
         fi
 
+        if [[ "~{alignment_file}" == "" ]]
+        then
+            ALIGNMENT_FILE=""
+        else
+            ALIGNMENT_FILE="~{alignment_file}"
+        fi
+
 
         guppy_basecaller \
             -i input/ \
@@ -223,7 +230,7 @@ task guppyGPU {
             -r \
             --read_batch_size "~{READ_BATCH_SIZE}" \
             -q "~{q}" \
-            ${ADDITIONAL_ARGS} "~{alignment_file}"
+            ${ADDITIONAL_ARGS} ${AlIGNMENT_FILE}
 
     >>>
 
