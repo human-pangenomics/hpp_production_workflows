@@ -166,7 +166,7 @@ task guppyGPU {
         String dockerImage = "jiminpark/guppy-wdl:latest" 
 
         String? additionalArgs
-        File? alignmentFile
+        String? alignmentFile
 
         Int preempts = 3
         Int memSizeGB = 64
@@ -231,7 +231,7 @@ task guppyGPU {
             -r \
             --read_batch_size "~{READ_BATCH_SIZE}" \
             -q "~{q}" \
-            ${ADDITIONAL_ARGS}${AlIGNMENT_FILE}
+            ${ADDITIONAL_ARGS} ${AlIGNMENT_FILE}
 
     >>>
 
