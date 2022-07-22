@@ -166,7 +166,7 @@ task guppyGPU {
         String dockerImage = "jiminpark/guppy-wdl:latest" 
 
         String? additionalArgs
-        String? alignmentFile
+        File? alignmentFile
 
         Int preempts = 3
         Int memSizeGB = 64
@@ -216,22 +216,30 @@ task guppyGPU {
 
         if [[ "~{alignmentFile}" == "" ]]
         then
-            ALIGNMENT_FILE=""
+            guppy_basecaller \
+                -i input/ \
+                -s output/ \
+                -c /opt/ont/guppy/data/"~{CONFIG_FILE}" \
+                --bam_out \
+                -x cuda:all:100% \
+                -r \
+                --read_batch_size "~{READ_BATCH_SIZE}" \
+                -q "~{q}" \
+                ${ADDITIONAL_ARGS}
         else
-            ALIGNMENT_FILE="~{alignmentFile}"
+            guppy_basecaller \
+                -i input/ \
+                -s output/ \
+                -c /opt/ont/guppy/data/"~{CONFIG_FILE}" \
+                --bam_out \
+                -x cuda:all:100% \
+                -r \
+                --read_batch_size "~{READ_BATCH_SIZE}" \
+                -q "~{q}" \
+                -a "~{alignmentFile}" \
+                ${ADDITIONAL_ARGS}
         fi
 
-
-        guppy_basecaller \
-            -i input/ \
-            -s output/ \
-            -c /opt/ont/guppy/data/"~{CONFIG_FILE}" \
-            --bam_out \
-            -x cuda:all:100% \
-            -r \
-            --read_batch_size "~{READ_BATCH_SIZE}" \
-            -q "~{q}" \
-            ${ADDITIONAL_ARGS} ${AlIGNMENT_FILE}
 
     >>>
 
