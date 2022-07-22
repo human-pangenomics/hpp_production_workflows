@@ -231,7 +231,7 @@ task guppyGPU {
             -r \
             --read_batch_size "~{READ_BATCH_SIZE}" \
             -q "~{q}" \
-            ${ADDITIONAL_ARGS} ${AlIGNMENT_FILE}
+            ${ADDITIONAL_ARGS}${AlIGNMENT_FILE}
 
     >>>
 
