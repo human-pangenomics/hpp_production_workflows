@@ -166,7 +166,7 @@ task guppyGPU {
         String dockerImage = "jiminpark/guppy-wdl:latest" 
 
         String? additionalArgs
-        File? alignment_file
+        File? alignmentFile
 
         Int preempts = 3
         Int memSizeGB = 64
@@ -213,11 +213,12 @@ task guppyGPU {
             ADDITIONAL_ARGS="~{additionalArgs}"
         fi
 
-        if [[ "~{alignment_file}" == "" ]]
+
+        if [[ "~{alignmentFile}" == "" ]]
         then
             ALIGNMENT_FILE=""
         else
-            ALIGNMENT_FILE="~{alignment_file}"
+            ALIGNMENT_FILE="~{alignmentFile}"
         fi
 
 
