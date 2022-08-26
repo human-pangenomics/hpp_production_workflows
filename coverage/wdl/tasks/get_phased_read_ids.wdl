@@ -3,6 +3,8 @@ version 1.0
 workflow runGetPhasedReadIds{
     call getPhasedReadIds
     output{
+        File initialHap1IdsText = getPhasedReadIds.initialHap1IdsText
+        File initialHap2IdsText = getPhasedReadIds.initialHap2IdsText
         File hap1IdsText = getPhasedReadIds.hap1IdsText
         File hap2IdsText = getPhasedReadIds.hap2IdsText
         File ambiguousIdsText = getPhasedReadIds.ambiguousIdsText
