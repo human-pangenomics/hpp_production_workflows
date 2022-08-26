@@ -62,6 +62,8 @@ task getPhasedReadIds{
         preemptible : preemptible
     }
     output{
+        File initialHap1IdsText = glob("output/*.hap1_read_ids.initial.txt")[0]
+        File initialHap2IdsText = glob("output/*.hap2_read_ids.initial.txt")[0]
         File hap1IdsText = glob("output/*.hap1_read_ids.txt")[0]
         File hap2IdsText = glob("output/*.hap2_read_ids.txt")[0]
         File ambiguousIdsText = glob("output/*.ambiguous_read_ids.txt")[0]
