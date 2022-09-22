@@ -58,6 +58,9 @@ workflows:
    -  name: StandardQCnoQV
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/standard_qc_no_qv.wdl
+   -  name: StandardQCnonTrio
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/workflows/standard_qc_nontrio.wdl    
    -  name: FilterHiFiAdapter
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/filter_hifi_adapter.wdl
