@@ -70,8 +70,8 @@ task calc_completeness {
 
     output {
         File chr_translation = "~{name}.translation.txt"
-        File chr_completeness = "~{name}.chr_completness.txt"
-        File chr_completeness_max = "~{name}.chr_completness.txt"
+        File chr_completeness = "~{name}.chr_completeness.txt"
+        File chr_completeness_max = "~{name}.chr_completness_max.txt"
     }
 
     runtime {
