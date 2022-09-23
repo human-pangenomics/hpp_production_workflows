@@ -26,6 +26,9 @@ workflows:
    -  name: YakAsmStatsnoQV
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/yak_no_qv.wdl
+   -  name: asmChrCompleteness
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/asm_chr_completeness.wdl
    -  name: Mash
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/mash.wdl
