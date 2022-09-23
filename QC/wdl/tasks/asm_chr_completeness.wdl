@@ -64,14 +64,14 @@ task calc_completeness {
             | sort -k2,2 \
             | awk '{if ($3 > 15000000) print $0}' \
             | awk -v LAST="" -v S="" '{if (LAST != $2) { if (S > 0) print LAST"\t"C"\t"SUM/S*100"\t"MAX/S*100"\t"TIG; SUM=0; MAX=0; C=0; } LAST=$2; S=$NF; SUM+=$3; if (MAX < $3) MAX=$3; C+=1; TIG=$1} END {print LAST"\t"C"\t"SUM/S*100"\t"MAX/S*100"\t"TIG;}' | awk '{print $1"\t"$4}' \
-            | sort -nk1,1 -s > ~{name}.chr_completness_max.txt
+            | sort -nk1,1 -s > ~{name}.chr_completeness_max.txt
    
     >>>
 
     output {
         File chr_translation = "~{name}.translation.txt"
         File chr_completeness = "~{name}.chr_completeness.txt"
-        File chr_completeness_max = "~{name}.chr_completness_max.txt"
+        File chr_completeness_max = "~{name}.chr_completeness_max.txt"
     }
 
     runtime {
