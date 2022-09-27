@@ -105,6 +105,9 @@ workflows:
    -  name: StandardQCHaploid
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/standard_qc_haploid.wdl
+   -  name: Primrose
+      subclass: WDL
+      primaryDescriptorPath: /data_processing/wdl/primrose.wdl
    -  name: Contamination
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/contamination.wdl
