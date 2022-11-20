@@ -189,7 +189,7 @@ task merylCount {
         String dockerImage = "juklucas/hpp_merqury:latest"
     }
 
-    String compress_arg = if compress then "-c" else ""
+    String compress_arg = if compress then "compress" else ""
 
 	command <<<
         # Set the exit code of a pipeline to that of the rightmost command
@@ -206,7 +206,7 @@ task merylCount {
 
         # generate meryl db for each read
         ID=`basename ~{readFile} | sed 's/.gz$//' | sed 's/.f[aq]\(st[aq]\)*$//'`
-        meryl k=~{kmerSize} ~{compress_arg} threads=~{threadCount} memory=$((~{memSizeGB}-10)) count output $ID.meryl ~{readFile}
+        meryl ~{compress_arg} k=~{kmerSize} threads=~{threadCount} memory=$((~{memSizeGB}-10)) count output $ID.meryl ~{readFile}
 
         # package
         tar cvf $ID.meryl.tar $ID.meryl
