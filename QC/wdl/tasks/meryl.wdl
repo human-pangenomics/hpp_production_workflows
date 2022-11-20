@@ -204,8 +204,6 @@ task merylCount {
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
 
-        if compress:
-
         # generate meryl db for each read
         ID=`basename ~{readFile} | sed 's/.gz$//' | sed 's/.f[aq]\(st[aq]\)*$//'`
         meryl k=~{kmerSize} ~{compress_arg} threads=~{threadCount} memory=$((~{memSizeGB}-10)) count output $ID.meryl ~{readFile}
