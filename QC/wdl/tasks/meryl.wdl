@@ -12,6 +12,7 @@ workflow runMeryl {
         Array[File] paternalReadsILM
         File? referenceFasta
         Int kmerSize = 21
+        Boolean compress = false
         Int merylCountMemSizeGB = 42
         Int merylCountThreadCount = 64
         Int merylUnionSumMemSizeGB = 32
@@ -96,6 +97,7 @@ workflow runMeryl {
             input:
                 readFile=readFile,
                 kmerSize=kmerSize,
+                compress=compress,
                 threadCount=merylCountThreadCount,
                 memSizeGB=merylCountMemSizeGB,
                 diskSizeGB=sampleReadSizeMax.value * 4,
@@ -107,6 +109,7 @@ workflow runMeryl {
             input:
                 readFile=readFile,
                 kmerSize=kmerSize,
+                compress=compress,
                 threadCount=merylCountThreadCount,
                 memSizeGB=merylCountMemSizeGB,
                 diskSizeGB=maternalReadSizeMax.value * 4,
@@ -118,6 +121,7 @@ workflow runMeryl {
             input:
                 readFile=readFile,
                 kmerSize=kmerSize,
+                compress=compress,
                 threadCount=merylCountThreadCount,
                 memSizeGB=merylCountMemSizeGB,
                 diskSizeGB=paternalReadSizeMax.value * 4,
@@ -178,11 +182,14 @@ task merylCount {
     input {
         File readFile
         Int kmerSize=21
+        Boolean compress = false
         Int memSizeGB = 42
         Int threadCount = 64
         Int diskSizeGB = 64
         String dockerImage = "juklucas/hpp_merqury:latest"
     }
+
+    String compress_arg = if compress then "-c" else ""
 
 	command <<<
         # Set the exit code of a pipeline to that of the rightmost command
@@ -197,9 +204,11 @@ task merylCount {
         set -o xtrace
         OMP_NUM_THREADS=~{threadCount}
 
+        if compress:
+
         # generate meryl db for each read
         ID=`basename ~{readFile} | sed 's/.gz$//' | sed 's/.f[aq]\(st[aq]\)*$//'`
-        meryl k=~{kmerSize} threads=~{threadCount} memory=$((~{memSizeGB}-10)) count output $ID.meryl ~{readFile}
+        meryl k=~{kmerSize} ~{compress_arg} threads=~{threadCount} memory=$((~{memSizeGB}-10)) count output $ID.meryl ~{readFile}
 
         # package
         tar cvf $ID.meryl.tar $ID.meryl
