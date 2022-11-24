@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 MAINTAINER Mobin Asri, masri@ucsc.edu
 
-RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y build-essential git zlib1g-dev wget libbz2-dev pkg-config libncurses5-dev libncursesw5-dev liblzma-dev libcurl4-openssl-dev pigz
+RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y build-essential git zlib1g-dev wget libbz2-dev pkg-config libncurses5-dev libncursesw5-dev liblzma-dev libcurl4-openssl-dev pigz zip
 
 RUN mkdir -p /home/apps
 
@@ -19,11 +19,13 @@ RUN cd /home/apps && \
 	make
 ENV PATH="/home/apps/yak:$PATH"
 
+# Hifiasm-0.17.4
 RUN cd /home/apps && \
-	git clone --branch 0.15.2 https://github.com/chhylp123/hifiasm && \
-	cd hifiasm && \
+	wget https://github.com/chhylp123/hifiasm/archive/refs/tags/r455.zip && \
+	unzip r455.zip  && \
+        cd hifiasm-r455 && \ 
 	make
-ENV PATH="/home/apps/hifiasm:$PATH"
+ENV PATH="/home/apps/hifiasm-r455:$PATH"
 
 RUN cd /home/apps && \
 	git clone --branch v0.4 https://github.com/lh3/gfatools && \

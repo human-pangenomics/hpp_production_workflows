@@ -10,6 +10,8 @@ workflow runTrioHifiasm{
         File paternalYak
         File maternalYak
         Array[File] childReadsHiFi
+        Array[File]? childReadsUL
+        Int? homCov
         String childID
         String? hifiasmExtraOptions
         File? inputBinFilesTarGz
@@ -49,6 +51,8 @@ workflow runTrioHifiasm{
             paternalYak=paternalYak,
             maternalYak=maternalYak,
             childReadsHiFi=filterAdapter.filteredReadFastq,
+            childReadsUL=childReadsUL,
+            homCov = homCov,
             childID=childID,
             extraOptions=hifiasmExtraOptions,
             inputBinFilesTarGz=inputBinFilesTarGz,
@@ -74,6 +78,8 @@ task trioHifiasm {
         File paternalYak
         File maternalYak
         Array[File] childReadsHiFi
+        Array[File]? childReadsUL
+        Int? homCov
         String childID
 	String? extraOptions
         File? inputBinFilesTarGz
@@ -110,8 +116,14 @@ task trioHifiasm {
         rm -rf ~{sep=" " childReadsHiFi}
 
         ## run trio hifiasm https://github.com/chhylp123/hifiasm
-        hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq
-        
+        # If ONT ultra long reads are provided
+        if [[ -n "~{sep="" childReadsUL}" ]];
+        then
+            hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep=" " childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq 
+        else 
+            hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq
+        fi
+
         #Move bin and gfa files to saparate folders and compress them 
         mkdir ~{childID}.raw_unitig_gfa
         mkdir ~{childID}.pat.contig_gfa

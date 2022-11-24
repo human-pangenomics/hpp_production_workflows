@@ -9,6 +9,8 @@ workflow trioHifiasmAssembly {
         String paternalID
         String maternalID
         Array[File] childReadsHiFi
+        Array[File]? childReadsUL
+        Int? homCov
         File paternalYak
         File maternalYak
         String? hifiasmExtraOptions
@@ -27,6 +29,8 @@ workflow trioHifiasmAssembly {
             paternalYak = paternalYak,
             maternalYak = maternalYak,
             childReadsHiFi = childReadsHiFi,
+            childReadsUL = childReadsUL,
+            homCov = homCov,
             childID = childID,
             hifiasmExtraOptions = hifiasmExtraOptions,
             inputBinFilesTarGz = inputBinFilesTarGz,
