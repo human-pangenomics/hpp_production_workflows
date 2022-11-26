@@ -16,6 +16,7 @@ workflow runTrioHifiasm{
         String? hifiasmExtraOptions
         File? inputBinFilesTarGz
         File? referenceFasta
+        Int removeLastFastqLines
         Int memSizeGB
         Int threadCount
         Int preemptible
@@ -37,6 +38,7 @@ workflow runTrioHifiasm{
         call adapter_t.cutadapt as filterAdapter {
             input:
                 readFastq = childReadsExtracted.extractedRead,
+                removeLastLines = removeLastFastqLines,
                 diskSizeGB = fileExtractionDiskSizeGB
         } 
     }
