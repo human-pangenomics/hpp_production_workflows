@@ -123,6 +123,7 @@ task verityMap {
         File horBed
         File readsFastq
         String suffix
+        String preset
         # runtime configurations
         Int memSize=16
         Int threadCount=8
@@ -151,7 +152,7 @@ task verityMap {
         bedtools getfasta -fi ${PREFIX}.fa -fo ${PREFIX}.~{suffix}.fa -bed ~{horBed}
 
         # run VerityMap
-        python3 ${VERITY_MAP_PY} --reads ~{readsFastq} -o output -t~{threadCount} -d hifi --careful ${PREFIX}.~{suffix}.fa
+        python3 ${VERITY_MAP_PY} --reads ~{readsFastq} -o output -t~{threadCount} -d ~{preset} --careful ${PREFIX}.~{suffix}.fa
 
         # convert sam to bam, sort and index bam file
         SAM_PATH=$(ls output/*.sam)
