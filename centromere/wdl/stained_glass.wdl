@@ -46,9 +46,9 @@ task stainedGlass {
         PREFIX=${FILENAME%%.fa*}
 
 
-        # save work dir to move the results here
-        WORK_DIR=$PWD
-        cd /home/apps/StainedGlass
+        # copy StainedGlass dir to the working dir
+        cp -r /home/apps/StainedGlass .
+        cd StainedGlass
         cp ~{cenFasta} ${PREFIX}.fa
         # index fasta
         samtools faidx ${PREFIX}.fa
@@ -58,11 +58,12 @@ task stainedGlass {
         # run StainedGlass
         conda run -n snakemake snakemake --use-conda --cores ~{threadCount} make_figures
           
-        # rename output folder
-        mv results ${PREFIX}
-        # move results
+        # move results out of StainedGlass dir
+        mv results ../${PREFIX}
+        # exit the StainedGlass dir
+        cd ../
+        # compress results
         tar cvzf ${PREFIX}.tar.gz ${PREFIX}
-        mv ${PREFIX}.tar.gz ${WORK_DIR}/
     >>> 
     runtime {
         docker: dockerImage
