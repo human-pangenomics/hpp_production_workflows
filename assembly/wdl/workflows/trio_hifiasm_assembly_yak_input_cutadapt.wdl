@@ -9,7 +9,8 @@ workflow trioHifiasmAssembly {
         String paternalID
         String maternalID
         Array[File] childReadsHiFi
-        Array[File]? childReadsUL
+        Array[File] childReadsONT=[]
+        Int? minOntReadLength
         Int? homCov
         File paternalYak
         File maternalYak
@@ -22,6 +23,7 @@ workflow trioHifiasmAssembly {
         Int preemptible=1
     }
 
+    
 
     ### Trio Hifiasm ###
     call hifiasm_t.runTrioHifiasm as trioHifiasm{
@@ -29,7 +31,8 @@ workflow trioHifiasmAssembly {
             paternalYak = paternalYak,
             maternalYak = maternalYak,
             childReadsHiFi = childReadsHiFi,
-            childReadsUL = childReadsUL,
+            childReadsONT = childReadsONT,
+            minOntReadLength = minOntReadLength,
             homCov = homCov,
             childID = childID,
             hifiasmExtraOptions = hifiasmExtraOptions,

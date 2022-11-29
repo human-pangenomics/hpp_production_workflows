@@ -10,8 +10,9 @@ workflow runTrioHifiasm{
         File paternalYak
         File maternalYak
         Array[File] childReadsHiFi
-        Array[File]? childReadsUL
+        Array[File] childReadsONT=[]
         Int? homCov
+        Int minOntReadLength=100000
         String childID
         String? hifiasmExtraOptions
         File? inputBinFilesTarGz
@@ -26,7 +27,7 @@ workflow runTrioHifiasm{
     }
 
     scatter (readFile in childReadsHiFi) {
-        call extractReads_t.extractReads as childReadsExtracted {
+        call extractReads_t.extractReads as childReadsHiFiExtracted {
             input:
                 readFile=readFile,
                 referenceFasta=referenceFasta,
@@ -35,32 +36,61 @@ workflow runTrioHifiasm{
                 diskSizeGB=fileExtractionDiskSizeGB,
                 dockerImage=dockerImage
         }
-        call adapter_t.cutadapt as filterAdapter {
+        call adapter_t.cutadapt as filterAdapterHiFi {
             input:
-                readFastq = childReadsExtracted.extractedRead,
+                readFastq = childReadsHiFiExtracted.extractedRead,
                 removeLastLines = removeLastFastqLines,
                 diskSizeGB = fileExtractionDiskSizeGB
         } 
     }
 
-    call arithmetic_t.sum as childReadSize {
-        input:
-            integers=filterAdapter.fileSizeGB
+    # if ONT reads are provided
+    if ("${sep="" childReadsONT}" != ""){
+        scatter (readFile in childReadsONT) {
+            call extractReads_t.extractReads as childReadsOntExtracted {
+                input:
+                    readFile=readFile,
+                    referenceFasta=referenceFasta,
+                    memSizeGB=4,
+                    threadCount=4,
+                    diskSizeGB=fileExtractionDiskSizeGB,
+                    dockerImage=dockerImage
+            }
+            # filter ONT reads to get UL reads
+            call filterShortReads as extractUltraLongReads{
+                input:
+                    readFastq = childReadsOntExtracted.extractedRead,
+                    diskSizeGB = fileExtractionDiskSizeGB,
+                    minReadLength = minOntReadLength
+            }
+         }
+         call arithmetic_t.sum as childReadULSize {
+             input:
+                 integers=extractUltraLongReads.fileSizeGB
+         }
     }
+
+    call arithmetic_t.sum as childReadHiFiSize {
+        input:
+            integers=filterAdapterHiFi.fileSizeGB
+    }
+
+    # if no ONT data is provided then it would be zero
+    Int readULSize = select_first([extractUltraLongReads.fileSizeGB, 0])
 
     call trioHifiasm {
         input:
             paternalYak=paternalYak,
             maternalYak=maternalYak,
-            childReadsHiFi=filterAdapter.filteredReadFastq,
-            childReadsUL=childReadsUL,
+            childReadsHiFi=filterAdapterHiFi.filteredReadFastq,
+            childReadsUL=extractUltraLongReads.longReadFastq, # optional argument
             homCov = homCov,
             childID=childID,
             extraOptions=hifiasmExtraOptions,
             inputBinFilesTarGz=inputBinFilesTarGz,
             memSizeGB=memSizeGB,
             threadCount=threadCount,
-            diskSizeGB= floor(childReadSize.value * 2.5) + 512,
+            diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 64,
             preemptible=preemptible,
             dockerImage=dockerImage,
             zones = zones
@@ -169,3 +199,46 @@ task trioHifiasm {
         File outputBinFiles = "~{childID}.binFiles.tar.gz"
     }
 }
+
+# This task does not work properly if sequences have methylation tags
+task filterShortReads {
+    input{
+        File readFastq
+        Int minReadLength
+        # runtime configurations
+        Int memSizeGB=8
+        Int threadCount=4
+        Int diskSizeGB=512
+        Int preemptible=1
+        String dockerImage="quay.io/masri2019/hpp_hifi_adapter_filt:latest"
+    }
+    command <<<
+        set -o pipefail
+        set -e
+        set -u
+        set -o xtrace
+
+        mkdir data
+        cd data
+        FILENAME=$(basename -- "~{readFastq}")
+        PREFIX="${FILENAME%.*}"
+        # filter reads shorter than minReadLength
+        awk 'NR%4==1{a=$0} NR%4==2{b=$0} NR%4==3{c=$0} NR%4==0&&length(b)>~{minReadLength}{print a"\n"b"\n"c"\n"$0;}' ~{readFastq} > ${PREFIX}.long.fastq
+        OUTPUTSIZE=`du -s -BG *.long.fastq | sed 's/G.*//'` 
+        echo $OUTPUTSIZE > outputsize
+    >>>
+
+    runtime {
+        docker: dockerImage
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        preemptible: preemptible
+    }
+
+    output {
+        File longReadFastq = glob("data/*.long.fastq")[0]
+        Int fileSizeGB = read_int("data/outputsize")
+    }
+}
+
