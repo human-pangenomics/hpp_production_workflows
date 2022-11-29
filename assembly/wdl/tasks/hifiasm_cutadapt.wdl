@@ -76,7 +76,7 @@ workflow runTrioHifiasm{
     }
 
     # if no ONT data is provided then it would be zero
-    Int readULSize = select_first([extractUltraLongReads.fileSizeGB, 0])
+    Int readULSize = select_first([childReadULSize.value, 0])
 
     call trioHifiasm {
         input:
