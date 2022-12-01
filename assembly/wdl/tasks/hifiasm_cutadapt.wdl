@@ -13,6 +13,7 @@ workflow runTrioHifiasm{
         Array[File] childReadsONT=[]
         Int? homCov
         Int minOntReadLength=100000
+        Int minHiFiReadLength=1
         String childID
         String? hifiasmExtraOptions
         File? inputBinFilesTarGz
@@ -36,9 +37,16 @@ workflow runTrioHifiasm{
                 diskSizeGB=fileExtractionDiskSizeGB,
                 dockerImage=dockerImage
         }
-        call adapter_t.cutadapt as filterAdapterHiFi {
+        # filter short HiFi reads
+        call filterShortReads as extractLongHiFiReads{
             input:
                 readFastq = childReadsHiFiExtracted.extractedRead,
+                diskSizeGB = fileExtractionDiskSizeGB,
+                minReadLength = minHiFiReadLength
+        }
+        call adapter_t.cutadapt as filterAdapterHiFi {
+            input:
+                readFastq = extractLongHiFiReads.longReadFastq,
                 removeLastLines = removeLastFastqLines,
                 diskSizeGB = fileExtractionDiskSizeGB
         } 
