@@ -142,8 +142,8 @@ task verkko {
             -d assembly \
             --local-memory ~{memSizeGB} \
             --local-cpus ~{threadCount} \
-            --hifi hifi/*fastq.gz \
-            --nano ont/*fastq.gz \
+            --hifi hifi/* \
+            --nano ont/* \
             --hap-kmers  /meryl/mat/$mat_hapmer_db /meryl/pat/$pat_hapmer_db trio \
             ${EXTRA_ARGS}
 
