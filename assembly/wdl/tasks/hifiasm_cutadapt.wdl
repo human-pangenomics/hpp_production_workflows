@@ -18,6 +18,7 @@ workflow runTrioHifiasm{
         String? hifiasmExtraOptions
         File? inputBinFilesTarGz
         File? referenceFasta
+        Boolean filterAdapters
         Int removeLastFastqLines
         Int memSizeGB
         Int threadCount
@@ -44,12 +45,15 @@ workflow runTrioHifiasm{
                 diskSizeGB = fileExtractionDiskSizeGB,
                 minReadLength = minHiFiReadLength
         }
-        call adapter_t.cutadapt as filterAdapterHiFi {
-            input:
-                readFastq = extractLongHiFiReads.longReadFastq,
-                removeLastLines = removeLastFastqLines,
-                diskSizeGB = fileExtractionDiskSizeGB
-        } 
+        if (filterAdapters){
+            call adapter_t.cutadapt as filterAdapterHiFi {
+                input:
+                    readFastq = extractLongHiFiReads.longReadFastq,
+                    removeLastLines = removeLastFastqLines,
+                    diskSizeGB = fileExtractionDiskSizeGB
+            } 
+        }
+        File hifiProcessed = select_first([filterAdapterHiFi.filteredReadFastq, extractLongHiFiReads.longReadFastq])
     }
 
     # if ONT reads are provided
@@ -80,7 +84,7 @@ workflow runTrioHifiasm{
 
     call arithmetic_t.sum as childReadHiFiSize {
         input:
-            integers=filterAdapterHiFi.fileSizeGB
+            integers=extractLongHiFiReads.fileSizeGB
     }
 
     # if no ONT data is provided then it would be zero
@@ -90,7 +94,7 @@ workflow runTrioHifiasm{
         input:
             paternalYak=paternalYak,
             maternalYak=maternalYak,
-            childReadsHiFi=filterAdapterHiFi.filteredReadFastq,
+            childReadsHiFi=hifiProcessed,
             childReadsUL=extractUltraLongReads.longReadFastq, # optional argument
             homCov = homCov,
             childID=childID,

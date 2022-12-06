@@ -15,6 +15,7 @@ workflow trioHifiasmAssembly {
         Int? homCov
         File paternalYak
         File maternalYak
+        Boolean filterAdapters=true
         String? hifiasmExtraOptions
         File? inputBinFilesTarGz
         File? referenceFasta
@@ -37,6 +38,7 @@ workflow trioHifiasmAssembly {
             minHiFiReadLength = minHiFiReadLength,
             homCov = homCov,
             childID = childID,
+            filterAdapters = filterAdapters,
             hifiasmExtraOptions = hifiasmExtraOptions,
             inputBinFilesTarGz = inputBinFilesTarGz,
             memSizeGB = memSizeGB,
