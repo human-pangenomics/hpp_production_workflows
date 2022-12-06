@@ -66,7 +66,7 @@ task extractReads {
         elif [[ "$SUFFIX" == "gz" ]] ; then
             gunzip -k -c ~{readFile} > output/${PREFIX}
         elif [[ "$SUFFIX" == "fastq" ]] || [[ "$SUFFIX" == "fq" ]] ; then
-            ln ~{readFile} output/${PREFIX}
+            ln ~{readFile} output/${PREFIX}.fq
         elif [[ "$SUFFIX" != "fastq" ]] && [[ "$SUFFIX" != "fq" ]] && [[ "$SUFFIX" != "fasta" ]] && [[ "$SUFFIX" != "fa" ]] ; then
             echo "Unsupported file type: ${SUFFIX}"
             exit 1
