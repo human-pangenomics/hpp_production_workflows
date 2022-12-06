@@ -73,8 +73,8 @@ task verkko {
 
         String? extra_args
 
-        Int threadCount = 128
-        Int memSizeGB   = 512
+        Int threadCount = 80
+        Int memSizeGB   = 240
         Int diskSizeGB  = 2500
     }
     
@@ -84,7 +84,7 @@ task verkko {
         mat_hapmer_tar: "Meryl Hapmer DB as tar file."
         pat_hapmer_tar: "Meryl Hapmer DB as tar file."
         extra_args: "For human assemblies, recommend using: --cns-run 32 0 48 --ali-run 12 32 48 --ovb-run 8 20 48 "
-        threadCount: "This WDL requests N2 instance types, do not request more than 128 threads."
+        threadCount: "This WDL requests N2 custom instance types, do not request more than 80 threads."
         memSizeGB: "recommend a ration of 2x-4x of CPU value"
     }
 
