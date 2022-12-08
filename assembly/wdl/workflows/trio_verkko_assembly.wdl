@@ -159,7 +159,7 @@ task verkko {
     output {
         File mat_fasta  = glob("*.maternal.fa.gz")[0]
         File pat_fasta  = glob("*.paternal.fa.gz")[0]
-        File asm_files  = glob("*_assembly_files.tar")[0]
+        File asm_files  = glob("*_verkko_v1.2_trio.tar")[0]
         File noseq_gfa  = glob("assembly/assembly.homopolymer-compressed.noseq.gfa")[0]
         File colors_csv = glob("assembly/6-rukki/unitig-popped-unitig-normal-connected-tip.colors.csv")
     }
