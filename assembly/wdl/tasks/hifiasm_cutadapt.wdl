@@ -163,7 +163,7 @@ task trioHifiasm {
         # If ONT ultra long reads are provided
         if [[ -n "~{sep="" childReadsUL}" ]];
         then
-            hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep=" " childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq 
+            hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq 
         else 
             hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq
         fi
