@@ -132,3 +132,4 @@ workflows:
    -  name: BreakIntoContigs
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/break_into_contigs.wdl
+
