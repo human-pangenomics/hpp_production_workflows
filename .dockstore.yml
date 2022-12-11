@@ -129,3 +129,6 @@ workflows:
    -  name: Guppy
       subclass: WDL
       primaryDescriptorPath: /data_processing/wdl/scatterGuppy.wdl
+   -  name: BreakIntoContigs
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/break_into_contigs.wdl
