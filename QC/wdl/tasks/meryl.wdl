@@ -189,7 +189,7 @@ task merylCount {
         String dockerImage = "juklucas/hpp_merqury:latest"
     }
 
-    String compress_arg = if compress then "-c" else ""
+    String compress_arg = if compress then "compress" else ""
 
 	command <<<
         # Set the exit code of a pipeline to that of the rightmost command
