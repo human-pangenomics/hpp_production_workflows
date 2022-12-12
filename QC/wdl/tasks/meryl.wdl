@@ -20,7 +20,7 @@ workflow runMeryl {
         Int merylHapmerMemSizeGB = 24
         Int merylHapmerThreadCount = 32
         Int fileExtractionDiskSizeGB = 256
-        String dockerImage = "juklucas/hpp_merqury:latest"
+        String dockerImage = "juklucas/hpp_merqury@sha256:ce62531539733eb3f81c8434b70473c18096ed7e2eae605cfcb333ede2437e1c"
     }
 
     # extract reads
