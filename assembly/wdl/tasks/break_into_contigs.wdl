@@ -2,7 +2,11 @@ version 1.0
 
 workflow runBreakIntoContigs{
     call breakIntoContigs
+    output {
+        File assemblyContigsFaGz = breakIntoContigs.assemblyContigsFaGz
+    }
 }
+
 task breakIntoContigs {
     input {
         File assemblyFaGz
