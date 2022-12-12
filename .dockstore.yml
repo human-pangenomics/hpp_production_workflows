@@ -135,4 +135,7 @@ workflows:
    -  name: BreakIntoContigs
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/break_into_contigs.wdl
+   -  name: LengthFilterFasta
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/len_filter_fasta.wdl
 
