@@ -92,8 +92,7 @@ workflow verkko_wf {
             input_nanopore = ont_reads_extracted.extractedRead,
             mat_hapmer_tar = mat_hapmer_tar,
             pat_hapmer_tar = pat_hapmer_tar,
-            name           = name,
-            preemptible    = preemptible
+            name           = name
     }
 
     output {
@@ -189,8 +188,8 @@ task overlap {
 
         Int threadCount = 8
         Int memSizeGB   = 24
-        Int diskSizeGB  = 1000
-        Int preemptible = 1
+        Int diskSizeGB  = 250
+        Int preemptible = 2
     }
 
     command <<<
@@ -262,7 +261,7 @@ task create_graph {
         # String? extra_args
 
         Int threadCount = 80
-        Int memSizeGB   = 240
+        Int memSizeGB   = 400
         Int diskSizeGB  = 2500
         Int preemptible = 1
     }
@@ -314,6 +313,7 @@ task create_graph {
             -d assembly \
             --local-memory ~{memSizeGB} \
             --local-cpus ~{threadCount} \
+            --red-run 8 32 4 \
             --snakeopts "-U indexGraph" \
             --hifi hifi/* \
             --nano ont/*
@@ -322,6 +322,7 @@ task create_graph {
             -d assembly \
             --local-memory ~{memSizeGB} \
             --local-cpus ~{threadCount} \
+            --red-run 8 32 4 \
             --snakeopts "-U splitONT" \
             --hifi hifi/* \
             --nano ont/*
@@ -430,8 +431,8 @@ task complete_asm {
 
         # String? extra_args
 
-        Int threadCount = 48
-        Int memSizeGB   = 128
+        Int threadCount = 64
+        Int memSizeGB   = 400
         Int diskSizeGB  = 2500
         Int preemptible = 1
     }
@@ -500,6 +501,7 @@ task complete_asm {
             -d assembly \
             --local-memory ~{memSizeGB} \
             --local-cpus ~{threadCount} \
+            --cns-run 32 0 48 \
             --hifi hifi/* \
             --nano ont/* \
             --hap-kmers  /meryl/mat/$mat_hapmer_db /meryl/pat/$pat_hapmer_db trio
