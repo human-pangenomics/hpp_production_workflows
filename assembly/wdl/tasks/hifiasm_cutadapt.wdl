@@ -3,7 +3,6 @@ version 1.0
 import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
 import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
 import "filter_hifi_adapter.wdl" as adapter_t
-import "tar.wdl" as tar_t
 
 workflow runTrioHifiasm{
     input {
@@ -203,8 +202,8 @@ task trioHifiasm {
     }
 
     output {
-        File outputPaternalGfa = "~{childID}.dip.hap1.p_ctg.gfa"
-        File outputMaternalGfa = "~{childID}.dip.hap2.p_ctg.gfa"
+        File outputPaternalGfa = glob("*.hap1.p_ctg.gfa")[0]
+        File outputMaternalGfa = glob("*.hap2.p_ctg.gfa")[0]
         File outputPaternalContigGfa = "~{childID}.pat.contig_gfa.tar.gz"
         File outputMaternalContigGfa = "~{childID}.mat.contig_gfa.tar.gz"
         File outputRawUnitigGfa = "~{childID}.raw_unitig_gfa.tar.gz"
