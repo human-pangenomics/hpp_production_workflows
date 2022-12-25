@@ -140,5 +140,5 @@ workflows:
       primaryDescriptorPath: /assembly/wdl/tasks/len_filter_fasta.wdl
    -  name: DownSampling
       subclass: WDL
-      primaryDescriptorPath: assembly/wdl/tasks/down_sampling.wdl
+      primaryDescriptorPath: /assembly/wdl/tasks/down_sampling.wdl
 
