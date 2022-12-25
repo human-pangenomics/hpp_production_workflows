@@ -3,6 +3,7 @@ version 1.0
 import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
 import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
 import "filter_hifi_adapter.wdl" as adapter_t
+import "filter_short_reads.wdl" as filter_short_reads_t
 
 workflow runTrioHifiasm{
     input {
@@ -38,7 +39,7 @@ workflow runTrioHifiasm{
                 dockerImage=dockerImage
         }
         # filter short HiFi reads
-        call filterShortReads as extractLongHiFiReads{
+        call filter_short_reads_t.filterShortReads as extractLongHiFiReads{
             input:
                 readFastq = childReadsHiFiExtracted.extractedRead,
                 diskSizeGB = fileExtractionDiskSizeGB,
@@ -68,7 +69,7 @@ workflow runTrioHifiasm{
                     dockerImage=dockerImage
             }
             # filter ONT reads to get UL reads
-            call filterShortReads as extractUltraLongReads{
+            call filter_short_reads_t.filterShortReads as extractUltraLongReads{
                 input:
                     readFastq = childReadsOntExtracted.extractedRead,
                     diskSizeGB = fileExtractionDiskSizeGB,
@@ -208,48 +209,6 @@ task trioHifiasm {
         File outputMaternalContigGfa = "~{childID}.mat.contig_gfa.tar.gz"
         File outputRawUnitigGfa = "~{childID}.raw_unitig_gfa.tar.gz"
         File outputBinFiles = "~{childID}.binFiles.tar.gz"
-    }
-}
-
-# This task does not work properly if sequences have methylation tags
-task filterShortReads {
-    input{
-        File readFastq
-        Int minReadLength
-        # runtime configurations
-        Int memSizeGB=8
-        Int threadCount=4
-        Int diskSizeGB=512
-        Int preemptible=1
-        String dockerImage="quay.io/masri2019/hpp_hifi_adapter_filt:latest"
-    }
-    command <<<
-        set -o pipefail
-        set -e
-        set -u
-        set -o xtrace
-
-        mkdir data
-        cd data
-        FILENAME=$(basename -- "~{readFastq}")
-        PREFIX="${FILENAME%.*}"
-        # filter reads shorter than minReadLength
-        awk 'NR%4==1{a=$0} NR%4==2{b=$0} NR%4==3{c=$0} NR%4==0&&length(b)>~{minReadLength}{print a"\n"b"\n"c"\n"$0;}' ~{readFastq} > ${PREFIX}.long.fastq
-        OUTPUTSIZE=`du -s -BG *.long.fastq | sed 's/G.*//'` 
-        echo $OUTPUTSIZE > outputsize
-    >>>
-
-    runtime {
-        docker: dockerImage
-        memory: memSizeGB + " GB"
-        cpu: threadCount
-        disks: "local-disk " + diskSizeGB + " SSD"
-        preemptible: preemptible
-    }
-
-    output {
-        File longReadFastq = glob("data/*.long.fastq")[0]
-        Int fileSizeGB = read_int("data/outputsize")
     }
 }
 

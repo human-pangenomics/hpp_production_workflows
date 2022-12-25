@@ -141,4 +141,7 @@ workflows:
    -  name: DownSampling
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/down_sampling.wdl
+   -  name: FilterShortReads
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/filter_short_reads.wdl
 
