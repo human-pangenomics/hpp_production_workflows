@@ -40,6 +40,7 @@ workflow RunDownSampling{
                 readFastq=readFastq,
                 samplingRate = downsampledCoverage / sum.sum,
                 suffix = "${downsampledCoverage}X",
+                refLength = refLength,
                 memSizeGB=8,
                 threadCount=8,
                 diskSizeGB= ceil(3 * size(readFastq, "GB")) + 64
