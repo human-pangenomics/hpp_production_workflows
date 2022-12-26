@@ -59,10 +59,24 @@ workflow RunDownSampling{
 task sum {
   input {
     Array[Float] numbers
+    Int memSize=2
+    Int threadCount=2
+    Int diskSize=16
+    Int preemptible=2
+    String dockerImage="quay.io/masri2019/hpp_seqtk:latest"
+    String zones="us-west2-a"
   }
   command <<<
   python -c "print(~{sep="+" numbers})"
   >>>
+  runtime {
+        docker: dockerImage
+        memory: memSize + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSize + " SSD"
+        preemptible : preemptible
+        zones: zones
+  }
   output {
     Float sum = read_int(stdout())
   }
