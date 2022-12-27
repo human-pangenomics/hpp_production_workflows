@@ -163,7 +163,7 @@ task downsample {
         mkdir downsampled
         seqtk sample ~{readFastq} ~{samplingRate} > downsampled/${PREFIX}.~{suffix}.fq
         samtools faidx downsampled/${PREFIX}.~{suffix}.fq
-        cat downsampled/${PREFIX}.~{suffix}.fq.fai | awk -v refLength=~{refLength} '{totalBases += $2}END{printf "%.2f\n", totalBases/refLength}' > ${PREFIX}.~{suffix}.cov.txt
+        cat downsampled/${PREFIX}.~{suffix}.fq.fai | awk -v refLength=~{refLength} '{totalBases += $2}END{printf "%.2f\n", totalBases/refLength}' > cov.txt
         pigz -p8 downsampled/${PREFIX}.~{suffix}.fq > downsampled/${PREFIX}.~{suffix}.fq.gz
         
     >>>
@@ -178,7 +178,7 @@ task downsample {
     }
 
     output {
-        Float downSampledCoverage = read_float(glob("*.cov.txt")[0])
+        Float downSampledCoverage = read_float("cov.txt")
         File downSampledFastqGz = glob("downsampled/*.fq.gz")[0]
     }
 }
