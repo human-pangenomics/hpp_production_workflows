@@ -23,7 +23,7 @@ workflow FilterShortReads {
         call filterShortReads{
             input:
                 readFastq = extractReads.extractedRead,
-                diskSizeGB = ceil(3 * size(readFile, "GB")) + 64,
+                diskSizeGB = ceil(3 * size(extractReads.extractedRead, "GB")) + 64,
                 minReadLength = minReadLength
         }
     }
