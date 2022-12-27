@@ -78,7 +78,7 @@ task sum {
         zones: zones
   }
   output {
-    Float sum = read_int(stdout())
+    Float sum = read_float(stdout())
   }
 }
 
