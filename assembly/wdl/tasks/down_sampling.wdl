@@ -18,7 +18,7 @@ workflow RunDownSampling{
                 referenceFasta=referenceFasta,
                 memSizeGB=4,
                 threadCount=4,
-                diskSizeGB=ceil(3 * size(readFile, "GB")) + 64,
+                diskSizeGB=ceil(3 * size(readFile, "GB")) + 256,
                 dockerImage="tpesout/hpp_base:latest"
         }
         call getCoverage {
