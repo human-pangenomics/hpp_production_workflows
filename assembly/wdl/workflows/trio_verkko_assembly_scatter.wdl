@@ -433,7 +433,7 @@ task complete_asm {
 
         Int threadCount = 64
         Int memSizeGB   = 400
-        Int diskSizeGB  = 2500
+        Int diskSizeGB  = 3500
         Int preemptible = 1
     }
 
