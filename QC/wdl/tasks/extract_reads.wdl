@@ -27,6 +27,7 @@ task extractReads {
     input {
         File readFile
         File? referenceFasta
+        String? excludeString # exclude lines with this string from fastq
         Int memSizeGB = 4
         Int threadCount = 8
         Int diskSizeGB = 128
@@ -72,7 +73,18 @@ task extractReads {
             exit 1
         fi
 
-        OUTPUTSIZE=`du -s -BG output/ | sed 's/G.*//'`
+
+        mkdir output_final
+        OUTPUT_NAME=$(ls output)
+
+        if [ "~{excludeString}" != ""]; then
+            cat output/${OUTPUT_NAME} | grep -v "~{excludeString}" > output_final/${OUTPUT_NAME}
+        else
+            ln output/${OUTPUT_NAME} output_final/${OUTPUT_NAME}
+        fi
+        
+
+        OUTPUTSIZE=`du -s -BG output_final/ | sed 's/G.*//'`
         if [[ "0" == $OUTPUTSIZE ]] ; then
             OUTPUTSIZE=`du -s -BG ~{readFile} | sed 's/G.*//'`
         fi
@@ -80,7 +92,7 @@ task extractReads {
     >>>
 
     output {
-        File extractedRead = flatten([glob("output/*"), [readFile]])[0]
+        File extractedRead = flatten([glob("output_final/*"), [readFile]])[0]
         Int fileSizeGB = read_int("outputsize")
     }
 
