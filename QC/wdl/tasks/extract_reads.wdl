@@ -27,7 +27,7 @@ task extractReads {
     input {
         File readFile
         File? referenceFasta
-        String? excludeString # exclude lines with this string from fastq
+        String excludeString="" # exclude lines with this string from fastq
         Int memSizeGB = 4
         Int threadCount = 8
         Int diskSizeGB = 128
