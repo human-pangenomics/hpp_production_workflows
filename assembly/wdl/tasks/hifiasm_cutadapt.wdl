@@ -20,6 +20,7 @@ workflow runTrioHifiasm{
         File? referenceFasta
         Boolean filterAdapters
         Int removeLastFastqLines
+        String excludeStringReadExtraction=""
         Int memSizeGB
         Int threadCount
         Int preemptible
@@ -35,6 +36,7 @@ workflow runTrioHifiasm{
                 referenceFasta=referenceFasta,
                 memSizeGB=4,
                 threadCount=4,
+                excludeString=excludeStringReadExtraction,
                 diskSizeGB=fileExtractionDiskSizeGB,
                 dockerImage=dockerImage
         }
