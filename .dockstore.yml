@@ -93,6 +93,9 @@ workflows:
    -  name: TrioHifiasmAssemblyYakInputCutadapt
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly_yak_input_cutadapt.wdl
+   -  name: TrioHifiasmAssemblyYakInputCutadaptMultiStep
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/workflows/trio_hifiasm_assembly_yak_input_cutadapt_multistep.wdl
    -  name: TrioVerkkoAssembly
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/workflows/trio_verkko_assembly.wdl
