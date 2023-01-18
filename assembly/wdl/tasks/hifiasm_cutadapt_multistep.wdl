@@ -22,7 +22,6 @@ workflow runTrioHifiasm{
         Int removeLastFastqLines
         Array[Float] memCovRatios = [4.7, 3.8, 3.6]
         String excludeStringReadExtraction=""
-        Int memSizeGB
         Int threadCount
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
