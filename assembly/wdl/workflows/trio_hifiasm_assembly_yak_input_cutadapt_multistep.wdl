@@ -20,9 +20,8 @@ workflow trioHifiasmAssembly {
         File? inputBinFilesTarGz
         File? referenceFasta
         # runtime configurations for running hifiasm
-        Int threadCount=48
-        Int memSizeGB=256
-        Int preemptible=1
+        Int threadCount=64
+        Int preemptible=2
     }
 
     
@@ -41,7 +40,6 @@ workflow trioHifiasmAssembly {
             filterAdapters = filterAdapters,
             hifiasmExtraOptions = hifiasmExtraOptions,
             inputBinFilesTarGz = inputBinFilesTarGz,
-            memSizeGB = memSizeGB,
             threadCount = threadCount,
             preemptible = preemptible
     }
