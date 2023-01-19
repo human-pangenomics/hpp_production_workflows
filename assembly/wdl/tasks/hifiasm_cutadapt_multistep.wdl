@@ -175,10 +175,10 @@ task trioHifiasm {
         String zones
     }
     command <<<
-        set -o pipefail
-        set -e
-        set -u
-        set -o xtrace
+        #set -o pipefail
+        #set -e
+        #set -u
+        #set -o xtrace
 
         ## if bin files are given we have to extract them in the directory where hifiasm is being run
         ## this enables hifiasm to skip the time-consuming process of finding read overlaps
@@ -193,15 +193,15 @@ task trioHifiasm {
 
         ## run trio hifiasm https://github.com/chhylp123/hifiasm
         # If ONT ultra long reads are provided
-        #if [[ -n "~{sep="" childReadsUL}" ]];
-        #then
-        #    hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq 
-        #else 
-        #    hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq
-        #fi
+        if [[ -n "~{sep="" childReadsUL}" ]];
+        then
+            hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq 
+        else 
+            hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq
+        fi
 
 
-        touch empty.bin
+        #touch empty.bin
 
         #Move bin and gfa files to saparate folders and compress them 
         mkdir ~{childID}.raw_unitig_gfa
