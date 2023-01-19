@@ -208,7 +208,7 @@ task trioHifiasm {
 
         # before hardlinking gfa files to the corresponding directory make sure they exist
         # first and second step of hifiasm does not output gfa files
-        if [[ -n $(find . -maxdepth 1 -iname "*.hap1.p_ctg.*") ]];
+        if [[ -n "$(find . -maxdepth 1 -iname "*.hap1.p_ctg.*")" ]];
         then
             ln ~{childID}.dip.r_utg.* ~{childID}.raw_unitig_gfa
             ln *.hap1.p_ctg.* ~{childID}.pat.contig_gfa
@@ -218,7 +218,8 @@ task trioHifiasm {
             # we make empty gfa files since we cannot have optional outputs in wdl
             touch empty.hap1.p_ctg.gfa
             touch empty.hap2.p_ctg.gfa
-        fi 
+        fi
+
         ln *.bin ~{childID}.binFiles
         
         
