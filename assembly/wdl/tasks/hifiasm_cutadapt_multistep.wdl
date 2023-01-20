@@ -200,6 +200,8 @@ task trioHifiasm {
             hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq
         fi
 
+        echo "exit code is"
+        echo $?
 
         #touch empty.bin
 
