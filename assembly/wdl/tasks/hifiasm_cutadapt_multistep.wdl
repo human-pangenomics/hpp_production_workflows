@@ -19,13 +19,14 @@ workflow runTrioHifiasm{
         File? inputBinFilesTarGz
         File? referenceFasta
         Boolean filterAdapters
-        Int removeLastFastqLines
+        Array[Float] offsetMem = [0, 0, 0]
         Array[Float] memCovRatios = [4.7, 3.8, 3.6]
         String excludeStringReadExtraction=""
+	File fakeFastq = "gs://masri/hprc/fake.fq" 
         Int threadCount
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
-        String dockerImage = "quay.io/masri2019/hpp_hifiasm:latest"
+        String dockerImage = "quay.io/masri2019/hpp_hifiasm:0.18.5-r500"
         String zones = "us-west2-a"
     }
 
@@ -50,12 +51,11 @@ workflow runTrioHifiasm{
         if (filterAdapters){
             call adapter_t.cutadapt as filterAdapterHiFi {
                 input:
-                    readFastq = extractLongHiFiReads.longReadFastq,
-                    removeLastLines = removeLastFastqLines,
+                    readFastqGz = extractLongHiFiReads.longReadFastqGz,
                     diskSizeGB = fileExtractionDiskSizeGB
             } 
         }
-        File hifiProcessed = select_first([filterAdapterHiFi.filteredReadFastq, extractLongHiFiReads.longReadFastq])
+        File hifiProcessedFastqGz = select_first([filterAdapterHiFi.filteredReadFastqGz, extractLongHiFiReads.longReadFastqGz])
     }
 
     # if ONT reads are provided
@@ -96,13 +96,12 @@ workflow runTrioHifiasm{
         input:
             paternalYak=paternalYak,
             maternalYak=maternalYak,
-            childReadsHiFi=hifiProcessed,
-            childReadsUL=extractUltraLongReads.longReadFastq, # optional argument
+            childReadsHiFi=hifiProcessedFastqGz,
             homCov = homCov,
             childID=childID,
             extraOptions="--bin-only",
             #inputBinFilesTarGz=inputBinFilesTarGz,
-            memSizeGB=ceil(memCovRatios[0] * homCov),
+            memSizeGB=ceil(memCovRatios[0] * homCov + offsetMem[0]),
             threadCount=threadCount,
             diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 64,
             preemptible=preemptible,
@@ -111,15 +110,13 @@ workflow runTrioHifiasm{
     }
     call trioHifiasm as hifiasmStep2{
         input:
-            paternalYak=paternalYak,
-            maternalYak=maternalYak,
-            childReadsHiFi=hifiProcessed,
-            childReadsUL=extractUltraLongReads.longReadFastq, # optional argument
+            childReadsHiFi=[fakeFastq],
+            childReadsUL=extractUltraLongReads.longReadFastqGz, # optional argument
             homCov = homCov,
             childID=childID,
             extraOptions="--bin-only",
             inputBinFilesTarGz=hifiasmStep1.outputBinFiles,
-            memSizeGB=ceil(memCovRatios[1] * homCov),
+            memSizeGB=ceil(memCovRatios[1] * homCov + offsetMem[1]),
             threadCount=threadCount,
             diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 64,
             preemptible=preemptible,
@@ -130,13 +127,13 @@ workflow runTrioHifiasm{
         input:
             paternalYak=paternalYak,
             maternalYak=maternalYak,
-            childReadsHiFi=hifiProcessed,
-            childReadsUL=extractUltraLongReads.longReadFastq, # optional argument
+            childReadsHiFi=[fakeFastq],
+            childReadsUL=extractUltraLongReads.longReadFastqGz, # optional argument
             homCov = homCov,
             childID=childID,
             extraOptions="",
             inputBinFilesTarGz=hifiasmStep2.outputBinFiles,
-            memSizeGB=ceil(memCovRatios[2] * homCov),
+            memSizeGB=ceil(memCovRatios[2] * homCov + offsetMem[2]),
             threadCount=threadCount,
             diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 64,
             preemptible=preemptible,
@@ -154,11 +151,14 @@ workflow runTrioHifiasm{
     }
 }
 
-
+# hifiasm steps
+# 1st: pass HiFi and both yak files / not need to pass UL (extraOptions="--bin-only")
+# 2nd: pass UL and fake HiFi and both yak files (extraOptions="--bin-only")
+# 3rd: pass UL and fake HiFi / no need to pass yak files 
 task trioHifiasm {
     input{
-        File paternalYak
-        File maternalYak
+        File? paternalYak
+        File? maternalYak
         Array[File] childReadsHiFi
         Array[File]? childReadsUL
         Int? homCov
@@ -175,10 +175,10 @@ task trioHifiasm {
         String zones
     }
     command <<<
-        #set -o pipefail
-        #set -e
-        #set -u
-        #set -o xtrace
+        set -o pipefail
+        set -e
+        set -u
+        set -o xtrace
 
         ## if bin files are given we have to extract them in the directory where hifiasm is being run
         ## this enables hifiasm to skip the time-consuming process of finding read overlaps
@@ -187,23 +187,17 @@ task trioHifiasm {
             rm -rf ~{inputBinFilesTarGz}
         fi
 
-        ## it is not possible to pipe multiple fastq files to hifiasm
-        cat ~{sep=" " childReadsHiFi} > ~{childID}.fastq
-        rm -rf ~{sep=" " childReadsHiFi}
-
         ## run trio hifiasm https://github.com/chhylp123/hifiasm
         # If ONT ultra long reads are provided
-        if [[ -n "~{sep="" childReadsUL}" ]];
-        then
-            hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq 
-        else 
-            hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{childID}.fastq
+        if [[ -n "~{sep="" childReadsUL}" ]]; then
+            if [[ -n ~{paternalYak} ]]; then # for the 2nd step
+                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{sep=" " childReadsHiFi}
+            else # for the 3rd step
+                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -3 ~{childID}.hap1.phase.bin -4 ~{childID}.hap2.phase.bin ~{sep=" " childReadsHiFi}           
+            fi
+        else # for the 1st step
+            hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{sep=" " childReadsHiFi}
         fi
-
-        echo "exit code is"
-        echo $?
-
-        #touch empty.bin
 
         #Move bin and gfa files to saparate folders and compress them 
         mkdir ~{childID}.raw_unitig_gfa
@@ -213,7 +207,7 @@ task trioHifiasm {
 
         # before hardlinking gfa files to the corresponding directory make sure they exist
         # first and second step of hifiasm does not output gfa files
-        if [[ -n "$(find . -maxdepth 1 -iname "*.hap1.p_ctg.*")" ]];
+        if [[ -n '$(find . -maxdepth 1 -iname "*.hap1.p_ctg.*")' ]];
         then
             ln ~{childID}.dip.r_utg.* ~{childID}.raw_unitig_gfa
             ln *.hap1.p_ctg.* ~{childID}.pat.contig_gfa
@@ -247,6 +241,7 @@ task trioHifiasm {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         preemptible : preemptible
+        cpuPlatform: "Intel Cascade Lake"
         zones : zones
     }
 

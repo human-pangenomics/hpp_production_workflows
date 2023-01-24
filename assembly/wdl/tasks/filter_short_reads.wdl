@@ -29,7 +29,7 @@ workflow FilterShortReads {
     }
 
     output {
-        Array[File] longReadFastqs = filterShortReads.longReadFastq 
+        Array[File] longReadFastqGzArray = filterShortReads.longReadFastqGz 
     }
 }
 
@@ -44,7 +44,7 @@ task filterShortReads {
         Int threadCount=4
         Int diskSizeGB=512
         Int preemptible=1
-        String dockerImage="tpesout/hpp_base:latest"
+        String dockerImage="mobinasri/bio_base:latest"
     }
     command <<<
         set -o pipefail
@@ -56,9 +56,10 @@ task filterShortReads {
         cd data
         FILENAME=$(basename -- "~{readFastq}")
         PREFIX="${FILENAME%.*}"
+        minLenKb=$(echo ~{minReadLength} | awk '{printf "%.0f",$1/1e3}')
         # filter reads shorter than minReadLength
-        awk 'NR%4==1{a=$0} NR%4==2{b=$0} NR%4==3{c=$0} NR%4==0&&length(b)>~{minReadLength}{print a"\n"b"\n"c"\n"$0;}' ~{readFastq} > ${PREFIX}.long.fastq
-        OUTPUTSIZE=`du -s -BG *.long.fastq | sed 's/G.*//'`
+        awk 'NR%4==1{a=$0} NR%4==2{b=$0} NR%4==3{c=$0} NR%4==0&&length(b)>~{minReadLength}{print a"\n"b"\n"c"\n"$0;}' ~{readFastq} | pigz -p8 - > ${PREFIX}.gt_${minLenKb}kb.fastq.gz
+        OUTPUTSIZE=`du -s -BG *.fastq.gz | sed 's/G.*//'`
         echo $OUTPUTSIZE > outputsize
     >>>
 
@@ -71,8 +72,8 @@ task filterShortReads {
     }
 
     output {
-        File longReadFastq = glob("data/*.long.fastq")[0]
-        Int fileSizeGB = read_int("data/outputsize")
+        File longReadFastqGz = glob("*.fastq.gz")[0]
+        Int fileSizeGB = read_int("outputsize")
     }
 }
 
