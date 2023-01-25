@@ -19,7 +19,7 @@ workflow runTrioHifiasm{
         File? inputBinFilesTarGz
         File? referenceFasta
         Boolean filterAdapters
-        Array[Float] offsetMem = [0, 0, 0]
+        Array[Float] offsetMem = [10, 0, 0]
         Array[Float] memCovRatios = [4.7, 3.8, 3.6]
         String excludeStringReadExtraction=""
 	File fakeFastq = "gs://masri/hprc/fake.fq" 
