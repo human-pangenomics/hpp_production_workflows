@@ -52,8 +52,6 @@ task filterShortReads {
         set -u
         set -o xtrace
 
-        mkdir data
-        cd data
         FILENAME=$(basename -- "~{readFastq}")
         PREFIX="${FILENAME%.*}"
         minLenKb=$(echo ~{minReadLength} | awk '{printf "%.0f",$1/1e3}')
@@ -72,8 +70,8 @@ task filterShortReads {
     }
 
     output {
-        File longReadFastqGz = glob("/data/*.fastq.gz")[0]
-        Int fileSizeGB = read_int("/data/outputsize")
+        File longReadFastqGz = glob("*.fastq.gz")[0]
+        Int fileSizeGB = read_int("outputsize")
     }
 }
 
