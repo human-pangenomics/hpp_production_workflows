@@ -72,8 +72,8 @@ task filterShortReads {
     }
 
     output {
-        File longReadFastqGz = glob("*.fastq.gz")[0]
-        Int fileSizeGB = read_int("outputsize")
+        File longReadFastqGz = glob("/data/*.fastq.gz")[0]
+        Int fileSizeGB = read_int("/data/outputsize")
     }
 }
 
