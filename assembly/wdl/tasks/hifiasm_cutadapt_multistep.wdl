@@ -190,12 +190,15 @@ task trioHifiasm {
         ## run trio hifiasm https://github.com/chhylp123/hifiasm
         # If ONT ultra long reads are provided
         if [[ -n "~{sep="" childReadsUL}" ]]; then
-            if [[ -n ~{paternalYak} ]]; then # for the 2nd step
+            if [[ -n "~{paternalYak}" ]]; then 
+                # for the 2nd step
                 hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{sep=" " childReadsHiFi}
-            else # for the 3rd step
+            else 
+                # for the 3rd step
                 hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -3 ~{childID}.hap1.phase.bin -4 ~{childID}.hap2.phase.bin ~{sep=" " childReadsHiFi}           
             fi
-        else # for the 1st step
+        else  
+            # for the 1st step
             hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{sep=" " childReadsHiFi}
         fi
 
