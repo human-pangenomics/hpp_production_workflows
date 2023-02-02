@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/human-pangenomics/hpp_production_workflows/master/QC/wdl/tasks/extract_reads_toGZ.wdl" as extract_reads
+import "https://raw.githubusercontent.com/human-pangenomics/hpp_production_workflows/master/QC/wdl/tasks/extract_reads_toGZ.wdl" as extractReadstoGZ
 
 workflow verkko_wf {
     
@@ -25,7 +25,7 @@ workflow verkko_wf {
 
     # extract HiFi reads
     scatter (readFile in input_hifi) {
-        call extract_reads.extractReads as hifi_reads_extracted {
+        call extractReadstoGZ.extractReadstoGZ as hifi_reads_extracted {
             input:
                 readFile=readFile,
                 referenceFasta=referenceFasta,
@@ -37,7 +37,7 @@ workflow verkko_wf {
 
     ## extract nanopore reads
     scatter (readFile in input_nanopore) {
-        call extract_reads.extractReads as ont_reads_extracted {
+        call extractReadstoGZ.extractReadstoGZ as ont_reads_extracted {
             input:
                 readFile=readFile,
                 referenceFasta=referenceFasta,
