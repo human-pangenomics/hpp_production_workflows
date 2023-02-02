@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/human-pangenomics/hpp_production_workflows/master/QC/wdl/tasks/extract_reads.wdl" as extract_reads
+import "https://raw.githubusercontent.com/human-pangenomics/hpp_production_workflows/master/QC/wdl/tasks/extract_reads_toGZ.wdl" as extract_reads
 
 workflow verkko_wf {
     
