@@ -51,7 +51,7 @@ task chopperFilter {
         PREFIX="${FILENAME%.*}"
 
 
-        gunzip -c {readFastqGZ} \
+        gunzip -c ~{readFastqGZ} \
             | chopper \
                 -q ~{minReadQual} \
                 -l ~{minReadLength} \
