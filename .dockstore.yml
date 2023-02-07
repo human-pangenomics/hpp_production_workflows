@@ -150,3 +150,6 @@ workflows:
    -  name: chopperFilter
       subclass: WDL
       primaryDescriptorPath: /data_processing/wdl/chopper.wdl
+   -  name: LiftOff
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/liftoff.wdl
