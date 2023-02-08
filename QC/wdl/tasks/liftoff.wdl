@@ -39,7 +39,7 @@ task liftoff {
         gunzip -c ~{referenceFastaGz} > ref.fa
 
         # parameteres taken from https://www.science.org/doi/10.1126/science.abj6987 supplementary file
-        liftoff -sc 0.95 -copies -polish -g ~{geneGff3} -o ~{sample}.~{suffix}.gff3 asm.fa ref.fa
+        liftoff -p ~{threadCount} -sc 0.95 -copies -polish -g ~{geneGff3} -o ~{sample}.~{suffix}.gff3 asm.fa ref.fa
 	        
 	>>>
 	output {
