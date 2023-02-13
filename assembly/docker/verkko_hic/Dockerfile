@@ -47,8 +47,8 @@ RUN git clone https://github.com/Dmitry-Antipov/verkkohic.git && \
 ENV PATH="/opt/verkkohic:${PATH}"
 
 ## Verkko HiC requires the following parameters to be set:
-ENV PSTOOLS="/opt/pstools_1"
-ENV VERKKO="/root/miniconda3/envs/verkko/bin/verkko"
+ENV PSTOOLS="/opt"
+ENV VERKKO="/root/miniconda3/envs/verkko_hic"
 
 
 ## Make sure to enter the environment when starting
