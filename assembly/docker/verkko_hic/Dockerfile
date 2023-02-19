@@ -35,7 +35,8 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
 ## pstools
 WORKDIR /opt
 RUN wget https://pstools.s3.us-east-2.amazonaws.com/pstools_1 \
-    && chmod +x pstools_1
+    && mv pstools_1 pstools \
+    && chmod +x pstools
 ENV PATH="/opt:${PATH}"
 
 
