@@ -99,6 +99,9 @@ workflows:
    -  name: HiCHifiasmAssemblyStep2
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/hifiasm_cutadapt_hic_step2.wdl
+   -  name: HiCHifiasmAssemblyStep3
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/hifiasm_cutadapt_hic_step3.wdl
    -  name: TrioVerkkoAssembly
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/workflows/trio_verkko_assembly.wdl

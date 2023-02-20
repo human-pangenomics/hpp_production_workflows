@@ -8,7 +8,7 @@ workflow runHiCHifiasm{
 # hifiasm HiC steps
 # 1st: pass HiFi / not need to pass UL and HiC (extraOptions="--bin-only")
 # 2nd: pass UL and fake HiFi / not need to pass HiC (extraOptions="--bin-only")
-# 3rd: pass UL, fake HiFi and HiC
+# 3rd: pass UL, HiC and fake HiFi
 task hicHifiasm {
     input{
         Array[File]? childReadsHiC1
