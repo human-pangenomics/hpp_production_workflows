@@ -1,0 +1,10 @@
+name: verkko_hic
+channels:
+  - conda-forge 
+  - bioconda 
+  - defaults
+
+dependencies:
+  - verkko
+  - mashmap
+  - networkx
