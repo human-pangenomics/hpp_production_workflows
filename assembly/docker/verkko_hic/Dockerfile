@@ -43,7 +43,7 @@ ENV PATH="/opt:${PATH}"
 ## verkko hic
 RUN git clone https://github.com/Dmitry-Antipov/verkkohic.git && \
     cd verkkohic && \
-    git reset --hard c2669d7df7de3af09853727fb1fcbf650cedd02c
+    git reset --hard 8be78a4cdfc655607f846e191eb5e9e7670dd8f1
 
 ENV PATH="/opt/verkkohic:${PATH}"
 
