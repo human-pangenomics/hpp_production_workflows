@@ -108,6 +108,9 @@ workflows:
    -  name: TrioVerkkoAssemblyScatter
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/workflows/trio_verkko_assembly_scatter.wdl
+   -  name: VerkkoCreateUnphasedGFA
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/verkko_create_unphased_gfa.wdl
    -  name: YakNoStats
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats.wdl
