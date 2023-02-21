@@ -67,8 +67,8 @@ task create_unphased_gfa {
             -d consensus_unitigs/ \
             --local-memory ~{memSizeGB} \
             --local-cpus ~{threadCount} \
-            --hifi inputs/hifi/*fast*.gz \
-            --nano inputs/ont/*fast*.gz
+            --hifi hifi/*fast*.gz \
+            --nano ont/*fast*.gz
 
 
         ## Creates rows like:
