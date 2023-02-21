@@ -24,8 +24,11 @@ RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 # RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 
+WORKDIR /opt
 
 ## Verkko
 RUN git clone https://github.com/marbl/verkko.git \
 	&& cd verkko/src \
 	&& make -j 8
+
+WORKDIR /data	
