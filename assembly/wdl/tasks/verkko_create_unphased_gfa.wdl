@@ -66,7 +66,7 @@ task create_unphased_gfa {
             --assembly assembly \
             -d consensus_unitigs/ \
             --local-memory ~{memSizeGB} \
-            --local-cpus ~{threadCount} \            
+            --local-cpus ~{threadCount} \
             --hifi inputs/hifi/*fast*.gz \
             --nano inputs/ont/*fast*.gz
 
