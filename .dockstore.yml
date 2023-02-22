@@ -111,6 +111,9 @@ workflows:
    -  name: VerkkoCreateUnphasedGFA
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/verkko_create_unphased_gfa.wdl
+   -  name: VerkkoHiCPhasing
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/verkko_hic.wdl
    -  name: YakNoStats
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats.wdl
