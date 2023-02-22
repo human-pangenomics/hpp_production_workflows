@@ -68,7 +68,7 @@ workflow runHiCHifiasmStep3{
             childReadsHiC2 = childReadsHiC2,
             homCov = homCov,
             childID=childID,
-            extraOptions="--bin-only",
+            extraOptions="",
             inputBinFilesTarGz=inputBinFilesTarGz,
             memSizeGB=ceil(memCovRatios[1] * homCov + offsetMem[1]),
             threadCount=threadCount,
