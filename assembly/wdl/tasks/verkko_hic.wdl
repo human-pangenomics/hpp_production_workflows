@@ -29,6 +29,9 @@ task verkko_hic {
     command <<<
 
         set -eux -o pipefail
+        
+        ## Neccesary so conda environment will activate...
+        source ~/.bashrc
 
         ## localize nanopore reads to one directory
         ont_files=(~{sep=" " input_nanopore})
