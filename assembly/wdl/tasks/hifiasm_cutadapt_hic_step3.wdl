@@ -72,7 +72,7 @@ workflow runHiCHifiasmStep3{
             inputBinFilesTarGz=inputBinFilesTarGz,
             memSizeGB=ceil(memCovRatios[1] * homCov + offsetMem[1]),
             threadCount=threadCount,
-            diskSizeGB= floor(readULSize * 2.5) + 512,
+            diskSizeGB= floor(readULSize * 2.5) + 1024,
             preemptible=preemptible,
             dockerImage=dockerImage,
             zones = zones
