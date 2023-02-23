@@ -82,7 +82,7 @@ task create_unphased_gfa {
 
         ## Rename contigs in assembly
         python3 $VERKKO/lib/verkko/scripts/process_reads.py rename \
-            assembly_renamed.fasta \            
+            assembly_renamed.fasta \
             rename.map \
             consensus_unitigs/assembly.fasta
             
