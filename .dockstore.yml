@@ -168,3 +168,6 @@ workflows:
    -  name: LiftOff
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/liftoff.wdl
+   -  name: ShortQC
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/workflows/short_qc.wdl
