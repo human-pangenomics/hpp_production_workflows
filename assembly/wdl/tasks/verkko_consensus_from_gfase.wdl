@@ -121,9 +121,9 @@ task finalize_gfase_verkko {
         params="$params  --solid-ratio 1.5 --issue-ratio 1. --fillable-bubble-len 500000 --fillable-bubble-diff 1000 --solid-homozygous-cov-coeff 1.1"        
 
         if [ xtrio = xtrio ]; then
-           params="$params --issue-len 200000  --marker-ratio 5. --issue-ratio 3. --issue-cnt 100"
+           params="$params --issue-len 200000  --marker-ratio 5. --issue-cnt 100"
         else
-           params="$params --issue-len 2000000 --marker-ratio 3. --issue-ratio 2. --issue-cnt 1000"
+           params="$params --issue-len 2000000 --marker-ratio 3. --issue-cnt 1000"
         fi
 
         ## Call w/ new branch of Rukki
