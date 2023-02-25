@@ -111,6 +111,9 @@ workflows:
    -  name: VerkkoCreateUnphasedGFA
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/verkko_create_unphased_gfa.wdl
+   -  name: VerkkoConsensusFromGFAse
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/verkko_consensus_from_gfase.wdl
    -  name: VerkkoHiCPhasing
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/verkko_hic.wdl

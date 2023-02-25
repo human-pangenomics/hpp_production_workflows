@@ -30,6 +30,7 @@ task finalize_gfase_verkko {
     command <<<
 
         set -eux -o pipefail
+        
         ## Neccesary so conda environment will activate...
         source ~/.bashrc
 
@@ -139,7 +140,7 @@ task finalize_gfase_verkko {
             --hifi hifi/*fast*.gz \
             --nano ont/*fast*.gz
 
-        tar -cvf ~{name}_~{tag}.tar ${new_run_folder}/final_asm   
+        tar -cvf ~{name}_~{tag}.tar ${new_run_folder}
 
     >>>
 
@@ -153,7 +154,7 @@ task finalize_gfase_verkko {
         cpu: threadCount
         cpuPlatform: "Intel Cascade Lake"
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "humanpangenomics/verkko_hic@sha256:84ee7348dc954c9c28f78580f6551eaec19d85d813e656f275cde46133da0396"
+        docker: "humanpangenomics/verkko_hic@sha256:9beccde8dc9416c34e69f1e9989b6eceddc6f983bbc0459d0fb20f0d95868924"
         preemptible: preemptible
     }
 }

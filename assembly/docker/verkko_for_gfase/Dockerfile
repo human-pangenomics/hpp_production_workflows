@@ -31,11 +31,13 @@ RUN git clone https://github.com/marbl/verkko.git \
 	&& cd verkko/src \
 	&& make -j 8
 
-## Updated Rukki
+WORKDIR /opt
+
+## build updated Rukki
 ## build executable is here: /opt/rukki/target/release/rukki
 RUN git clone https://github.com/marbl/rukki.git \
-	&& git checkout weak_signal_bubbles \
 	&& cd rukki \
+	&& git checkout weak_signal_bubbles \
 	&& cargo build --release
 
 WORKDIR /data	
