@@ -154,7 +154,7 @@ task finalize_gfase_verkko {
         cpu: threadCount
         cpuPlatform: "Intel Cascade Lake"
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "humanpangenomics/verkko_hic@sha256:9beccde8dc9416c34e69f1e9989b6eceddc6f983bbc0459d0fb20f0d95868924"
+        docker: "humanpangenomics/verkko_for_gfase@sha256:9beccde8dc9416c34e69f1e9989b6eceddc6f983bbc0459d0fb20f0d95868924"
         preemptible: preemptible
     }
 }
