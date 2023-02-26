@@ -171,3 +171,6 @@ workflows:
    -  name: ShortQC
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/short_qc.wdl
+   -  name: asmComparisonQC
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/workflows/comparison_qc.wdl
