@@ -29,15 +29,7 @@ workflow comparisonQC {
         Int preemptibleQC = 2
         String dockerQC   = "quay.io/masri2019/qc-stats:latest"
         String zonesQC    = "us-west2-a"
-
-        Array[File] sampleReadsILM
-        Array[File] maternalReadsILM
-        Array[File] paternalReadsILM
-        File paternalAssembly
-        File maternalAssembly
-        Boolean isMaleSample
-        File referenceFasta
-        File geneAnnotationFile
+        
     }
 
     ## filter by size
