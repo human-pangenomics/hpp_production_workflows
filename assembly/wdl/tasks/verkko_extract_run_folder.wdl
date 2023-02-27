@@ -32,9 +32,6 @@ task extract_run_folder {
         ## extract tar w/ snakemake run to cwd
         tar xvf ~{run_folder} --directory ./
 
-        ## Get the name of the assembly folder
-        asm_folder=$(ls -d */)
-
         ## extract haplotypes
         # awk < ${asm_folder}/final_*/assembly.fasta \
         #    'BEGIN {{
@@ -44,13 +41,13 @@ task extract_run_folder {
         #     (\$2 ~ /^haplotype2[0-9]+$/)    {{ print \$2 > "./haplotype2.names"; }}
         #     (\$2 ~ /^unassigned-[0-9]+$/)   {{ print \$2 > "./unassigned.names"; }}'
 
-        grep "haplotype1.*" ${asm_folder}/final_*/assembly.fasta > haplotype1.names
-        grep "haplotype2.*" ${asm_folder}/final_*/assembly.fasta > haplotype2.names
-        grep "unassigned.*" ${asm_folder}/final_*/assembly.fasta > unassigned.names
+        grep "haplotype1.*" */final_*/assembly.fasta > haplotype1.names
+        grep "haplotype2.*" */final_*/assembly.fasta > haplotype2.names
+        grep "unassigned.*" */final_*/assembly.fasta > unassigned.names
 
-        seqtk subseq ${final_asm_folder}/assembly.fasta haplotype1.names | gzip > ~{sample_name}_~{tag}_haplotype1.fasta.gz &
-        seqtk subseq ${final_asm_folder}/assembly.fasta haplotype2.names | gzip > ~{sample_name}_~{tag}_haplotype2.fasta.gz &
-        seqtk subseq ${final_asm_folder}/assembly.fasta unassigned.names | gzip > ~{sample_name}_~{tag}_unassigned.fasta.gz &
+        seqtk subseq */assembly.fasta haplotype1.names | gzip > ~{sample_name}_~{tag}_haplotype1.fasta.gz &
+        seqtk subseq */assembly.fasta haplotype2.names | gzip > ~{sample_name}_~{tag}_haplotype2.fasta.gz &
+        seqtk subseq */assembly.fasta unassigned.names | gzip > ~{sample_name}_~{tag}_unassigned.fasta.gz &
 
         wait
 
