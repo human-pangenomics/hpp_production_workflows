@@ -120,6 +120,9 @@ workflows:
    -  name: VerkkoExtractPhasedAsms
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/verkko_extract_run_folder.wdl
+   -  name: VerkkoRephaseRukki
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/verkko_rerun_rukki.wdl
    -  name: YakNoStats
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats.wdl
