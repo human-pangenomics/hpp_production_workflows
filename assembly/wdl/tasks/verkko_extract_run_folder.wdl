@@ -41,9 +41,9 @@ task extract_run_folder {
         #     (\$2 ~ /^haplotype2[0-9]+$/)    {{ print \$2 > "./haplotype2.names"; }}
         #     (\$2 ~ /^unassigned-[0-9]+$/)   {{ print \$2 > "./unassigned.names"; }}'
 
-        grep "haplotype1.*" */final_*/assembly.fasta > haplotype1.names
-        grep "haplotype2.*" */final_*/assembly.fasta > haplotype2.names
-        grep "unassigned.*" */final_*/assembly.fasta > unassigned.names
+        grep "haplotype1.*" */final_*/assembly.fasta | sed "s/.*:>//" > haplotype1.names
+        grep "haplotype2.*" */final_*/assembly.fasta | sed "s/.*:>//" > haplotype2.names
+        grep "unassigned.*" */final_*/assembly.fasta | sed "s/.*:>//" > unassigned.names
 
         seqtk subseq */final_*/assembly.fasta haplotype1.names | gzip > ~{sample_name}_~{tag}_haplotype1.fasta.gz &
         seqtk subseq */final_*/assembly.fasta haplotype2.names | gzip > ~{sample_name}_~{tag}_haplotype2.fasta.gz &
