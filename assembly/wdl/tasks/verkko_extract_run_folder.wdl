@@ -45,9 +45,9 @@ task extract_run_folder {
         grep "haplotype2.*" */final_*/assembly.fasta > haplotype2.names
         grep "unassigned.*" */final_*/assembly.fasta > unassigned.names
 
-        seqtk subseq */assembly.fasta haplotype1.names | gzip > ~{sample_name}_~{tag}_haplotype1.fasta.gz &
-        seqtk subseq */assembly.fasta haplotype2.names | gzip > ~{sample_name}_~{tag}_haplotype2.fasta.gz &
-        seqtk subseq */assembly.fasta unassigned.names | gzip > ~{sample_name}_~{tag}_unassigned.fasta.gz &
+        seqtk subseq */final_*/assembly.fasta haplotype1.names | gzip > ~{sample_name}_~{tag}_haplotype1.fasta.gz &
+        seqtk subseq */final_*/assembly.fasta haplotype2.names | gzip > ~{sample_name}_~{tag}_haplotype2.fasta.gz &
+        seqtk subseq */final_*/assembly.fasta unassigned.names | gzip > ~{sample_name}_~{tag}_unassigned.fasta.gz &
 
         wait
 
