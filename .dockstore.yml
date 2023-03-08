@@ -180,3 +180,6 @@ workflows:
    -  name: asmComparisonQC
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/comparison_qc.wdl
+   -  name: ssdsTerraUpload
+      subclass: WDL
+      primaryDescriptorPath: /data_processing/wdl/ssds_terra_upload.wdl      
