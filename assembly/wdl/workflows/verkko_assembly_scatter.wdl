@@ -103,7 +103,7 @@ task configure_overlap {
         String name     = "assembly"
 
         Int threadCount = 24
-        Int memSizeGB   = 64
+        Int memSizeGB   = 96
         Int diskSizeGB  = 2500
         Int preemptible = 1
     }
