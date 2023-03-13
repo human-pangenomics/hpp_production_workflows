@@ -45,11 +45,11 @@ task hicHifiasm {
         if [[ -n "~{sep="" childReadsUL}" ]]; then
             if [[ -n "~{sep="" childReadsHiC1}" ]]; then                 
                 # Keep only necessary bin files for step 3
-                mkdir kept_bin_files
-                mv *.ec.bin *.ovlp.reverse.bin *.ovlp.source.bin *.ul.ovlp.bin kept_bin_files
-                rm -rf *.bin
-                mv kept_bin_files/* .
-                rm -rf kept_bin_files
+                #mkdir kept_bin_files
+                #mv *.ec.bin *.ovlp.reverse.bin *.ovlp.source.bin *.ul.ovlp.bin kept_bin_files
+                #rm -rf *.bin
+                #mv kept_bin_files/* .
+                #rm -rf kept_bin_files
 
                 # Run step 3
                 hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} --h1 "~{sep="," childReadsHiC1}" --h2 "~{sep="," childReadsHiC2}"  ~{sep=" " childReadsHiFi}
