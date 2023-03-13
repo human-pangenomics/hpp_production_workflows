@@ -43,15 +43,29 @@ task hicHifiasm {
         ## run trio hifiasm https://github.com/chhylp123/hifiasm
         # If ONT ultra long reads are provided
         if [[ -n "~{sep="" childReadsUL}" ]]; then
-            if [[ -n "~{sep="" childReadsHiC1}" ]]; then 
-                # for the 3nd step
+            if [[ -n "~{sep="" childReadsHiC1}" ]]; then                 
+                # Keep only necessary bin files for step 3
+                mkdir kept_bin_files
+                mv *.ec.bin *.ovlp.reverse.bin *.ovlp.source.bin *.ul.ovlp.bin kept_bin_files
+                rm -rf *.bin
+                mv kept_bin_files/* .
+                rm -rf kept_bin_files
+
+                # Run step 3
                 hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} --h1 "~{sep="," childReadsHiC1}" --h2 "~{sep="," childReadsHiC2}"  ~{sep=" " childReadsHiFi}
-            else 
-                # for the 2rd step
-                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} ~{sep=" " childReadsHiFi}           
+            else
+                # Keep only necessary bin files for step 2
+                mkdir kept_bin_files
+                mv *.ec.bin *.ovlp.reverse.bin *.ovlp.source.bin kept_bin_files
+                rm -rf *.bin
+                mv kept_bin_files/* .
+                rm -rf kept_bin_files
+
+                # Run step 2
+                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} ~{sep=" " childReadsHiFi}
             fi
         else  
-            # for the 1st step
+            # Run step 1
             hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} ~{sep=" " childReadsHiFi}
         fi
 
