@@ -119,6 +119,13 @@ task trio_phase {
         ## extract tar w/ unphased verkko run
         tar xvf ~{run_folder} --directory ./
 
+        ## clean up to trigger full rerun
+        rm assembly/assembly.*
+        rm -rf assembly/6-*
+        mkdir tmp 
+        cp -p assembly/7-consensus/ont* tmp/
+        rm -rf assembly/7-consensus/*
+        cp -p tmp/* assembly/7-consensus/
 
         ## Extract meryl hapmer DBs
         mkdir -p /meryl/mat/

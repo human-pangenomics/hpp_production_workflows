@@ -67,8 +67,7 @@ workflow verkko_wf {
             run_folder     = configure_overlap.run_folder_tar,
             overlap_tars   = overlap.ovlp_tar,
             input_hifi     = hifi_reads_extracted.extractedRead,            
-            input_nanopore = ont_reads_extracted.extractedRead,
-            preemptible    = preemptible
+            input_nanopore = ont_reads_extracted.extractedRead
     }
     
     ## Align ONT reads
@@ -111,6 +110,9 @@ task configure_overlap {
     command <<<
 
         set -eux -o pipefail
+
+        ## Neccesary so conda environment will activate...
+        source ~/.bashrc
 
         ## localize HiFi reads to one directory
         hifi_files=(~{sep=" " input_hifi})
@@ -164,7 +166,7 @@ task configure_overlap {
         cpu: threadCount
         cpuPlatform: "Intel Cascade Lake"
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "quay.io/biocontainers/verkko:1.3.1--h64afbab_0"
+        docker: "humanpangenomics/hprc_verkko@sha256:7cad26822fd3c1382982cd00fd8f5bb7082909245fd16ee16f222bb4739b54ba"
         preemptible: preemptible
     }
 }
@@ -176,8 +178,6 @@ task overlap {
         String job_id
         String name = "assembly"
 
-        # String? extra_args
-
         Int threadCount = 8
         Int memSizeGB   = 24
         Int diskSizeGB  = 250
@@ -187,6 +187,9 @@ task overlap {
     command <<<
 
         set -eux -o pipefail
+        
+        ## Neccesary so conda environment will activate...
+        source ~/.bashrc
 
         ## extract tar w/ snakemake run up to now to cwd
         tar xvf ~{configure_ovl_tar} --directory ./
@@ -197,7 +200,7 @@ task overlap {
         cd assembly/0-correction/overlap-jobs
 
         ## Compute the overlap...
-        /usr/local/lib/verkko/bin/overlapInCore \
+        /root/miniconda3/envs/hprc_verkko/lib/verkko/bin/overlapInCore \
             -t 8 \
             -k 28 \
             -k ../../0-correction/hifi.ignoremers \
@@ -237,7 +240,7 @@ task overlap {
         cpu: threadCount
         cpuPlatform: "Intel Cascade Lake"
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "quay.io/biocontainers/verkko:1.3.1--h64afbab_0"
+        docker: "humanpangenomics/hprc_verkko@sha256:7cad26822fd3c1382982cd00fd8f5bb7082909245fd16ee16f222bb4739b54ba"
         preemptible: preemptible
     }
 }
@@ -255,12 +258,15 @@ task create_graph {
         Int threadCount = 80
         Int memSizeGB   = 400
         Int diskSizeGB  = 2500
-        Int preemptible = 1
+        Int preemptible = 0
     }
 
     command <<<
 
         set -eux -o pipefail
+        
+        ## Neccesary so conda environment will activate...
+        source ~/.bashrc
 
         ## localize nanopore reads to one directory
         ont_files=(~{sep=" " input_nanopore})
@@ -342,7 +348,7 @@ task create_graph {
         cpu: threadCount
         cpuPlatform: "Intel Cascade Lake"
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "quay.io/biocontainers/verkko:1.3.1--h64afbab_0"
+        docker: "humanpangenomics/hprc_verkko@sha256:7cad26822fd3c1382982cd00fd8f5bb7082909245fd16ee16f222bb4739b54ba"
         preemptible: preemptible
     }
 }
@@ -362,18 +368,22 @@ task graph_aligner {
 
         set -eux -o pipefail
 
+        ## Neccesary so conda environment will activate...
+        source ~/.bashrc
+
         ## extract tar w/ snakemake run up to now to cwd
         tar xvf ~{create_graph_tar} --directory ./
 
         cd assembly/3-align
 
         ## Align the ONT data...
-        /usr/local/bin/GraphAligner \
+        /root/miniconda3/envs/hprc_verkko/bin/GraphAligner \
             -t ~{threadCount} \
             -g ../2-processGraph/unitig-unrolled-hifi-resolved.gfa \
             -f ../3-align/split/ont~{aln_job_id}.fasta.gz \
             -a ../3-align/aligned~{aln_job_id}.WORKING.gaf \
             --seeds-mxm-cache-prefix ../3-align/graph \
+            --seeds-mxm-windowsize 5000 \
             --seeds-mxm-length 30 \
             --seeds-mem-count 10000 \
             --bandwidth 15 \
@@ -384,7 +394,8 @@ task graph_aligner {
             --discard-cigar \
             --clip-ambiguous-ends 100 \
             --overlap-incompatible-cutoff 0.15 \
-            --max-trace-count 5
+            --max-trace-count 5 \
+            --mem-index-no-wavelet-tree
 
         mv -f ../3-align/aligned~{aln_job_id}.WORKING.gaf ../3-align/aligned~{aln_job_id}.gaf
 
@@ -406,7 +417,7 @@ task graph_aligner {
         cpu: threadCount
         cpuPlatform: "Intel Cascade Lake"
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "quay.io/biocontainers/verkko:1.3.1--h64afbab_0"
+        docker: "humanpangenomics/hprc_verkko@sha256:7cad26822fd3c1382982cd00fd8f5bb7082909245fd16ee16f222bb4739b54ba"
         preemptible: preemptible
     }
 }
@@ -430,6 +441,9 @@ task complete_asm {
     command <<<
 
         set -eux -o pipefail
+        
+        ## Neccesary so conda environment will activate...
+        source ~/.bashrc
 
         ## localize nanopore reads to one directory
         ont_files=(~{sep=" " input_nanopore})
@@ -484,6 +498,12 @@ task complete_asm {
             --hifi hifi/* \
             --nano ont/*
 
+
+        ## clean up to save space
+        rm -rf assembly/0-correction/*
+        rm -rf assembly/7-consensus/packages/*
+        rm -rf assembly/3-align/*
+
         ## compress all assembly files into an archive (useful for reruns locally)
         tar -cvf ~{name}_verkko_v1.3_trio.tar assembly
 
@@ -498,7 +518,7 @@ task complete_asm {
         cpu: threadCount
         cpuPlatform: "Intel Cascade Lake"
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "quay.io/biocontainers/verkko:1.3.1--h64afbab_0"
+        docker: "humanpangenomics/hprc_verkko@sha256:7cad26822fd3c1382982cd00fd8f5bb7082909245fd16ee16f222bb4739b54ba"
         preemptible: preemptible
     }
 }
