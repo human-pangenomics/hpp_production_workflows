@@ -1,4 +1,4 @@
-name: verkko_hic
+name: hprc_verkko
 channels:
   - conda-forge 
   - bioconda 
