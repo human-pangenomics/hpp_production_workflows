@@ -195,11 +195,11 @@ task trioHifiasm {
                 hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{sep=" " childReadsHiFi}
             else
                 # Keep only necessary bin files for step 3
-                #mkdir kept_bin_files
-                #mv *.ec.bin *.ovlp.reverse.bin *.ovlp.source.bin *.hap1.phase.bin *.hap2.phase.bin  *.ul.ovlp.bin kept_bin_files
-                #rm -rf *.bin
-                #mv kept_bin_files/* .
-                #rm -rf kept_bin_files 
+                mkdir kept_bin_files
+                mv *.ec.bin *.ovlp.reverse.bin *.ovlp.source.bin *.hap1.phase.bin *.hap2.phase.bin *.ul.ovlp.bin kept_bin_files
+                rm -rf *.bin
+                mv kept_bin_files/* .
+                rm -rf kept_bin_files 
 
                 # Run step 3
                 hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -3 ~{childID}.hap1.phase.bin -4 ~{childID}.hap2.phase.bin ~{sep=" " childReadsHiFi}           
