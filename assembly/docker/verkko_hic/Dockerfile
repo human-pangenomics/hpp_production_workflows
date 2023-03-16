@@ -33,6 +33,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
 
 
 ## verkko hic
+WORKDIR /opt
 RUN git clone https://github.com/Dmitry-Antipov/verkkohic.git && \
     cd verkkohic && \
     git reset --hard b8fdda6aac3245f2ee39e3c0d6c01b58debcc092
