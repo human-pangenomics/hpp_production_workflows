@@ -8,3 +8,4 @@ dependencies:
   - verkko
   - mashmap
   - networkx
+  - samtools

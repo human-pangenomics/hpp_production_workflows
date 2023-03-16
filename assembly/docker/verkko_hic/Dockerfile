@@ -32,23 +32,14 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
     && conda env create -f /tmp/environment.yml
 
 
-## pstools
-WORKDIR /opt
-RUN wget https://pstools.s3.us-east-2.amazonaws.com/pstools_1 \
-    && mv pstools_1 pstools \
-    && chmod +x pstools
-ENV PATH="/opt:${PATH}"
-
-
 ## verkko hic
 RUN git clone https://github.com/Dmitry-Antipov/verkkohic.git && \
     cd verkkohic && \
-    git reset --hard 8be78a4cdfc655607f846e191eb5e9e7670dd8f1
+    git reset --hard b8fdda6aac3245f2ee39e3c0d6c01b58debcc092
 
 ENV PATH="/opt/verkkohic:${PATH}"
 
 ## Verkko HiC requires the following parameters to be set:
-ENV PSTOOLS="/opt"
 ENV VERKKO="/root/miniconda3/envs/verkko_hic"
 
 
