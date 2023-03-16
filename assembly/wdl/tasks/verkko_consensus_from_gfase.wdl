@@ -21,15 +21,18 @@ task finalize_gfase_verkko {
         String name = "assembly"
         String tag  = "verkko_gfase"
 
-        Int threadCount = 16
-        Int memSizeGB   = 100
+        Int threadCount = 72
+        Int memSizeGB   = 400
         Int diskSizeGB  = 2000
-        Int preemptible = 0
+        Int preemptible = 1
     }
 
     command <<<
 
         set -eux -o pipefail
+        
+        ## Neccesary so conda environment will activate...
+        source ~/.bashrc
 
         ## localize nanopore reads to one directory
         ont_files=(~{sep=" " input_nanopore})
@@ -95,7 +98,7 @@ task finalize_gfase_verkko {
              } \
            }' \
         | \
-        /usr/local/lib/verkko/scripts/inject_coverage.py --allow-absent \
+        /root/miniconda3/envs/verkko_hic/lib/verkko/scripts/inject_coverage.py--allow-absent \
           ${prior_run_folder}/5-untip/unitig-popped-unitig-normal-connected-tip.hifi-coverage.csv \
         > ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.noseq.gfa
 
@@ -115,19 +118,29 @@ task finalize_gfase_verkko {
         params="$params --marker-sparsity 5000"
         params="$params --issue-sparsity 1000"
         params="$params --try-fill-bubbles"
-        params="$params  --solid-ratio 1.5 --issue-ratio 1. --fillable-bubble-len 500000 --fillable-bubble-diff 1000 --solid-homozygous-cov-coeff 1.1"        
+        params="$params --try-fill-bubbles"
+        params="$params --fillable-bubble-diff 1000"
+        params="$params --fillable-bubble-len 500000"
+        params="$params --assign-tangles --tangle-allow-deadend"
+        params="$params --issue-ratio 1."
+        params="$params --solid-homozygous-cov-coeff 1.1"
+        params="$params --solid-ratio 1.5"
+        params="$params --hap-names haplotype1,haplotype2"
 
         if [ xtrio = xtrio ]; then
-           params="$params --issue-len 200000  --marker-ratio 5. --issue-cnt 100"
+           params="$params --marker-ratio 5."
         else
-           params="$params --issue-len 2000000 --marker-ratio 3. --issue-cnt 1000"
+           params="$params --marker-ratio 3."
         fi
 
-        /usr/local/lib/verkko/bin/rukki trio -g ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.noseq.gfa -m ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.colors.csv              -p ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.paths.tsv $params
-        /usr/local/lib/verkko/bin/rukki trio -g ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.noseq.gfa -m ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.colors.csv --gaf-format -p ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.paths.gaf $params
+
+        /root/miniconda3/envs/verkko_hic/lib/verkko/bin/rukki trio -g ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.noseq.gfa -m ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.colors.csv              -p ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.paths.tsv $params
+        /root/miniconda3/envs/verkko_hic/lib/verkko/bin/rukki trio -g ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.noseq.gfa -m ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.colors.csv --gaf-format -p ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.paths.gaf $params
+
 
         ## Call verkko to build consensus and get final assemblies
         verkko  \
+            --screen human \
             --paths ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.paths.gaf \
             --assembly ${prior_run_folder} \
             -d ${new_run_folder}/final_asm \
@@ -135,6 +148,7 @@ task finalize_gfase_verkko {
             --local-cpus ~{threadCount} \
             --hifi hifi/*fast*.gz \
             --nano ont/*fast*.gz
+
 
         tar -cvf ~{name}_~{tag}.tar ${new_run_folder}
 
@@ -150,7 +164,7 @@ task finalize_gfase_verkko {
         cpu: threadCount
         cpuPlatform: "Intel Cascade Lake"
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "quay.io/biocontainers/verkko:1.3.1--h64afbab_0"
+        docker: "humanpangenomics/verkko_hic@sha256:40bd11c6823c47aa2224fe5cdfb13dc633b6632b390d786d294ce24ec10f784c"
         preemptible: preemptible
     }
 }
