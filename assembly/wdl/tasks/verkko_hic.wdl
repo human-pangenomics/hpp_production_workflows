@@ -16,14 +16,14 @@ task verkko_hic {
         File run_folder
         Array[File] input_hifi
         Array[File] input_nanopore
-        Array[File] input_hic      
+        Array[File] aligned_hic      
         String name = "assembly"
         String tag  = "verkko_hic"
 
-        Int threadCount = 46
-        Int memSizeGB   = 290
+        Int threadCount = 72
+        Int memSizeGB   = 400
         Int diskSizeGB  = 2500
-        Int preemptible = 0
+        Int preemptible = 1
     }
 
     command <<<
@@ -60,26 +60,24 @@ task verkko_hic {
         touch -a -m -t 202001011205.02 inputs/ont/*
 
 
-        ## localize HiC reads to one directory
-        hic_files=(~{sep=" " input_hic})
-        
-        mkdir  -p inputs/hic 
+        ## merge then sort hic bams
+        hic_files=(~{sep=" " aligned_hic})
 
-        for hic_file in ${hic_files[@]};
-        do
-            ## Have to copy so I can set timestamp
-            cp $hic_file inputs/hic/
-        done
+        samtools merge -o hic_merged.bam $hic_files
+        samtools sort hic_merged.bam -o hic_merged_sorted.bam
+        rm hic_merged.bam
+    
 
         ## extract tar w/ snakemake run to cwd
         tar xvf ~{run_folder} --directory ./
 
         mkdir verkko_hic
 
-        all_wrapper.sh \
+        norealign_wrapper.sh \
             assembly \
             verkko_hic \
-            inputs
+            inputs \
+            hic_merged_sorted.bam
 
         tar -cvf ~{name}_~{tag}.tar verkko_hic
     >>>
@@ -93,7 +91,7 @@ task verkko_hic {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "humanpangenomics/verkko_hic@sha256:84ee7348dc954c9c28f78580f6551eaec19d85d813e656f275cde46133da0396"
+        docker: "humanpangenomics/verkko_hic@sha256:40bd11c6823c47aa2224fe5cdfb13dc633b6632b390d786d294ce24ec10f784c"
         preemptible: preemptible
     }
 }
