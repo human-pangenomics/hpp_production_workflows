@@ -43,7 +43,7 @@ task create_unphased_gfa {
 
         /root/miniconda3/envs/hprc_verkko/lib/verkko/scripts/fasta_combine.py rename \
             assembly_renamed.fasta \
-            ename.map \
+            rename.map \
             assembly/assembly.fasta    
 
 
