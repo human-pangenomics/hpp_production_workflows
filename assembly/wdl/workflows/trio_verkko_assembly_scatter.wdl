@@ -141,6 +141,7 @@ task trio_phase {
         ## Call Verkko 
         verkko \
             -d assembly \
+            --screen human \
             --local-memory ~{memSizeGB} \
             --local-cpus ~{threadCount} \
             --hifi hifi/* \
