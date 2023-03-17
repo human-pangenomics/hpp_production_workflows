@@ -118,7 +118,6 @@ task finalize_gfase_verkko {
         params="$params --marker-sparsity 5000"
         params="$params --issue-sparsity 1000"
         params="$params --try-fill-bubbles"
-        params="$params --try-fill-bubbles"
         params="$params --fillable-bubble-diff 1000"
         params="$params --fillable-bubble-len 500000"
         params="$params --assign-tangles --tangle-allow-deadend"
