@@ -98,7 +98,7 @@ task finalize_gfase_verkko {
              } \
            }' \
         | \
-        /root/miniconda3/envs/verkko_hic/lib/verkko/scripts/inject_coverage.py--allow-absent \
+        /root/miniconda3/envs/verkko_hic/lib/verkko/scripts/inject_coverage.py --allow-absent \
           ${prior_run_folder}/5-untip/unitig-popped-unitig-normal-connected-tip.hifi-coverage.csv \
         > ${new_run_folder}/6-rukki/unitig-popped-unitig-normal-connected-tip.noseq.gfa
 
