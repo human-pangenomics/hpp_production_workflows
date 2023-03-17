@@ -89,7 +89,7 @@ task verkko_hic {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "humanpangenomics/verkko_hic@sha256:40bd11c6823c47aa2224fe5cdfb13dc633b6632b390d786d294ce24ec10f784c"
+        docker: "humanpangenomics/verkko_hic@sha256:a0842a0cfcac363dd80333dd60c4794914f2bc4ff0dd8bc6ce84a1086dcbbc25"
         preemptible: preemptible
     }
 }
