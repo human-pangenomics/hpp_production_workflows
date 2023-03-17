@@ -4,7 +4,7 @@ import "../../../assembly/wdl/tasks/len_filter_fasta.wdl" as filter_fasta_t
 import "../../../assembly/wdl/tasks/break_into_contigs.wdl" as breakIntoContigs_t
 import "../../../QC/wdl/workflows/short_qc.wdl" as shortQC_t
 import "https://raw.githubusercontent.com/human-pangenomics/hpp_production_workflows/asset/asset/wdl/tasks/produce_fai.wdl" as produceFai_t
-
+import "https://raw.githubusercontent.com/biomonika/HPP/main/assembly/wdl/workflows/findAssemblyBreakpoints.wdl" as findAssemblyBreakpoints_wf
 
 workflow comparisonQC {
 
@@ -23,6 +23,12 @@ workflow comparisonQC {
         File patYak 
         File childYak
 
+        ## findAssemblyBreakpoints Inputs
+        File reference
+        File annotationBed
+        File annotationSD
+        File annotationCENSAT
+
         Int memSizeQC     = 200
         Int diskSizeQC    = 256
         Int threadCountQC = 32
@@ -31,6 +37,26 @@ workflow comparisonQC {
         String zonesQC    = "us-west2-a"
         
     }
+
+    ## Find breakpoints for each assembly
+    call findAssemblyBreakpoints_wf.findAssemblyBreakpoints as findAssemblyBreakpoints_hap1 {
+        input:
+            assembly=hap1Fasta,
+            reference=reference,
+            annotationBed=annotationBed,
+            annotationSD=annotationSD,
+            annotationCENSAT=annotationCENSAT
+    }
+
+    call findAssemblyBreakpoints_wf.findAssemblyBreakpoints as findAssemblyBreakpoints_hap2 {
+        input:
+            assembly=hap1Fasta,
+            reference=reference,
+            annotationBed=annotationBed,
+            annotationSD=annotationSD,
+            annotationCENSAT=annotationCENSAT
+    }
+    
 
     ## filter by size
     call filter_fasta_t.filter_fasta as filter_fasta_hap1 {
@@ -129,6 +155,39 @@ workflow comparisonQC {
     }
 
 	output {
+
+        ## Outputs for breakpoint analysis
+        File hap1_T2Tcontigs             = findAssemblyBreakpoints_hap1.T2Tcontigs
+        File hap1_T2Tscaffolds           = findAssemblyBreakpoints_hap1.T2Tscaffolds
+        File hap1_assembly_CHM13         = findAssemblyBreakpoints_hap1.assembly_CHM13
+        File hap1_assemblyStatistics     = findAssemblyBreakpoints_hap1.assemblyStatistics
+        File hap1_unifiedAssembly        = findAssemblyBreakpoints_hap1.unifiedAssembly
+        File hap1_breakAnnotation_region = findAssemblyBreakpoints_hap1.breakAnnotation_region
+        File hap1_breakAnnotation_SD     = findAssemblyBreakpoints_hap1.breakAnnotation_SD
+        File hap1_breakAnnotation_CENSAT = findAssemblyBreakpoints_hap1.breakAnnotation_CENSAT
+        File hap1_assembly_CHM13         = findAssemblyBreakpoints_hap1.assembly_CHM13 
+        File hap1_filteredFlanksBed      = findAssemblyBreakpoints_hap1.filteredFlanksBed
+        File hap1_bed_region             = findAssemblyBreakpoints_hap1.bed_region
+        File hap1_bed_SD                 = findAssemblyBreakpoints_hap1.bed_SD
+        File hap1_bed_CENSAT             = findAssemblyBreakpoints_hap1.bed_CENSAT
+        File hap1_assemblyStatistics     = findAssemblyBreakpoints_hap1.assemblyStatistics
+
+        File hap2_T2Tcontigs             = findAssemblyBreakpoints_hap2.T2Tcontigs
+        File hap2_T2Tscaffolds           = findAssemblyBreakpoints_hap2.T2Tscaffolds
+        File hap2_assembly_CHM13         = findAssemblyBreakpoints_hap2.assembly_CHM13
+        File hap2_assemblyStatistics     = findAssemblyBreakpoints_hap2.assemblyStatistics
+        File hap2_unifiedAssembly        = findAssemblyBreakpoints_hap2.unifiedAssembly
+        File hap2_breakAnnotation_region = findAssemblyBreakpoints_hap2.breakAnnotation_region
+        File hap2_breakAnnotation_SD     = findAssemblyBreakpoints_hap2.breakAnnotation_SD
+        File hap2_breakAnnotation_CENSAT = findAssemblyBreakpoints_hap2.breakAnnotation_CENSAT
+        File hap2_assembly_CHM13         = findAssemblyBreakpoints_hap2.assembly_CHM13 
+        File hap2_filteredFlanksBed      = findAssemblyBreakpoints_hap2.filteredFlanksBed
+        File hap2_bed_region             = findAssemblyBreakpoints_hap2.bed_region
+        File hap2_bed_SD                 = findAssemblyBreakpoints_hap2.bed_SD
+        File hap2_bed_CENSAT             = findAssemblyBreakpoints_hap2.bed_CENSAT
+        File hap2_assemblyStatistics     = findAssemblyBreakpoints_hap2.assemblyStatistics
+
+
         ## Outputs for filtered assemblies
         File hap1FiltFasta     = filter_fasta_hap1.filteredFasta
         File hap2FiltFasta     = filter_fasta_hap2.filteredFasta
