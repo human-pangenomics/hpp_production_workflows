@@ -61,7 +61,7 @@ task verkko_hic {
 
 
         ## merge then sort hic bams
-        samtools merge -o hic_merged.bam ${sep=" " aligned_hic}
+        samtools merge hic_merged.bam ~{sep=" " aligned_hic}
         samtools sort hic_merged.bam -o hic_merged_sorted.bam
         rm hic_merged.bam
     
