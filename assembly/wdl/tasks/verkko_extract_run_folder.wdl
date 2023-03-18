@@ -48,8 +48,8 @@ task extract_run_folder {
         seqtk subseq */final_*/assembly.fasta haplotype1.names | gzip > ~{sample_name}_~{tag}_haplotype1.fasta.gz &
         seqtk subseq */final_*/assembly.fasta haplotype2.names | gzip > ~{sample_name}_~{tag}_haplotype2.fasta.gz &
         seqtk subseq */final_*/assembly.fasta unassigned.names | gzip > ~{sample_name}_~{tag}_unassigned.fasta.gz &
-	
-	wait
+
+        wait
 
     >>>
 
