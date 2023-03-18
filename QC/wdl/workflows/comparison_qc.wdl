@@ -50,7 +50,7 @@ workflow comparisonQC {
 
     call findAssemblyBreakpoints_wf.findAssemblyBreakpoints as findAssemblyBreakpoints_hap2 {
         input:
-            assembly=hap1Fasta,
+            assembly=hap2Fasta,
             reference=reference,
             annotationBed=annotationBed,
             annotationSD=annotationSD,
