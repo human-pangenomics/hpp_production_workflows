@@ -47,9 +47,9 @@ task extract_run_folder {
         seqtk subseq assembly.fasta unassigned.names | gzip > ~{sample_name}_~{tag}_unassigned.fasta.gz &
 
         gzip -cvf assembly.fasta > ~{sample_name}_~{tag}_diploid.fasta.gz &
-        gzip -cvf */final_*/7-final_consensus/assembly.mito.fasta > ~{sample_name}_~{tag}_mito.fasta.gz &
-        gzip -cvf */final_*/7-final_consensus/assembly.mito.exemplar.fasta > ~{sample_name}_~{tag}_mito_exemplar.fasta.gz &
-        
+        gzip -cvf */final_*/7-consensus/assembly.mito.fasta > ~{sample_name}_~{tag}_mito.fasta.gz &
+        gzip -cvf */final_*/7-consensus/assembly.mito.exemplar.fasta > ~{sample_name}_~{tag}_mito_exemplar.fasta.gz &
+
         wait
 
     >>>
