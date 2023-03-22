@@ -80,7 +80,7 @@ task trio_phase {
         String name = "assembly"
 
         Int threadCount = 64
-        Int memSizeGB   = 300
+        Int memSizeGB   = 400
         Int diskSizeGB  = 2000
         Int preemptible = 0
     }
@@ -141,9 +141,9 @@ task trio_phase {
         ## Call Verkko 
         verkko \
             -d assembly \
+            --screen human \
             --local-memory ~{memSizeGB} \
             --local-cpus ~{threadCount} \
-            --cns-run 32 0 48 \
             --hifi hifi/* \
             --nano ont/* \
             --hap-kmers  /meryl/mat/$mat_hapmer_db /meryl/pat/$pat_hapmer_db trio \

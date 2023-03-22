@@ -494,7 +494,6 @@ task complete_asm {
             -d assembly \
             --local-memory ~{memSizeGB} \
             --local-cpus ~{threadCount} \
-            --cns-run 32 0 48 \
             --hifi hifi/* \
             --nano ont/*
 

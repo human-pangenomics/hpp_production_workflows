@@ -5,6 +5,8 @@ channels:
   - defaults
 
 dependencies:
-  - verkko
+  - verkko=1.3
   - mashmap
   - networkx
+  - openssl=1.0
+  - samtools
