@@ -188,4 +188,7 @@ workflows:
       primaryDescriptorPath: /QC/wdl/workflows/comparison_qc.wdl
    -  name: ssdsTerraUpload
       subclass: WDL
-      primaryDescriptorPath: /data_processing/wdl/ssds_terra_upload.wdl      
+      primaryDescriptorPath: /data_processing/wdl/ssds_terra_upload.wdl
+   -  name: AssemblyCleanUp
+      subclass: WDL
+      primaryDescriptorPath: /assembly/wdl/tasks/assembly_clean_up.wdl     
