@@ -191,4 +191,7 @@ workflows:
       primaryDescriptorPath: /data_processing/wdl/ssds_terra_upload.wdl
    -  name: AssemblyCleanUp
       subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/tasks/assembly_clean_up.wdl     
+      primaryDescriptorPath: /assembly/wdl/tasks/assembly_clean_up.wdl
+   -  name: ShortDiploidQC
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/workflows/short_diploid_qc.wdl 
