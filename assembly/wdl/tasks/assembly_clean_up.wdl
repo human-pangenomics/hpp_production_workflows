@@ -5,13 +5,9 @@ workflow runAssemblyCleanUp{
     output {
         File miscFilesTarGz = assemblyCleanUp.miscFilesTarGz
         File mitoFastaGz = assemblyCleanUp.mitoFastaGz
-        File mitoFai = assemblyCleanUp.mitoFai
         File ebvFastaGz = assemblyCleanUp.ebvFastaGz
-        File ebvFai = assemblyCleanUp.ebvFai
         File rdnaFastaGz = assemblyCleanUp.rdnaFastaGz
-        File rdnaFai = assemblyCleanUp.rdnaFai
         File cleanedFastaGz = assemblyCleanUp.cleanedFastaGz
-        File cleanedFai = assemblyCleanUp.cleanedFai
     }
 }
 
@@ -72,12 +68,10 @@ task assemblyCleanUp {
           cd ../
          
           mv outputs/assembly.fasta ~{childID}.cleaned.fa
-          mv outputs/assembly.fasta.fai ~{childID}.cleaned.fa.fai
           gzip ~{childID}.cleaned.fa
  
           for suffix in mito rdna ebv; do
               mv outputs/assembly.${suffix}.fasta ~{childID}.${suffix}.fa
-              mv outputs/assembly.${suffix}.fasta.fai ~{childID}.${suffix}.fa.fai
               gzip ~{childID}.${suffix}.fa 
           done
 
@@ -98,13 +92,9 @@ task assemblyCleanUp {
     output {
         File miscFilesTarGz = "${childID}.clean_up.tar.gz"
         File mitoFastaGz = "${childID}.mito.fa.gz"
-        File mitoFai = "${childID}.mito.fai"
         File ebvFastaGz = "${childID}.ebv.fa.gz"
-        File ebvFai = "${childID}.ebv.fai"
         File rdnaFastaGz = "${childID}.rdna.fa.gz"
-        File rdnaFai = "${childID}.rdna.fai"
         File cleanedFastaGz = "${childID}.cleaned.fa.gz"
-        File cleanedFai =  "${childID}.cleaned.fai"
     }
 }
 
