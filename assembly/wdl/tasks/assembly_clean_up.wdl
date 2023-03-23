@@ -41,8 +41,8 @@ task assemblyCleanUp {
         set -o xtrace
 
         mkdir outputs
-        tar -xvzf ~{paternalGfaTarGz} --directory outputs
-        tar -xvzf ~{maternalGfaTarGz} --directory outputs
+        tar -xvzf ~{paternalGfaTarGz} --strip-components 1 --directory outputs
+        tar -xvzf ~{maternalGfaTarGz} --strip-components 1 --directory outputs
         cd outputs 
 
         cat *.dip.hap[12].p_ctg.gfa | awk '{if (match($1, "^S")) { print ">"$2; print $3}}' > combined.fasta
