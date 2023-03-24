@@ -12,8 +12,8 @@ workflow runAssemblyCleanUp{
 
 task assemblyCleanUp {
     input{
-        File paternalGfaTarGz
-        File maternalGfaTarGz
+        File haplotype1GfaTarGz
+        File haplotype2GfaTarGz
         String childID
         String suffix
         # runtime configurations
@@ -36,14 +36,14 @@ task assemblyCleanUp {
         set -o xtrace
 
         mkdir outputs
-        tar -xvzf ~{paternalGfaTarGz} --strip-components 1 --directory outputs
-        tar -xvzf ~{maternalGfaTarGz} --strip-components 1 --directory outputs
+        tar -xvzf ~{haplotype1GfaTarGz} --strip-components 1 --directory outputs
+        tar -xvzf ~{haplotype2GfaTarGz} --strip-components 1 --directory outputs
         cd outputs 
 
-        cat *.dip.hap[12].p_ctg.gfa | awk '{if (match($1, "^S")) { print ">"$2; print $3}}' > combined.fasta
-        cat *.dip.hap[12].p_ctg.gfa > combined.gfa
-        cat *.dip.hap[12].p_ctg.noseq.gfa | awk '{if (match($1, "^S")) { print "path "$2"\t"$2; print "piece000002"; print "end"; }}' > combined.scfmap
-        cat *.dip.hap[12].p_ctg.noseq.gfa | awk -v NAME="" '{if (match($1, "^S")) { if (NAME != "") print NAME"\t"SUM/LEN; SUM=0; NAME=$2; LEN=substr($4, 6, length($4)); } if (match($1, "^A")) { SUM+=$7-$6}} END {print NAME"\t"SUM/LEN}' > combined.csv
+        cat *.hap[12].p_ctg.gfa | awk '{if (match($1, "^S")) { print ">"$2; print $3}}' > combined.fasta
+        cat *.hap[12].p_ctg.gfa > combined.gfa
+        cat *.hap[12].p_ctg.noseq.gfa | awk '{if (match($1, "^S")) { print "path "$2"\t"$2; print "piece000002"; print "end"; }}' > combined.scfmap
+        cat *.hap[12].p_ctg.noseq.gfa | awk -v NAME="" '{if (match($1, "^S")) { if (NAME != "") print NAME"\t"SUM/LEN; SUM=0; NAME=$2; LEN=substr($4, 6, length($4)); } if (match($1, "^A")) { SUM+=$7-$6}} END {print NAME"\t"SUM/LEN}' > combined.csv
       
          /usr/local/lib/verkko/scripts/screen-assembly.pl \
           --assembly      combined.fasta \
