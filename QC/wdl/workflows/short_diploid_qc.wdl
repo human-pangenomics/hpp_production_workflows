@@ -4,6 +4,7 @@ workflow RunShortDiploidQC {
     input {
         File patFastaGz
         File matFastaGz
+        File dipFastaGZ
         File patYak
         File matYak
         File genesFasta
@@ -22,6 +23,7 @@ workflow RunShortDiploidQC {
         input:
             patFastaGz = patFastaGz ,
             matFastaGz = matFastaGz ,
+            dipFastaGZ = dipFastaGZ ,
             patYak = patYak ,
             matYak = matYak ,
             genesFasta = genesFasta ,
@@ -71,8 +73,9 @@ task shortDiploidQC {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
 
-        zcat ~{patFastaGz} ~{matFastaGz} | pigz -p8 - > dip.asm.fa.gz
-
+        # zcat ~{patFastaGz} ~{matFastaGz} | pigz -p8 - > dip.asm.fa.gz
+        ln ~{dipFastaGZ} dip.asm.fa.gz
+        
         # Computing length statistics
         k8 ${CAL_N50_PATH} dip.asm.fa.gz > dip.len.stats.txt
 
