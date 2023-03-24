@@ -4,7 +4,7 @@ workflow RunShortDiploidQC {
     input {
         File patFastaGz
         File matFastaGz
-        File dipFastaGZ
+        File dipFastaGz
         File patYak
         File matYak
         File genesFasta
@@ -23,7 +23,7 @@ workflow RunShortDiploidQC {
         input:
             patFastaGz = patFastaGz ,
             matFastaGz = matFastaGz ,
-            dipFastaGZ = dipFastaGZ ,
+            dipFastaGz = dipFastaGz ,
             patYak = patYak ,
             matYak = matYak ,
             genesFasta = genesFasta ,
@@ -47,7 +47,7 @@ task shortDiploidQC {
     input{
         File patFastaGz
         File matFastaGz
-        File dipFastaGZ
+        File dipFastaGz
         File patYak
         File matYak
         File childYak
@@ -75,7 +75,7 @@ task shortDiploidQC {
         set -o xtrace
 
         # zcat ~{patFastaGz} ~{matFastaGz} | pigz -p8 - > dip.asm.fa.gz
-        ln ~{dipFastaGZ} dip.asm.fa.gz
+        ln ~{dipFastaGz} dip.asm.fa.gz
         
         # Computing length statistics
         k8 ${CAL_N50_PATH} dip.asm.fa.gz > dip.len.stats.txt
