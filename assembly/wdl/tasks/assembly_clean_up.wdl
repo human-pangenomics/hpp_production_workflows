@@ -3,11 +3,9 @@ version 1.0
 workflow runAssemblyCleanUp{
     call assemblyCleanUp
     output {
-        File miscFilesTarGz = assemblyCleanUp.miscFilesTarGz
+        File mitoExemplarFastaGz = assemblyCleanUp.mitoExemplarFastaGz
         File mitoFastaGz = assemblyCleanUp.mitoFastaGz
-        File ebvFastaGz = assemblyCleanUp.ebvFastaGz
-        File rdnaFastaGz = assemblyCleanUp.rdnaFastaGz
-        File cleanedFastaGz = assemblyCleanUp.cleanedFastaGz
+        File cleanedAssemblyFastaGz = assemblyCleanUp.cleanedAssemblyFastaGz
     }
 }
 
@@ -17,6 +15,7 @@ task assemblyCleanUp {
         File paternalGfaTarGz
         File maternalGfaTarGz
         String childID
+        String suffix
         # runtime configurations
         Int memSizeGB=32
         Int threadCount=8
@@ -67,17 +66,14 @@ task assemblyCleanUp {
           done
           cd ../
          
-          mv outputs/assembly.fasta ~{childID}.cleaned.fa
-          gzip ~{childID}.cleaned.fa
+          mv outputs/assembly.fasta ~{childID}.~{suffix}.cleaned.fa
+          gzip ~{childID}.~{suffix}.cleaned.fa
  
-          for suffix in mito rdna ebv; do
-              mv outputs/assembly.${suffix}.fasta ~{childID}.${suffix}.fa
-              gzip ~{childID}.${suffix}.fa 
-          done
+          mv outputs/assembly.mito.fasta ~{childID}.~{suffix}.mito.fa
+          gzip ~{childID}.~{suffix}.mito.fa
 
-          mv outputs ~{childID}.clean_up
-          tar -cf ~{childID}.clean_up.tar ~{childID}.clean_up
-          gzip ~{childID}.clean_up.tar
+          mv outputs/assembly.mito.exemplar.fasta ~{childID}.~{suffix}.mito.exemplar.fa
+          gzip ~{childID}.~{suffix}.mito.exemplar.fa
           
     >>>
 
@@ -90,11 +86,9 @@ task assemblyCleanUp {
     }
 
     output {
-        File miscFilesTarGz = "${childID}.clean_up.tar.gz"
-        File mitoFastaGz = "${childID}.mito.fa.gz"
-        File ebvFastaGz = "${childID}.ebv.fa.gz"
-        File rdnaFastaGz = "${childID}.rdna.fa.gz"
-        File cleanedFastaGz = "${childID}.cleaned.fa.gz"
+        File mitoFastaGz = "${childID}.${suffix}.mito.fa.gz"
+        File mitoExemplarFastaGz = "${childID}.${suffix}.mito.exemplar.fa.gz"
+        File cleanedAssemblyFastaGz = "${childID}.${suffix}.cleaned.fa.gz"
     }
 }
 
