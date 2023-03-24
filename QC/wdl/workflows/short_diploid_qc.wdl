@@ -47,6 +47,7 @@ task shortDiploidQC {
     input{
         File patFastaGz
         File matFastaGz
+        File dipFastaGZ
         File patYak
         File matYak
         File childYak
