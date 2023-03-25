@@ -35,7 +35,7 @@ workflow comparisonQC {
         Int diskSizeQC    = 256
         Int threadCountQC = 32
         Int preemptibleQC = 2
-        String dockerQC   = "quay.io/masri2019/qc-stats:latest"
+        String dockerQC   = "mobinasri/hpp_qc_stats:latest"
         String zonesQC    = "us-west2-a"
         
     }
@@ -53,7 +53,7 @@ workflow comparisonQC {
     ## filter by size
     call filter_fasta_t.filter_fasta as filter_fasta_hap1 {
         input:
-            inputFasta=asmFasta,
+            inputFasta=hap1Fasta,
             sampleName=sampleName,
             outputFileTag="hap1_filt",
             min_size=min_len
