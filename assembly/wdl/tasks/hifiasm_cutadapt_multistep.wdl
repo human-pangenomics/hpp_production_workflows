@@ -94,8 +94,6 @@ workflow runTrioHifiasm{
 
     call trioHifiasm as hifiasmStep1{
         input:
-            paternalYak=paternalYak,
-            maternalYak=maternalYak,
             childReadsHiFi=hifiProcessedFastqGz,
             homCov = homCov,
             childID=childID,
@@ -112,6 +110,8 @@ workflow runTrioHifiasm{
         input:
             childReadsHiFi=[fakeFastq],
             childReadsUL=extractUltraLongReads.longReadFastqGz, # optional argument
+            paternalYak=paternalYak,
+            maternalYak=maternalYak,
             homCov = homCov,
             childID=childID,
             extraOptions="--bin-only",
@@ -125,8 +125,6 @@ workflow runTrioHifiasm{
     }
     call trioHifiasm as hifiasmStep3{
         input:
-            paternalYak=paternalYak,
-            maternalYak=maternalYak,
             childReadsHiFi=[fakeFastq],
             childReadsUL=extractUltraLongReads.longReadFastqGz, # optional argument
             homCov = homCov,
@@ -206,7 +204,7 @@ task trioHifiasm {
             fi
         else  
             # Run step 1
-            hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{sep=" " childReadsHiFi}
+            hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} ~{sep=" " childReadsHiFi}
         fi
 
         #Move bin and gfa files to saparate folders and compress them 
