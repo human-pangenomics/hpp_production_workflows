@@ -1,4 +1,4 @@
-version 1.1
+version 1.0
 
 workflow runPhasedGFAs2Fasta{
     call phasedGFAs2Fasta

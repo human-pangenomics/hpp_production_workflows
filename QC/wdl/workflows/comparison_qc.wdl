@@ -1,4 +1,4 @@
-version 1.1
+version 1.0
 
 import "../../../assembly/wdl/tasks/len_filter_fasta.wdl" as filter_fasta_t
 import "../../../assembly/wdl/tasks/break_into_contigs.wdl" as breakIntoContigs_t

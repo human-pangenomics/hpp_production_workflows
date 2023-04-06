@@ -1,4 +1,4 @@
-version 1.1
+version 1.0
 
 import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
 

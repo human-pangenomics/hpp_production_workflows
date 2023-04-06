@@ -1,4 +1,4 @@
-version 1.1
+version 1.0
 
 import "extract_reads.wdl" as extractReads_t
 import "shard_reads.wdl" as shardReads_t

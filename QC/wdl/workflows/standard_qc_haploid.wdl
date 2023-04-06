@@ -1,4 +1,4 @@
-version 1.1
+version 1.0
 
 import "../tasks/merqury.wdl" as merqury_t
 import "../tasks/meryl.wdl" as meryl_t

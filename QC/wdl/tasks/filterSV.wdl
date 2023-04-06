@@ -1,4 +1,4 @@
-version 1.1
+version 1.0
 
 # This is a task level wdl workflow to run a python script to filter SV calls
 

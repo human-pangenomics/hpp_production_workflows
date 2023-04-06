@@ -1,4 +1,4 @@
-version 1.1
+version 1.0
 
 workflow len_filter_fasta {
 
