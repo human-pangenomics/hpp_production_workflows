@@ -1,4 +1,4 @@
-version 1.0
+version 1.1
 
 
 workflow verkko_create_unphased_gfa {

@@ -1,4 +1,4 @@
-version 1.0 
+version 1.1 
 
 import "../tasks/yak_no_stats.wdl" as yak_t
 import "../tasks/hifiasm.wdl" as hifiasm_t

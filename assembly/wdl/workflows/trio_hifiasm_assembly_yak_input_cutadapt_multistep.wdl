@@ -1,4 +1,4 @@
-version 1.0
+version 1.1
 
 import "../tasks/hifiasm_cutadapt_multistep.wdl" as hifiasm_multistep_t
 import "../tasks/gfatools.wdl" as gfatools_t

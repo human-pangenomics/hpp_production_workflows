@@ -1,4 +1,4 @@
-version 1.0
+version 1.1
 
 import "../tasks/parliament.wdl" as runParliament
 import "../tasks/sniffles.wdl" as runSniffles

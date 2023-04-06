@@ -1,4 +1,4 @@
-version 1.0
+version 1.1
 
 import "../tasks/dipcall.wdl" as dipcall_t
 import "../tasks/merqury.wdl" as merqury_t

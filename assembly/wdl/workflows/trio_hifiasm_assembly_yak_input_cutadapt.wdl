@@ -1,4 +1,4 @@
-version 1.0
+version 1.1
 
 import "../tasks/hifiasm_cutadapt.wdl" as hifiasm_t
 import "../tasks/gfatools.wdl" as gfatools_t

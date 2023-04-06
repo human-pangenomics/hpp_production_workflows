@@ -1,4 +1,4 @@
-version 1.0
+version 1.1
 
 import "../tasks/deepvariant.wdl" as runDeepVariant
 import "../tasks/pepperMarginDeepVariant.wdl" as runPepperMarginDeepVariant

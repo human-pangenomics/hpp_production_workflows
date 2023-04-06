@@ -1,4 +1,4 @@
-version 1.0
+version 1.1
 
 import "../tasks/busco.wdl" as busco_t
 import "../tasks/dipcall.wdl" as dipcall_t

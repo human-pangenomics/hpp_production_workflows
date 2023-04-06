@@ -1,4 +1,4 @@
-version 1.0
+version 1.1
 
 import "https://raw.githubusercontent.com/human-pangenomics/hpp_production_workflows/master/QC/wdl/tasks/extract_reads.wdl" as extract_reads
 
