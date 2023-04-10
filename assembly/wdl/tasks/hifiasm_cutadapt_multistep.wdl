@@ -59,7 +59,7 @@ workflow runTrioHifiasm{
     }
 
     # if ONT reads are provided
-    if ("${sep="" childReadsONT}" != ""){
+    if (length(childReadsONT) != 0){
         scatter (readFile in childReadsONT) {
             call extractReads_t.extractReads as childReadsOntExtracted {
                 input:
