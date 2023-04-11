@@ -182,7 +182,7 @@ task trioHifiasm {
         ## this enables hifiasm to skip the time-consuming process of finding read overlaps
         if [ ! -v ~{inputBinFilesTarGz} ]; then
             tar -xzf ~{inputBinFilesTarGz} --strip-components 1
-            rm -rf ~{inputBinFilesTarGz}
+            rm -rf ~{inputBinFilesTarGz} || true
         fi
 
         if [[ -z "~{sep=" " childReadsHiFi}" ]]; then
