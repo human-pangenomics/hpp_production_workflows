@@ -22,7 +22,6 @@ workflow runTrioHifiasm{
         Array[Float] offsetMem = [10, 0, 0]
         Array[Float] memCovRatios = [4.7, 3.8, 3.6]
         String excludeStringReadExtraction=""
-	File fakeFastq = "gs://masri/hprc/fake.fq" 
         Int threadCount
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
@@ -108,7 +107,7 @@ workflow runTrioHifiasm{
     }
     call trioHifiasm as hifiasmStep2{
         input:
-            childReadsHiFi=[fakeFastq],
+            childReadsHiFi=[],
             childReadsUL=extractUltraLongReads.longReadFastqGz, # optional argument
             paternalYak=paternalYak,
             maternalYak=maternalYak,
@@ -125,7 +124,7 @@ workflow runTrioHifiasm{
     }
     call trioHifiasm as hifiasmStep3{
         input:
-            childReadsHiFi=[fakeFastq],
+            childReadsHiFi=[],
             childReadsUL=extractUltraLongReads.longReadFastqGz, # optional argument
             homCov = homCov,
             childID=childID,
@@ -172,6 +171,7 @@ task trioHifiasm {
         String dockerImage
         String zones
     }
+    
     command <<<
         set -o pipefail
         set -e
@@ -185,12 +185,21 @@ task trioHifiasm {
             rm -rf ~{inputBinFilesTarGz}
         fi
 
+        if [[ -z "~{sep=" " childReadsHiFi}" ]]; then
+            # There are no childReadsHiFi FASTQs but we must have at least one file.
+            FAKE_FASTQ="fake.fq"
+            printf "@fake\nA\n+\nI\n" >$FAKE_FASTQ
+        else
+            # No additional FASTQ name needed.
+            FAKE_FASTQ=""
+        fi
+
         ## run trio hifiasm https://github.com/chhylp123/hifiasm
         # If ONT ultra long reads are provided
         if [[ -n "~{sep="" childReadsUL}" ]]; then
             if [[ -n "~{paternalYak}" ]]; then 
                 # Run step 2
-                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{sep=" " childReadsHiFi}
+                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} ~{sep=" " childReadsHiFi} $FAKE_FASTQ
             else
                 # Keep only necessary bin files for step 3
                 mkdir kept_bin_files
@@ -200,11 +209,11 @@ task trioHifiasm {
                 rm -rf kept_bin_files 
 
                 # Run step 3
-                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -3 ~{childID}.hap1.phase.bin -4 ~{childID}.hap2.phase.bin ~{sep=" " childReadsHiFi}           
+                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -3 ~{childID}.hap1.phase.bin -4 ~{childID}.hap2.phase.bin ~{sep=" " childReadsHiFi} $FAKE_FASTQ           
             fi
         else  
             # Run step 1
-            hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} ~{sep=" " childReadsHiFi}
+            hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} ~{sep=" " childReadsHiFi} $FAKE_FASTQ
         fi
 
         #Move bin and gfa files to saparate folders and compress them 
