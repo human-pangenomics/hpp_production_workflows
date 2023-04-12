@@ -39,15 +39,6 @@ task hicHifiasm {
             tar -xzf ~{inputBinFilesTarGz} --strip-components 1
             rm -rf ~{inputBinFilesTarGz} || true
         fi
-        
-        if [[ -z "~{sep=" " childReadsHiFi}" ]]; then
-            # There are no childReadsHiFi FASTQs but we must have at least one file.
-            FAKE_FASTQ="fake.fq"
-            printf "@fake\nA\n+\nI\n" >$FAKE_FASTQ
-        else
-            # No additional FASTQ name needed.
-            FAKE_FASTQ=""
-        fi
 
         ## run trio hifiasm https://github.com/chhylp123/hifiasm
         # If ONT ultra long reads are provided
@@ -61,7 +52,7 @@ task hicHifiasm {
                 rm -rf kept_bin_files
 
                 # Run step 3
-                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} --h1 "~{sep="," childReadsHiC1}" --h2 "~{sep="," childReadsHiC2}"  ~{sep=" " childReadsHiFi} $FAKE_FASTQ
+                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} --h1 "~{sep="," childReadsHiC1}" --h2 "~{sep="," childReadsHiC2}"  ~{sep=" " childReadsHiFi}
             else
                 # Keep only necessary bin files for step 2
                 mkdir kept_bin_files
@@ -71,11 +62,11 @@ task hicHifiasm {
                 rm -rf kept_bin_files
 
                 # Run step 2
-                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} ~{sep=" " childReadsHiFi} $FAKE_FASTQ
+                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} ~{sep=" " childReadsHiFi}
             fi
         else  
             # Run step 1
-            hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} ~{sep=" " childReadsHiFi} $FAKE_FASTQ
+            hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} ~{sep=" " childReadsHiFi}
         fi
 
         #Move bin and gfa files to saparate folders and compress them 

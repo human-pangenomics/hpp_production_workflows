@@ -23,6 +23,7 @@ workflow runTrioHifiasmStep3{
         Array[Float] offsetMem = [10, 0, 0]
         Array[Float] memCovRatios = [4.7, 3.8, 3.6]
         String excludeStringReadExtraction=""
+	File fakeFastq = "gs://masri/hprc/fake.fq"
         Int threadCount
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
@@ -63,7 +64,7 @@ workflow runTrioHifiasmStep3{
         input:
             paternalYak=paternalYak,
             maternalYak=maternalYak,
-            childReadsHiFi=[],
+            childReadsHiFi=[fakeFastq],
             childReadsUL=extractUltraLongReads.longReadFastqGz, # optional argument
             homCov = homCov,
             childID=childID,

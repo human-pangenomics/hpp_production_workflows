@@ -20,6 +20,7 @@ workflow runHiCHifiasmStep2{
         Array[Float] offsetMem = [10, 0, 0]
         Array[Float] memCovRatios = [4.7, 3.8, 3.6]
         String excludeStringReadExtraction=""
+	File fakeFastq = "gs://masri/hprc/fake.fq" 
         Int threadCount
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
@@ -58,7 +59,7 @@ workflow runHiCHifiasmStep2{
 
     call hifiasm_hic_t.hicHifiasm as hifiasmStep2{
         input:
-            childReadsHiFi=[],
+            childReadsHiFi=[fakeFastq],
             childReadsUL=extractUltraLongReads.longReadFastqGz,
             homCov = homCov,
             childID=childID,
