@@ -15,7 +15,7 @@ task hicHifiasm {
         Array[File]? childReadsHiC2
         Array[File] childReadsHiFi
         Array[File]? childReadsUL
-        Int homCov
+        Int? homCov
         String childID
 	String? extraOptions
         File? inputBinFilesTarGz
