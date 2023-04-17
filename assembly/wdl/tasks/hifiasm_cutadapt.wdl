@@ -11,7 +11,7 @@ workflow runTrioHifiasm{
         File maternalYak
         Array[File] childReadsHiFi
         Array[File] childReadsONT=[]
-        Int? homCov
+        Int homCov
         Int minOntReadLength=100000
         Int minHiFiReadLength=1
         String childID
@@ -125,7 +125,7 @@ task trioHifiasm {
         File maternalYak
         Array[File] childReadsHiFi
         Array[File]? childReadsUL
-        Int? homCov
+        Int homCov
         String childID
 	String? extraOptions
         File? inputBinFilesTarGz
