@@ -12,7 +12,7 @@ workflow trioHifiasmAssembly {
         Array[File] childReadsONT=[]
         Int? minOntReadLength
         Int? minHiFiReadLength
-        Int homCov
+        Int? homCov
         File paternalYak
         File maternalYak
         Boolean filterAdapters=true
