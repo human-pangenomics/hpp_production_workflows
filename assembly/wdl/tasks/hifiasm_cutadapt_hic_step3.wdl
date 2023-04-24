@@ -82,6 +82,8 @@ workflow runHiCHifiasmStep3{
         input:
             paternalGfa = hifiasmStep3.outputHaplotype1Gfa,
             maternalGfa = hifiasmStep3.outputHaplotype2Gfa,
+            patSuffix = "hap1",
+            matSuffix = "hap2",
             childID = childID
     }
  
