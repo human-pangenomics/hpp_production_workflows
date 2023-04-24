@@ -58,7 +58,7 @@ workflow runTrioHifiasm{
     }
 
     # if ONT reads are provided
-    if ("${sep="" childReadsONT}" != ""){
+    if (length(childReadsONT) != 0){
         scatter (readFile in childReadsONT) {
             call extractReads_t.extractReads as childReadsOntExtracted {
                 input:
@@ -98,7 +98,7 @@ workflow runTrioHifiasm{
             childID=childID,
             extraOptions="--bin-only",
             #inputBinFilesTarGz=inputBinFilesTarGz,
-            memSizeGB=ceil(memCovRatios[0] * homCov + offsetMem[0]),
+            memSizeGB=ceil(memCovRatios[0] * select_first([homCov, 0]) + offsetMem[0]),
             threadCount=threadCount,
             diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 64,
             preemptible=preemptible,
@@ -114,7 +114,7 @@ workflow runTrioHifiasm{
             childID=childID,
             extraOptions="--bin-only",
             inputBinFilesTarGz=hifiasmStep1.outputBinFiles,
-            memSizeGB=ceil(memCovRatios[1] * homCov + offsetMem[1]),
+            memSizeGB=ceil(memCovRatios[1] * select_first([homCov, 0]) + offsetMem[1]),
             threadCount=threadCount,
             diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 64,
             preemptible=preemptible,
@@ -128,7 +128,7 @@ workflow runTrioHifiasm{
             childID=childID,
             extraOptions="",
             inputBinFilesTarGz=hifiasmStep2.outputBinFiles,
-            memSizeGB=ceil(memCovRatios[2] * homCov + offsetMem[2]),
+            memSizeGB=ceil(memCovRatios[2] * select_first([homCov, 0]) + offsetMem[2]),
             threadCount=threadCount,
             diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 64,
             preemptible=preemptible,
@@ -179,7 +179,7 @@ task trioHifiasm {
         ## this enables hifiasm to skip the time-consuming process of finding read overlaps
         if [ ! -v ~{inputBinFilesTarGz} ]; then
             tar -xzf ~{inputBinFilesTarGz} --strip-components 1
-            rm -rf ~{inputBinFilesTarGz}
+            rm -rf ~{inputBinFilesTarGz} || true
         fi
         
         # make a fake fastq to use for step 2 and 3
