@@ -71,8 +71,8 @@ task hicHifiasm {
 
         #Move bin and gfa files to saparate folders and compress them 
         mkdir ~{childID}.raw_unitig_gfa
-        mkdir ~{childID}.pat.contig_gfa
-        mkdir ~{childID}.mat.contig_gfa
+        mkdir ~{childID}.hap1.contig_gfa
+        mkdir ~{childID}.hap2.contig_gfa
         mkdir ~{childID}.binFiles
 
         # before hardlinking gfa files to the corresponding directory make sure they exist
@@ -80,8 +80,8 @@ task hicHifiasm {
         if [[ -n $(find . -maxdepth 1 -iname "*.hap1.p_ctg.*") ]];
         then
             ln *.r_utg.* ~{childID}.raw_unitig_gfa
-            ln *.hap1.p_ctg.* ~{childID}.pat.contig_gfa
-            ln *.hap2.p_ctg.* ~{childID}.mat.contig_gfa
+            ln *.hap1.p_ctg.* ~{childID}.hap1.contig_gfa
+            ln *.hap2.p_ctg.* ~{childID}.hap2.contig_gfa
         else
             # To avoid making a separete new task for steps 1 and 2 of hifiasm
             # we make empty gfa files since we cannot have optional outputs in wdl
@@ -94,14 +94,14 @@ task hicHifiasm {
         
         # make archives
         tar -cf ~{childID}.raw_unitig_gfa.tar ~{childID}.raw_unitig_gfa
-        tar -cf ~{childID}.pat.contig_gfa.tar ~{childID}.pat.contig_gfa
-        tar -cf ~{childID}.mat.contig_gfa.tar ~{childID}.mat.contig_gfa
+        tar -cf ~{childID}.hap1.contig_gfa.tar ~{childID}.hap1.contig_gfa
+        tar -cf ~{childID}.hap2.contig_gfa.tar ~{childID}.hap2.contig_gfa
         tar -cf ~{childID}.binFiles.tar ~{childID}.binFiles
         
         # compress
         pigz -p~{threadCount} ~{childID}.raw_unitig_gfa.tar
-        pigz -p~{threadCount} ~{childID}.pat.contig_gfa.tar
-        pigz -p~{threadCount} ~{childID}.mat.contig_gfa.tar
+        pigz -p~{threadCount} ~{childID}.hap1.contig_gfa.tar
+        pigz -p~{threadCount} ~{childID}.hap2.contig_gfa.tar
         pigz -p~{threadCount} ~{childID}.binFiles.tar
     >>>
 
@@ -116,10 +116,10 @@ task hicHifiasm {
     }
 
     output {
-        File outputPaternalGfa = glob("*.hap1.p_ctg.gfa")[0]
-        File outputMaternalGfa = glob("*.hap2.p_ctg.gfa")[0]
-        File outputPaternalContigGfa = "~{childID}.pat.contig_gfa.tar.gz"
-        File outputMaternalContigGfa = "~{childID}.mat.contig_gfa.tar.gz"
+        File outputHaplotype1Gfa = glob("*.hap1.p_ctg.gfa")[0]
+        File outputHaplotype2Gfa = glob("*.hap2.p_ctg.gfa")[0]
+        File outputHaplotype1ContigGfa = "~{childID}.hap1.contig_gfa.tar.gz"
+        File outputHaplotype2ContigGfa = "~{childID}.hap2.contig_gfa.tar.gz"
         File outputRawUnitigGfa = "~{childID}.raw_unitig_gfa.tar.gz"
         File outputBinFiles = "~{childID}.binFiles.tar.gz"
     }

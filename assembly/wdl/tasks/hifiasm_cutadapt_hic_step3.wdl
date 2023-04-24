@@ -80,16 +80,16 @@ workflow runHiCHifiasmStep3{
 
     call gfatools_t.phasedGFAs2Fasta as gfa2fasta{
         input:
-            paternalGfa = hifiasmStep3.outputPaternalGfa,
-            maternalGfa = hifiasmStep3.outputMaternalGfa,
+            paternalGfa = hifiasmStep3.outputHaplotype1Gfa,
+            maternalGfa = hifiasmStep3.outputHaplotype2Gfa,
             childID = childID
     }
  
     output {
-        File paternalFastaGz = gfa2fasta.outputPaternalFastaGz
-        File maternalFastaGz = gfa2fasta.outputMaternalFastaGz
-        File outputPaternalContigGfa = hifiasmStep3.outputPaternalContigGfa
-        File outputMaternalContigGfa = hifiasmStep3.outputMaternalContigGfa
+        File haplotype1FastaGz = gfa2fasta.outputPaternalFastaGz
+        File haplotype2FastaGz = gfa2fasta.outputMaternalFastaGz
+        File outputHaplotype1ContigGfa = hifiasmStep3.outputHaplotype1ContigGfa
+        File outputHaplotype2ContigGfa = hifiasmStep3.outputHaplotype2ContigGfa
         File outputRawUnitigGfa = hifiasmStep3.outputRawUnitigGfa
         File outputBinFiles = hifiasmStep3.outputBinFiles
     }
