@@ -27,6 +27,7 @@ workflow runHiCHifiasmStep3{
         Int threadCount
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
+        String fileExtractionDockerImage = "quay.io/masri2019/hpp_hifiasm:0.18.5-r500"
         String dockerImage = "quay.io/masri2019/hpp_hifiasm:0.18.5-r500"
         String zones = "us-west2-a"
     }
@@ -74,7 +75,7 @@ workflow runHiCHifiasmStep3{
             threadCount=threadCount,
             diskSizeGB= floor(readULSize * 2.5) + 1024,
             preemptible=preemptible,
-            dockerImage=dockerImage,
+            dockerImage=fileExtractionDockerImage,
             zones = zones
     }
 
