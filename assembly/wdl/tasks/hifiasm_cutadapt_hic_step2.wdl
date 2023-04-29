@@ -38,7 +38,7 @@ workflow runHiCHifiasmStep2{
                     memSizeGB=4,
                     threadCount=4,
                     diskSizeGB=fileExtractionDiskSizeGB,
-                    dockerImage=dockerImage
+                    dockerImage="mobinasri/bio_base:v0.2"
             }
             # filter ONT reads to get UL reads
             call filter_short_reads_t.filterShortReads as extractUltraLongReads{
