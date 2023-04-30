@@ -75,7 +75,7 @@ workflow runHiCHifiasmStep3{
             threadCount=threadCount,
             diskSizeGB= floor(readULSize * 2.5) + 1024,
             preemptible=preemptible,
-            dockerImage=fileExtractionDockerImage,
+            dockerImage=dockerImage,
             zones = zones
     }
 
