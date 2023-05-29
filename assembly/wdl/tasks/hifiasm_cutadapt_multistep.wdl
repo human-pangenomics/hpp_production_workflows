@@ -116,7 +116,7 @@ workflow runTrioHifiasm{
             inputBinFilesTarGz=hifiasmStep1.outputBinFiles,
             memSizeGB=ceil(memCovRatios[1] * select_first([homCov, 0]) + offsetMem[1]),
             threadCount=threadCount,
-            diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 64,
+            diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 128,
             preemptible=preemptible,
             dockerImage=dockerImage,
             zones = zones
@@ -130,7 +130,7 @@ workflow runTrioHifiasm{
             inputBinFilesTarGz=hifiasmStep2.outputBinFiles,
             memSizeGB=ceil(memCovRatios[2] * select_first([homCov, 0]) + offsetMem[2]),
             threadCount=threadCount,
-            diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 64,
+            diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 128,
             preemptible=preemptible,
             dockerImage=dockerImage,
             zones = zones
