@@ -11,7 +11,7 @@ workflow RunDownSampling{
     }
 
     parameter_meta {
-        readFiles: "Reads file in BAM, FASTQ, or FASTA format (optionally gzipped)",
+        readFiles: "Reads files in BAM, CRAM, FASTQ, or FASTA format (optionally gzipped)",
         downsampledCoverage: "Target coverage after downsampling",
         refLength: "Length of reference genome in bytes",
         referenceFasta: "Fasta of reference genome" 
