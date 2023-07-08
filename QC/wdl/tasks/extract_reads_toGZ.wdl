@@ -64,7 +64,7 @@ task extractReadstoGZ {
             ln -s ~{referenceFasta}
             samtools fastq ~{fastqOptions} -@~{threadCount} --reference `basename ~{referenceFasta}` ~{readFile} | pigz -p~{threadCount} > output/${PREFIX}.fq.gz
         elif [[ "$SUFFIX" == "gz" ]] ; then
-            ln ~{readFile} output/${PREFIX}.gz
+            ln -s ~{readFile} output/${PREFIX}.gz
         elif [[ "$SUFFIX" == "fastq" ]] || [[ "$SUFFIX" == "fq" ]] ; then
             cat ~{readFile} | pigz -p~{threadCount} > output/${PREFIX}.fq.gz
 
