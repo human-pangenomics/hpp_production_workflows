@@ -1,5 +1,6 @@
 version 1.0
 
+import "../../../QC/wdl/tasks/extract_reads_toGZ.wdl" as extractReadsToGZ_t
 import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
 import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
 import "filter_hifi_adapter.wdl" as adapter_t
@@ -30,7 +31,7 @@ workflow runTrioHifiasm{
     }
 
     scatter (readFile in childReadsHiFi) {
-        call extractReads_t.extractReads as childReadsHiFiExtracted {
+        call extractReadsToGZ_t.extractReadstoGZ as childReadsHiFiExtracted {
             input:
                 readFile=readFile,
                 referenceFasta=referenceFasta,
@@ -40,17 +41,10 @@ workflow runTrioHifiasm{
                 diskSizeGB=fileExtractionDiskSizeGB,
                 dockerImage=dockerImage
         }
-        # filter short HiFi reads
-        call filter_short_reads_t.filterShortReads as extractLongHiFiReads{
-            input:
-                readFastq = childReadsHiFiExtracted.extractedRead,
-                diskSizeGB = fileExtractionDiskSizeGB,
-                minReadLength = minHiFiReadLength
-        }
         if (filterAdapters){
             call adapter_t.cutadapt as filterAdapterHiFi {
                 input:
-                    readFastqGz = extractLongHiFiReads.longReadFastqGz,
+                    readFastqGz = childReadsHiFiExtracted.extractedRead,
                     diskSizeGB = fileExtractionDiskSizeGB
             } 
         }
@@ -107,7 +101,7 @@ workflow runTrioHifiasm{
     }
     call trioHifiasm as hifiasmStep2{
         input:
-            childReadsUL=extractUltraLongReads.longReadFastqGz, # optional argument
+            childReadsUL=extractUltraLongReads.longReadFastqGz, 
             paternalYak=paternalYak,
             maternalYak=maternalYak,
             homCov = homCov,
