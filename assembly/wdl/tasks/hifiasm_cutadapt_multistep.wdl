@@ -31,7 +31,7 @@ workflow runTrioHifiasm{
     }
 
     scatter (readFile in childReadsHiFi) {
-        call extractReadsToGZ_t.extractReadstoGZ as childReadsHiFiExtracted {
+        call extractReadsToGZ_t.extractReadstoGZ as childReadsHiFiExtractedGz {
             input:
                 readFile=readFile,
                 referenceFasta=referenceFasta,
@@ -44,11 +44,11 @@ workflow runTrioHifiasm{
         if (filterAdapters){
             call adapter_t.cutadapt as filterAdapterHiFi {
                 input:
-                    readFastqGz = childReadsHiFiExtracted.extractedRead,
+                    readFastqGz = childReadsHiFiExtractedGz.extractedRead,
                     diskSizeGB = fileExtractionDiskSizeGB
             } 
         }
-        File hifiProcessedFastqGz = select_first([filterAdapterHiFi.filteredReadFastqGz, extractLongHiFiReads.longReadFastqGz])
+        File hifiProcessedFastqGz = select_first([filterAdapterHiFi.filteredReadFastqGz, childReadsHiFiExtractedGz.extractedRead])
     }
 
     # if ONT reads are provided
@@ -79,7 +79,7 @@ workflow runTrioHifiasm{
 
     call arithmetic_t.sum as childReadHiFiSize {
         input:
-            integers=extractLongHiFiReads.fileSizeGB
+            integers=childReadsHiFiExtractedGz.fileSizeGB
     }
 
     # if no ONT data is provided then it would be zero
