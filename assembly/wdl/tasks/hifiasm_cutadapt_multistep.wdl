@@ -20,13 +20,13 @@ workflow runTrioHifiasm{
         File? inputBinFilesTarGz
         File? referenceFasta
         Boolean filterAdapters
-        Array[Float] offsetMem = [10, 0, 0]
+        Array[Float] offsetMem = [40, 20, 20]
         Array[Float] memCovRatios = [4.7, 3.8, 3.6]
         String excludeStringReadExtraction=""
         Int threadCount
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
-        String dockerImage = "quay.io/masri2019/hpp_hifiasm:0.18.5-r500"
+        String dockerImage = "quay.io/masri2019/hpp_hifiasm:0.19.5"
         String zones = "us-west2-a"
     }
 
