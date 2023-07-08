@@ -32,7 +32,7 @@ task extractReadstoGZ {
         Int memSizeGB = 4
         Int threadCount = 8
         Int diskSizeGB = 128
-        String dockerImage = "mobinasri/bio_base:dev-v0.1"
+        String dockerImage = "mobinasri/bio_base:v0.3.0"
     }
 
 
@@ -47,8 +47,6 @@ task extractReadstoGZ {
         # echo each line of the script to stdout so we can see what is happening
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
-        # load samtools
-        #export PATH=$PATH:/root/bin/samtools_1.9/
 
         FILENAME=$(basename -- "~{readFile}")
         PREFIX="${FILENAME%.*}"
@@ -57,18 +55,18 @@ task extractReadstoGZ {
         mkdir output
 
         if [[ "$SUFFIX" == "bam" ]] ; then
-            samtools fastq ~{fastqOptions} -@~{threadCount} ~{readFile} | gzip > output/${PREFIX}.fq.gz
+            samtools fastq ~{fastqOptions} -@~{threadCount} ~{readFile} | pigz -p~{threadCount} > output/${PREFIX}.fq.gz
         elif [[ "$SUFFIX" == "cram" ]] ; then
             if [[ ! -f "~{referenceFasta}" ]] ; then
                 echo "Could not extract $FILENAME, reference file not supplied"
                 exit 1
             fi
             ln -s ~{referenceFasta}
-            samtools fastq ~{fastqOptions} -@~{threadCount} --reference `basename ~{referenceFasta}` ~{readFile} | gzip > output/${PREFIX}.fq.gz
+            samtools fastq ~{fastqOptions} -@~{threadCount} --reference `basename ~{referenceFasta}` ~{readFile} | pigz -p~{threadCount} > output/${PREFIX}.fq.gz
         elif [[ "$SUFFIX" == "gz" ]] ; then
-            ln ~{readFile} output/${PREFIX}.fq.gz
+            ln ~{readFile} output/${PREFIX}.gz
         elif [[ "$SUFFIX" == "fastq" ]] || [[ "$SUFFIX" == "fq" ]] ; then
-            cat ~{readFile} | gzip > output/${PREFIX}.fq.gz
+            cat ~{readFile} | pigz -p~{threadCount} > output/${PREFIX}.fq.gz
 
         elif [[ "$SUFFIX" != "fastq" ]] && [[ "$SUFFIX" != "fq" ]] && [[ "$SUFFIX" != "fasta" ]] && [[ "$SUFFIX" != "fa" ]] ; then
             echo "Unsupported file type: ${SUFFIX}"
@@ -80,7 +78,7 @@ task extractReadstoGZ {
         OUTPUT_NAME=$(ls output)
 
         if [ "~{excludeString}" != "" ]; then
-            cat output/${OUTPUT_NAME} | grep -v "~{excludeString}" > output_final/${OUTPUT_NAME}
+            zcat output/${OUTPUT_NAME} | grep -v "~{excludeString}" | pigz -p~{threadCount} > output_final/${OUTPUT_NAME}
         else
             ln output/${OUTPUT_NAME} output_final/${OUTPUT_NAME}
         fi
