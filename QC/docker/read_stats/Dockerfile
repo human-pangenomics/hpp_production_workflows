@@ -1,4 +1,4 @@
-FROM mobinasr/bio_base:v0.3.0
+FROM mobinasri/bio_base:v0.3.0
 MAINTAINER Julian Lucas, juklucas@ucsc.edu
 
 RUN apt-get update
