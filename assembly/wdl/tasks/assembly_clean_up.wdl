@@ -21,7 +21,7 @@ task assemblyCleanUp {
         Int threadCount=8
         Int diskSizeGB=128
         Int preemptible=1
-        String dockerImage="quay.io/biocontainers/verkko:1.3.1--h64afbab_0"
+        String dockerImage="quay.io/biocontainers/verkko:1.4--h48217b1_0"
     }
     command <<<
         # Set the exit code of a pipeline to that of the rightmost command
