@@ -44,7 +44,12 @@ task assemblyCleanUp {
         cat *.hap[12].p_ctg.gfa > combined.gfa
         cat *.hap[12].p_ctg.noseq.gfa | awk '{if (match($1, "^S")) { print "path "$2"\t"$2; print "piece000002"; print "end"; }}' > combined.scfmap
         cat *.hap[12].p_ctg.noseq.gfa | awk -v NAME="" '{if (match($1, "^S")) { if (NAME != "") print NAME"\t"SUM/LEN; SUM=0; NAME=$2; LEN=substr($4, 6, length($4)); } if (match($1, "^A")) { SUM+=$7-$6}} END {print NAME"\t"SUM/LEN}' > combined.csv
-      
+
+        # Fix error:
+        # mashmap: error while loading shared libraries: libmkl_rt.so.2: cannot open shared object file: No such file or directory
+        ## Seen in 1.4--h48217b1_0 Biocontainer for Verkko
+        pip install mkl
+
          /usr/local/lib/verkko/scripts/screen-assembly.pl \
           --assembly      combined.fasta \
           --graph         combined.gfa \
