@@ -50,7 +50,12 @@ task assemblyCleanUp {
         ## Seen in 1.4--h48217b1_0 Biocontainer for Verkko
         pip install mkl
 
-         /usr/local/lib/verkko/scripts/screen-assembly.pl \
+        ## Download newer version of script that doesn't miss as many contigs
+        ## lowers segment length in mashmap to 5kb (from 10kb) and enforces more overlap for circularization
+        wget https://raw.githubusercontent.com/marbl/verkko/ff64f65a1cfebbd70207f17ac80723ecd3dc9030/src/scripts/screen-assembly.pl
+        chmod +x screen-assembly.pl
+
+        ./screen-assembly.pl \
           --assembly      combined.fasta \
           --graph         combined.gfa \
           --graphmap      combined.scfmap \
@@ -66,7 +71,7 @@ task assemblyCleanUp {
           #  if it fails to circularize it will output sequence unchanged
           for xx in assembly.*.exemplar.fasta ; do
               if [ -e $xx ]; then
-                  python3 /usr/local/lib/verkko/scripts/circularize_ctgs.py -p 10 -f 0.90 -o $xx --min-ovl 2500 $xx
+                  python3 /usr/local/lib/verkko/scripts/circularize_ctgs.py -f 0.65 -p 100 -o $xx --min-ovl 2500 $xx
               fi
           done
           cd ../
