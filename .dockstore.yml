@@ -192,6 +192,9 @@ workflows:
    -  name: ssdsTerraUpload
       subclass: WDL
       primaryDescriptorPath: /data_processing/wdl/ssds_terra_upload.wdl
+   -  name: s5cmd_download
+      subclass: WDL
+      primaryDescriptorPath: /data_processing/wdl/s5cmd_download.wdl      
    -  name: AssemblyCleanUp
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/assembly_clean_up.wdl
