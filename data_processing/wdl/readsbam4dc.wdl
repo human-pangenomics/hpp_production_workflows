@@ -55,7 +55,7 @@ task filter_reads_bam {
         mkdir download
 
         ## download file from S3 bucket
-        ./s5cmd --no-sign-request cp  \
+        s5cmd --no-sign-request cp  \
             ~{s3_uri} \
             download/
 
