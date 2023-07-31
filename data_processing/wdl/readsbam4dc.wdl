@@ -69,7 +69,7 @@ task filter_reads_bam {
             --remove-tag 'fi,ri,fp,rp' \
             --expr '[rq]>=0.88' \
             download/*.bam \
-            q9.bam   
+            > q9.bam   
 
         input_bam_prefix=$(basename ~{s3_uri} .reads.bam)
 
