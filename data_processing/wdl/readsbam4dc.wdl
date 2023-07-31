@@ -94,7 +94,7 @@ task filter_reads_bam {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSize + " SSD"
-        docker: "quay.io/biocontainers/lima:2.7.1--h9ee0642_0"
+        docker: "humanpangenomics/readsbam4dc@sha256:95113a377cf2aeef2071736ed1408e876783d2982867a75ef24f838e559cc4be"
         preemptible: preempts
     }
 }
