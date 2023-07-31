@@ -201,3 +201,6 @@ workflows:
    -  name: ShortDiploidQC
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/short_diploid_qc.wdl 
+   -  name: Readsbam4DC
+      subclass: WDL
+      primaryDescriptorPath: /data_processing/wdl/readsbam4dc.wdl
