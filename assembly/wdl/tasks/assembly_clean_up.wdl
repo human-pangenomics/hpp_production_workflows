@@ -71,7 +71,7 @@ task assemblyCleanUp {
           #  if it fails to circularize it will output sequence unchanged
           for xx in assembly.*.exemplar.fasta ; do
               if [ -e $xx ]; then
-                  python3 /usr/local/lib/verkko/scripts/circularize_ctgs.py -f 0.65 -p 100 -o $xx --min-ovl 2500 $xx
+                  python3 /usr/local/lib/verkko/scripts/circularize_ctgs.py -f 0.90 -p 100 -o $xx --min-ovl 2500 $xx
               fi
           done
           cd ../
