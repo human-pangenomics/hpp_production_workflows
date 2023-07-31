@@ -52,6 +52,9 @@ task filter_reads_bam {
 
         set -eux -o pipefail
 
+        ## Neccesary so conda environment will activate...
+        source ~/.bashrc
+        
         mkdir download
 
         ## download file from S3 bucket
