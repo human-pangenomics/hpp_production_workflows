@@ -97,6 +97,9 @@ task filter_reads_bam {
         else
             ## no need to demux or strip barcodes, just output q9 filtered bam
             cp q9.bam ~{outputBam}
+
+            touch empty.out.lima.counts
+            touch empty.out.lima.summary
         fi
 
     >>>
