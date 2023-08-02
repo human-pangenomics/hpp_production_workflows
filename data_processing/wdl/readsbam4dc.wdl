@@ -17,6 +17,7 @@ workflow filter_reads_bam_wf {
         String s3_uri
         String barcode
         File barcodes_file
+        Boolean run_lima
     }
 
 
@@ -24,7 +25,8 @@ workflow filter_reads_bam_wf {
         input:
             s3_uri        = s3_uri,
             barcode       = barcode,
-            barcodes_file = barcodes_file
+            barcodes_file = barcodes_file,
+            run_lima      = run_lima
     }
 
 
@@ -40,6 +42,7 @@ task filter_reads_bam {
         String s3_uri
         String barcode
         File barcodes_file
+        Boolean run_lima
 
         Int memSizeGB   = 16
         Int threadCount = 4
@@ -47,6 +50,8 @@ task filter_reads_bam {
         Int preempts    = 3
     }
 
+    String bam_basename = basename(s3_uri, ".reads.bam")
+    String outputBam    = "~{bam_basename}_q9_forDC.bam"
 
     command <<<
 
@@ -73,22 +78,31 @@ task filter_reads_bam {
 
         input_bam_prefix=$(basename ~{s3_uri} .reads.bam)
 
-        ## demultiplex
-        lima \
-            q9.bam \
-            ~{barcodes_file} \
-            ${input_bam_prefix}.out.bam \
-            --dump-removed \
-            --split-named \
-            --min-ref-span 0.75 \
-            --min-score 70 \
-            --same \
-            --single-side  
+        if [[ ~{run_lima} == true ]]; then
+            
+            ## demultiplex
+            lima \
+                q9.bam \
+                ~{barcodes_file} \
+                ${input_bam_prefix}.out.bam \
+                --dump-removed \
+                --split-named \
+                --min-ref-span 0.75 \
+                --min-score 70 \
+                --same \
+                --single-side 
+
+                ## output q9 filterd bam that has been demultiplexed
+                cp *~{barcode}.bam ~{outputBam}
+        else
+            ## no need to demux or strip barcodes, just output q9 filtered bam
+            cp q9.bam ~{outputBam}
+        fi
 
     >>>
 
     output {
-        File q9_demux_bam  = glob("*~{barcode}.bam")[0]
+        File q9_demux_bam  = outputBam
         File lima_counts   = glob("*.out.lima.counts")[0]
         File lima_summary  = glob("*.out.lima.summary")[0]
     }
