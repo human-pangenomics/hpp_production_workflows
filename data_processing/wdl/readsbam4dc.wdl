@@ -78,19 +78,19 @@ task filter_reads_bam {
 
         input_bam_prefix=$(basename ~{s3_uri} .reads.bam)
 
+        ## Always run lima to make sure that we aren't missing anything!
+        lima \
+            q9.bam \
+            ~{barcodes_file} \
+            ${input_bam_prefix}.out.bam \
+            --dump-removed \
+            --split-named \
+            --min-ref-span 0.75 \
+            --min-score 70 \
+            --same \
+            --single-side 
+
         if [[ ~{run_lima} == true ]]; then
-            
-            ## demultiplex
-            lima \
-                q9.bam \
-                ~{barcodes_file} \
-                ${input_bam_prefix}.out.bam \
-                --dump-removed \
-                --split-named \
-                --min-ref-span 0.75 \
-                --min-score 70 \
-                --same \
-                --single-side 
 
                 ## output q9 filterd bam that has been demultiplexed
                 cp *~{barcode}.bam ~{outputBam}
@@ -98,8 +98,6 @@ task filter_reads_bam {
             ## no need to demux or strip barcodes, just output q9 filtered bam
             cp q9.bam ~{outputBam}
 
-            touch empty.out.lima.counts
-            touch empty.out.lima.summary
         fi
 
     >>>
