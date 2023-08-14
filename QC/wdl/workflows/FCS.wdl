@@ -14,11 +14,17 @@ workflow RunFCS{
 
         Int threadCount
         Int preemptible = 1
-        Int diskSizeGBGX  = 32
+        Int diskSizeGBGX  = 500
         Int diskSizeGBAdapter = 32
 
         String GxDB = basename(GXI, ".gxi")
         String asm_name=basename(sub(sub(assembly, "\\.gz$", ""), "\\.fasta$", ""))
+    }
+
+    meta {
+        author: "Hailey Loucks"
+        email: "hloucks@ucsc.edu"
+        description: "Runs NCBI FCS-GX and FCS-adapter https://doi.org/10.1101/2023.06.02.543519 on given assembly"
     }
 
     call FCSGX {
@@ -42,7 +48,7 @@ workflow RunFCS{
     }
     call FCS_adapter{
         input:
-            cleanFasta = FCSGX.cleanFasta,
+            GxCleanFasta = FCSGX.GxCleanFasta,
             asm_name=asm_name,
 
 
@@ -52,17 +58,25 @@ workflow RunFCS{
     }
 
     output {
-        File cleanFasta = FCSGX.cleanFasta
+        File GxCleanFasta = FCSGX.GxCleanFasta
         File contamFasta = FCSGX.contamFasta
         File report = FCSGX.report
         
-        File adapter_CleanedSequence = FCS_adapter.adapter_CleanedSequence
+        File cleanFasta = FCS_adapter.cleanFasta
         File adapter_Report = FCS_adapter.adapter_Report
     }
-    meta {
-        author: "Hailey Loucks"
-        email: "hloucks@ucsc.edu"
+    parameter_meta {
+        assembly: "Gzipped assembly to be screened for genomic and adapter contamination"
+        blast_div: "Required database file - download instructions https://github.com/ncbi/fcs/wiki/FCS-GX before running"
+        GXI: "Required database file - download instructions https://github.com/ncbi/fcs/wiki/FCS-GX before running"
+        GXS: "Required database file - download instructions https://github.com/ncbi/fcs/wiki/FCS-GX before running"
+        manifest: "Required database file - download instructions https://github.com/ncbi/fcs/wiki/FCS-GX before running"
+        metaJSON: "Required database file - download instructions https://github.com/ncbi/fcs/wiki/FCS-GX before running"
+        seq_info: "Required database file - download instructions https://github.com/ncbi/fcs/wiki/FCS-GX before running"
+        taxa: "Required database file - download instructions https://github.com/ncbi/fcs/wiki/FCS-GX before running"
     }
+
+
 }
 
 task FCSGX {
@@ -93,9 +107,6 @@ task FCSGX {
         set -u
         set -o xtrace
 
-        echo `df -h .`
-        echo `du -h .`
-
         ln -s ~{blast_div}
         ln -s ~{GXI}
         ln -s ~{GXS}
@@ -107,16 +118,16 @@ task FCSGX {
         ln -s ~{assembly}
 
         python3 /app/bin/run_gx --fasta ~{assembly} --gx-db ~{GxDB} --out-dir . --tax-id 9606
-        zcat ~{assembly} | /app/bin/gx clean-genome --action-report ~{asm_name}.9606.fcs_gx_report.txt --output ~{asm_name}.clean.fasta --contam-fasta-out ~{asm_name}.contam.fasta 
+        zcat ~{assembly} | /app/bin/gx clean-genome --action-report ~{asm_name}.9606.fcs_gx_report.txt --output ~{asm_name}.GXclean.fasta --contam-fasta-out ~{asm_name}.GXcontam.fasta 
 
-        gzip ~{asm_name}.clean.fasta
-        gzip ~{asm_name}.contam.fasta
+        gzip ~{asm_name}.GXclean.fasta
+        gzip ~{asm_name}.GXcontam.fasta
     
     >>>
 
     output {
-        File cleanFasta = "~{asm_name}.clean.fasta.gz"
-        File contamFasta = "~{asm_name}.contam.fasta.gz"
+        File GxCleanFasta = "~{asm_name}.GXclean.fasta.gz"
+        File contamFasta = "~{asm_name}.GXcontam.fasta.gz"
         File report = "~{asm_name}.9606.fcs_gx_report.txt"
         
     }
@@ -131,7 +142,7 @@ task FCSGX {
 
 task FCS_adapter {
     input {
-        File cleanFasta
+        File GxCleanFasta
 
         String asm_name
 
@@ -149,20 +160,19 @@ task FCS_adapter {
         set -o xtrace
 
         # Run the adapter script 
-        echo `df -h .`
-        echo `du -h .`
-        /app/fcs/bin/av_screen_x -o . --euk ~{cleanFasta}
-        mv cleaned_sequences/* ~{asm_name}.adapterClean.fa # the output of FCS adapter is not actually gzipped
+
+        /app/fcs/bin/av_screen_x -o . --euk ~{GxCleanFasta}
+        mv cleaned_sequences/* ~{asm_name}.clean.fa # the output of FCS adapter is not actually gzipped
 
         rm -rf cleaned_sequences/
 
-        gzip ~{asm_name}.adapterClean.fa
+        gzip ~{asm_name}.clean.fa
 
         
     >>>
 
     output {
-        File adapter_CleanedSequence = "~{asm_name}.adapterClean.fa.gz"
+        File cleanFasta = "~{asm_name}.clean.fa.gz"
         File adapter_Report = "fcs_adaptor_report.txt"
     }
 
