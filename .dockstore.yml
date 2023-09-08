@@ -204,3 +204,6 @@ workflows:
    -  name: Readsbam4DC
       subclass: WDL
       primaryDescriptorPath: /data_processing/wdl/readsbam4dc.wdl
+   -  name: ontSummaryStats
+      subclass: WDL
+      primaryDescriptorPath: /data_processing/wdl/calc_ont_summary_stats.wdl
