@@ -48,11 +48,11 @@ task calc_ont_summary_stats {
         
         # Create summary for just pass reads
         # grab header, then reads over Q10
-        #gzip -cd ~{sequencing_summary} | awk 'NR==1 {print; exit}' > ${BASENAME}_pass.txt
+        #gzip -cd ~{sequencing_summary} | sed -n 1p > ${BASENAME}_pass.txt
         zcat ~{sequencing_summary} | awk '{ if ($15 >= 10) { print } }' >> ${BASENAME}_pass.txt
 
         # Create summary for just fail reads
-        gzip -cd ~{sequencing_summary} | awk 'NR==1 {print; exit}' > ${BASENAME}_fail.txt
+        gzip -cd ~{sequencing_summary} | sed -n 1p > ${BASENAME}_fail.txt
         zcat ~{sequencing_summary} | awk '{ if ($15 < 10) { print } }' >> ${BASENAME}_fail.txt
 
         python3 /opt/calculate_summary_stats.py ${BASENAME}_pass.txt > ${BASENAME}.pass_summary_stats.txt
