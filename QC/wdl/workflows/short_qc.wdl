@@ -81,7 +81,7 @@ task shortQC {
 
         # hs38.ensembl.v99.cdna is already aligned to hg38 and its paf file should be given as an input
         # link to hs38.ensembl.v99.cdna : ftp://ftp.ensembl.org/pub/release-99/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
-        ln ~{hs38Paf} hs38.paf
+        ln -s ~{hs38Paf} hs38.paf
         # Computing statistics for gene completeness
         paftools.js asmgene -a hs38.paf pat.paf > pat.gene.stats.txt
         paftools.js asmgene -a hs38.paf mat.paf > mat.gene.stats.txt
