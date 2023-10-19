@@ -159,8 +159,6 @@ workflow comparisonQC {
         ## Outputs for breakpoint analysis
         File hap1_T2Tcontigs             = findAssemblyBreakpoints_hap1.T2Tcontigs
         File hap1_T2Tscaffolds           = findAssemblyBreakpoints_hap1.T2Tscaffolds
-        File hap1_assembly_CHM13         = findAssemblyBreakpoints_hap1.assembly_CHM13
-        File hap1_assemblyStatistics     = findAssemblyBreakpoints_hap1.assemblyStatistics
         File hap1_unifiedAssembly        = findAssemblyBreakpoints_hap1.unifiedAssembly
         File hap1_breakAnnotation_region = findAssemblyBreakpoints_hap1.breakAnnotation_region
         File hap1_breakAnnotation_SD     = findAssemblyBreakpoints_hap1.breakAnnotation_SD
@@ -174,8 +172,6 @@ workflow comparisonQC {
 
         File hap2_T2Tcontigs             = findAssemblyBreakpoints_hap2.T2Tcontigs
         File hap2_T2Tscaffolds           = findAssemblyBreakpoints_hap2.T2Tscaffolds
-        File hap2_assembly_CHM13         = findAssemblyBreakpoints_hap2.assembly_CHM13
-        File hap2_assemblyStatistics     = findAssemblyBreakpoints_hap2.assemblyStatistics
         File hap2_unifiedAssembly        = findAssemblyBreakpoints_hap2.unifiedAssembly
         File hap2_breakAnnotation_region = findAssemblyBreakpoints_hap2.breakAnnotation_region
         File hap2_breakAnnotation_SD     = findAssemblyBreakpoints_hap2.breakAnnotation_SD
