@@ -2,7 +2,6 @@ version 1.0
 
 ## pulled from: https://raw.githubusercontent.com/biomonika/HPP/main/assembly/wdl/workflows/findAssemblyBreakpoints.wdl
 
-find_assembly_breakpoints.wdl
 workflow findAssemblyBreakpoints{
     input {
         File assembly
