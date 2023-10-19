@@ -34,6 +34,7 @@ ENV PATH="/home/apps/hifiasm-0.19.7:$PATH"
 
 RUN cd /home/apps && \
 	git clone --branch v0.4 https://github.com/lh3/gfatools && \
+	git reset --hard 9d4f360538717bad2ea53dd2eef389072430e913 \
 	cd gfatools && \
 	make
 ENV PATH="/home/apps/gfatools:$PATH"
