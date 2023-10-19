@@ -1,7 +1,11 @@
 FROM ubuntu:18.04
-MAINTAINER Mobin Asri, masri@ucsc.edu
+MAINTAINER Julian Lucas, juklucas@ucsc.edu
 
-RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y build-essential git zlib1g-dev wget libbz2-dev pkg-config libncurses5-dev libncursesw5-dev liblzma-dev libcurl4-openssl-dev python3-dev pigz zip
+RUN apt-get update \
+	&& DEBIAN_FRONTEND="noninteractive" \
+	apt-get install -y \
+	build-essential git zlib1g-dev wget libbz2-dev pkg-config libncurses5-dev \
+	libncursesw5-dev liblzma-dev libcurl4-openssl-dev python3-dev pigz zip
 
 RUN mkdir -p /home/apps
 
@@ -16,6 +20,7 @@ ENV PATH="/home/apps/samtools-1.10:$PATH"
 RUN cd /home/apps && \
 	git clone https://github.com/lh3/yak && \
 	cd yak && \
+	git reset --hard f37704a97b68ad08e9129dd7e1ea60072107bda4 \
 	make
 ENV PATH="/home/apps/yak:$PATH"
 
