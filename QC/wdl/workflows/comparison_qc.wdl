@@ -3,8 +3,8 @@ version 1.0
 import "../../../assembly/wdl/tasks/len_filter_fasta.wdl" as filter_fasta_t
 import "../../../assembly/wdl/tasks/break_into_contigs.wdl" as breakIntoContigs_t
 import "../../../QC/wdl/workflows/short_qc.wdl" as shortQC_t
-import "https://raw.githubusercontent.com/human-pangenomics/hpp_production_workflows/asset/asset/wdl/tasks/produce_fai.wdl" as produceFai_t
-import "https://raw.githubusercontent.com/biomonika/HPP/main/assembly/wdl/workflows/findAssemblyBreakpoints.wdl" as findAssemblyBreakpoints_wf
+import "../../../QC/wdl/tasks/produce_fai.wdl" as produceFai_t
+import "../../../QC/wdl/tasks/find_assembly_breakpoints.wdl" as findAssemblyBreakpoints_wf
 
 workflow comparisonQC {
 
