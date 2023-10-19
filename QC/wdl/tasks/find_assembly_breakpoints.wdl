@@ -486,7 +486,7 @@ task createAssemblyStatistics {
     }
 
     command <<<
-        R --no-save --args ~{sep=" " mashmap} <<Rscript
+        R --no-save --args ~{mashmap} <<Rscript
         args <- commandArgs(trailingOnly = TRUE)
         filename<-args[1]
 
