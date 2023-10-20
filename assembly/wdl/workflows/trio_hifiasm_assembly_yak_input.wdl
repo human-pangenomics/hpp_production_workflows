@@ -1,6 +1,5 @@
 version 1.0
 
-import "../tasks/yak_no_stats.wdl" as yak_t
 import "../tasks/hifiasm.wdl" as hifiasm_t
 import "../tasks/gfatools.wdl" as gfatools_t
 
