@@ -14,7 +14,6 @@ workflow trioHifiasmAssembly {
         File maternalYak
         String? hifiasmExtraOptions
         File? inputBinFilesTarGz
-        File? referenceFasta
         # runtime configurations for running hifiasm
         Int threadCount=48
         Int memSizeGB=256
@@ -61,7 +60,6 @@ workflow trioHifiasmAssembly {
         maternalID: "NIST ID (or Coriell ID) of the maternal sample"
         childReadsHiFi: "An array of files (or a single file) that contain the HiFi reads of the child sample ( Acceptable formats are fastq (or fq), fastq.gz (or fq.gz), bam and cram)"
         inputBinFilesTarGz: "(optional) The hifiasm produces some bin files which can be saved and used for re-running the assembly process. By having these bin files hifiasm can skip the time-consuming process of finding overlaps (Acceptable format is .tar.gz)"
-        referenceFasta: "(optional) If any of the read files (can be either for child, father or mother) are having .cram format, the reference genome should be provided in .fasta format"
         threadCount: "(default=48) The number of cores for running hifiasm"
         memSize: "(default=256) The memory size (GB) for running hifiasm"
         preemptible: "(default=1) The number of tries for using a preemptible node for running hifiasm. Note that if your child data has a coverage of more than 40X, hifiasm (without any given bin files) may take longer than 24 hours. So using a preemptible node is useless beacuse it gets interrupted after 24 hours"
