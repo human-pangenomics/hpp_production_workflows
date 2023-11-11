@@ -24,13 +24,13 @@ RUN cd /home/apps && \
     make
 ENV PATH="/home/apps/yak:$PATH"
 
-# Hifiasm-0.19.7
+# Hifiasm-0.19.8
 RUN cd /home/apps && \
-    wget https://github.com/chhylp123/hifiasm/archive/refs/tags/0.19.7.zip && \
-    unzip 0.19.7.zip  && \
-        cd hifiasm-0.19.7 && \ 
+    wget https://github.com/chhylp123/hifiasm/archive/refs/tags/0.19.8.zip && \
+    unzip 0.19.8.zip  && \
+        cd hifiasm-0.19.8 && \ 
     make
-ENV PATH="/home/apps/hifiasm-0.19.7:$PATH"
+ENV PATH="/home/apps/hifiasm-0.19.8:$PATH"
 
 RUN cd /home/apps && \
     git clone --branch v0.4 https://github.com/lh3/gfatools && \
