@@ -9,7 +9,6 @@ workflow trioHifiasmAssembly {
         Array[File] childReadsHiFi
         Array[File] childReadsONT=[]
         Int? minOntReadLength
-        Int? minHiFiReadLength
         Int? homCov
         File paternalYak
         File maternalYak
@@ -32,7 +31,6 @@ workflow trioHifiasmAssembly {
             childReadsHiFi = childReadsHiFi,
             childReadsONT = childReadsONT,
             minOntReadLength = minOntReadLength,
-            minHiFiReadLength = minHiFiReadLength,
             homCov = homCov,
             childID = childID,
             filterAdapters = filterAdapters,
