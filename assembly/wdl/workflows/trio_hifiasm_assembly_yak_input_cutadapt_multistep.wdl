@@ -1,7 +1,7 @@
 version 1.0
 
-import "../tasks/hifiasm_cutadapt_multistep.wdl" as hifiasm_multistep_t
-import "../tasks/gfatools.wdl" as gfatools_t
+import "../tasks/hifiasm_cutadapt_multistep.wdl" as hifiasm_multistep_wf
+import "../tasks/gfatools.wdl" as gfatools_wf
 
 workflow trioHifiasmAssembly {
     input {
@@ -27,7 +27,7 @@ workflow trioHifiasmAssembly {
     
 
     ### Trio Hifiasm ###
-    call hifiasm_multistep_t.runTrioHifiasm as trioHifiasm{
+    call hifiasm_multistep_wf.runTrioHifiasm as trioHifiasm{
         input:
             paternalYak = paternalYak,
             maternalYak = maternalYak,
@@ -45,7 +45,7 @@ workflow trioHifiasmAssembly {
     }
 
     ### Convert GFA to FASTA ###
-    call gfatools_t.phasedGFAs2Fasta as gfa2fasta{
+    call gfatools_wf.phasedGFAs2Fasta as gfa2fasta{
         input:
             paternalGfa = trioHifiasm.outputPaternalGfa,
             maternalGfa = trioHifiasm.outputMaternalGfa,
@@ -61,15 +61,15 @@ workflow trioHifiasmAssembly {
         File binFilesTarGz = trioHifiasm.outputBinFiles
     }
     parameter_meta {
-        childID: " NIST ID (or Coriell ID) of the child sample whose reads are going to be assembled"
-        paternalID: " NIST ID (or Coriell ID) of the paternal sample"
-        maternalID: "NIST ID (or Coriell ID) of the maternal sample"
+        childID: "Sample ID of the child sample whose reads are going to be assembled"
+        paternalID: "Sample ID of the paternal sample"
+        maternalID: "Sample ID of the maternal sample"
         childReadsHiFi: "An array of files (or a single file) that contain the HiFi reads of the child sample ( Acceptable formats are fastq (or fq), fastq.gz (or fq.gz), bam and cram)"
         inputBinFilesTarGz: "(optional) The hifiasm produces some bin files which can be saved and used for re-running the assembly process. By having these bin files hifiasm can skip the time-consuming process of finding overlaps (Acceptable format is .tar.gz)"
         referenceFasta: "(optional) If any of the read files (can be either for child, father or mother) are having .cram format, the reference genome should be provided in .fasta format"
-        threadCount: "(default=48) The number of cores for running hifiasm"
-        memSize: "(default=256) The memory size (GB) for running hifiasm"
-        preemptible: "(default=1) The number of tries for using a preemptible node for running hifiasm. Note that if your child data has a coverage of more than 40X, hifiasm (without any given bin files) may take longer than 24 hours. So using a preemptible node is useless beacuse it gets interrupted after 24 hours"
+        threadCount: "The number of cores for running hifiasm"
+        memSize: "The memory size (GB) for running hifiasm"
+        preemptible: "The number of tries for using a preemptible node for running hifiasm. Note that if your child data has a coverage of more than 40X, hifiasm (without any given bin files) may take longer than 24 hours. So using a preemptible node is useless beacuse it gets interrupted after 24 hours"
     }
     meta {
         author: "Mobin Asri"
