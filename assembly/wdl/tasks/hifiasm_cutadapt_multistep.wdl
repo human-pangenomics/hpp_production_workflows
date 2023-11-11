@@ -11,7 +11,6 @@ workflow runTrioHifiasm{
         Array[File] childReadsONT=[]
         Int? homCov
         Int minOntReadLength=50000
-        Int minHiFiReadLength=1
         String childID
         String? hifiasmExtraOptions
         File? inputBinFilesTarGz

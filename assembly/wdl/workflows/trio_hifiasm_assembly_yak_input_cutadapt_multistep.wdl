@@ -6,8 +6,6 @@ import "../tasks/gfatools.wdl" as gfatools_wf
 workflow trioHifiasmAssembly {
     input {
         String childID
-        String paternalID
-        String maternalID
         Array[File] childReadsHiFi
         Array[File] childReadsONT=[]
         Int? minOntReadLength
@@ -40,6 +38,7 @@ workflow trioHifiasmAssembly {
             filterAdapters = filterAdapters,
             hifiasmExtraOptions = hifiasmExtraOptions,
             inputBinFilesTarGz = inputBinFilesTarGz,
+            referenceFasta = referenceFasta,
             threadCount = threadCount,
             preemptible = preemptible
     }
@@ -62,8 +61,6 @@ workflow trioHifiasmAssembly {
     }
     parameter_meta {
         childID: "Sample ID of the child sample whose reads are going to be assembled"
-        paternalID: "Sample ID of the paternal sample"
-        maternalID: "Sample ID of the maternal sample"
         childReadsHiFi: "An array of files (or a single file) that contain the HiFi reads of the child sample ( Acceptable formats are fastq (or fq), fastq.gz (or fq.gz), bam and cram)"
         inputBinFilesTarGz: "(optional) The hifiasm produces some bin files which can be saved and used for re-running the assembly process. By having these bin files hifiasm can skip the time-consuming process of finding overlaps (Acceptable format is .tar.gz)"
         referenceFasta: "(optional) If any of the read files (can be either for child, father or mother) are having .cram format, the reference genome should be provided in .fasta format"
