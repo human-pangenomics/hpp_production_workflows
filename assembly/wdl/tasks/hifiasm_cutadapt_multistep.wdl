@@ -66,7 +66,7 @@ workflow runTrioHifiasm{
             }
          }
 
-         Float childReadULSize = size(childReadsOntExtractedGz.filteredReadFastqGz, 'GB')
+         Int childReadULSize = size(childReadsOntExtractedGz.extractedRead, 'GB')
     }
 
     # if no ONT data is provided then it would be zero
@@ -105,7 +105,7 @@ workflow runTrioHifiasm{
     }
     call trioHifiasm as hifiasmStep3{
         input:
-            childReadsUL=extractUltraLongReads.longReadFastqGz, # optional argument
+            childReadsUL=extractUltraLongReads.extractedRead, # optional argument
             homCov = homCov,
             minOntReadLength = minOntReadLength,
             childID=childID,
