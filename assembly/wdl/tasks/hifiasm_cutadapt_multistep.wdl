@@ -1,10 +1,7 @@
 version 1.0
 
 import "../../../QC/wdl/tasks/extract_reads_toGZ.wdl" as extractReadsToGZ_t
-import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
-import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
 import "filter_hifi_adapter.wdl" as adapter_t
-import "filter_short_reads.wdl" as filter_short_reads_t
 
 workflow runTrioHifiasm{
     input {
@@ -13,7 +10,7 @@ workflow runTrioHifiasm{
         Array[File] childReadsHiFi
         Array[File] childReadsONT=[]
         Int? homCov
-        Int minOntReadLength=100000
+        Int minOntReadLength=50000
         Int minHiFiReadLength=1
         String childID
         String? hifiasmExtraOptions
@@ -26,7 +23,7 @@ workflow runTrioHifiasm{
         Int threadCount
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
-        String dockerImage = "quay.io/masri2019/hpp_hifiasm:0.19.5"
+        String dockerImage = "humanpangenomics/hifiasm@sha256:1fa4d7fa4b587a8f803adf79cd36a6f0c7e0c3b2d79fa501876c949dc8d43435"
         String zones = "us-west2-a"
     }
 
@@ -51,39 +48,29 @@ workflow runTrioHifiasm{
         File hifiProcessedFastqGz = select_first([filterAdapterHiFi.filteredReadFastqGz, childReadsHiFiExtractedGz.extractedRead])
     }
 
+    Float childReadHiFiSize = size(hifiProcessedFastqGz, 'GB')
+
+
     # if ONT reads are provided
     if (length(childReadsONT) != 0){
         scatter (readFile in childReadsONT) {
-            call extractReads_t.extractReads as childReadsOntExtracted {
+            call extractReadsToGZ_t.extractReadstoGZ as childReadsOntExtractedGz {
                 input:
                     readFile=readFile,
                     referenceFasta=referenceFasta,
                     memSizeGB=4,
                     threadCount=4,
+                    excludeString=excludeStringReadExtraction,
                     diskSizeGB=fileExtractionDiskSizeGB,
                     dockerImage=dockerImage
             }
-            # filter ONT reads to get UL reads
-            call filter_short_reads_t.filterShortReads as extractUltraLongReads{
-                input:
-                    readFastq = childReadsOntExtracted.extractedRead,
-                    diskSizeGB = fileExtractionDiskSizeGB,
-                    minReadLength = minOntReadLength
-            }
          }
-         call arithmetic_t.sum as childReadULSize {
-             input:
-                 integers=extractUltraLongReads.fileSizeGB
-         }
-    }
 
-    call arithmetic_t.sum as childReadHiFiSize {
-        input:
-            integers=childReadsHiFiExtractedGz.fileSizeGB
+         Float childReadULSize = size(childReadsOntExtractedGz.filteredReadFastqGz, 'GB')
     }
 
     # if no ONT data is provided then it would be zero
-    Int readULSize = select_first([childReadULSize.value, 0])
+    Int readULSize = select_first([childReadULSize, 0])
 
     call trioHifiasm as hifiasmStep1{
         input:
@@ -94,23 +81,24 @@ workflow runTrioHifiasm{
             #inputBinFilesTarGz=inputBinFilesTarGz,
             memSizeGB=ceil(memCovRatios[0] * select_first([homCov, 0]) + offsetMem[0]),
             threadCount=threadCount,
-            diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 64,
+            diskSizeGB= floor((childReadHiFiSize + readULSize) * 2.5) + 64,
             preemptible=preemptible,
             dockerImage=dockerImage,
             zones = zones
     }
     call trioHifiasm as hifiasmStep2{
         input:
-            childReadsUL=extractUltraLongReads.longReadFastqGz, 
+            childReadsUL=childReadsOntExtractedGz.extractedRead, 
             paternalYak=paternalYak,
             maternalYak=maternalYak,
             homCov = homCov,
+            minOntReadLength = minOntReadLength,
             childID=childID,
             extraOptions="--bin-only",
             inputBinFilesTarGz=hifiasmStep1.outputBinFiles,
             memSizeGB=ceil(memCovRatios[1] * select_first([homCov, 0]) + offsetMem[1]),
             threadCount=threadCount,
-            diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 128,
+            diskSizeGB= floor((childReadHiFiSize + readULSize) * 2.5) + 128,
             preemptible=preemptible,
             dockerImage=dockerImage,
             zones = zones
@@ -119,12 +107,13 @@ workflow runTrioHifiasm{
         input:
             childReadsUL=extractUltraLongReads.longReadFastqGz, # optional argument
             homCov = homCov,
+            minOntReadLength = minOntReadLength,
             childID=childID,
             extraOptions="",
             inputBinFilesTarGz=hifiasmStep2.outputBinFiles,
             memSizeGB=ceil(memCovRatios[2] * select_first([homCov, 0]) + offsetMem[2]),
             threadCount=threadCount,
-            diskSizeGB= floor((childReadHiFiSize.value + readULSize) * 2.5) + 128,
+            diskSizeGB= floor((childReadHiFiSize + readULSize) * 2.5) + 128,
             preemptible=preemptible,
             dockerImage=dockerImage,
             zones = zones
@@ -151,8 +140,9 @@ task trioHifiasm {
         Array[File]? childReadsHiFi
         Array[File]? childReadsUL
         Int? homCov
+        Int minOntReadLength = 50000
         String childID
-	String? extraOptions
+        String? extraOptions
         File? inputBinFilesTarGz
         File? referenceFasta
         # runtime configurations
@@ -184,7 +174,16 @@ task trioHifiasm {
         if [[ -n "~{sep="" childReadsUL}" ]]; then
             if [[ -n "~{paternalYak}" ]]; then 
                 # Run step 2
-                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -1 ~{paternalYak} -2 ~{maternalYak} fake.fq
+                hifiasm \
+                    ~{extraOptions} \
+                    -o ~{childID} \
+                    --ul ~{sep="," childReadsUL} \
+                    --ul-cut ~{minOntReadLength} \
+                    --hom-cov ~{homCov} \
+                    -t~{threadCount} \
+                    -1 ~{paternalYak} \
+                    -2 ~{maternalYak} \
+                    fake.fq
             else
                 # Keep only necessary bin files for step 3
                 mkdir kept_bin_files
@@ -194,11 +193,25 @@ task trioHifiasm {
                 rm -rf kept_bin_files 
                 
                 # Run step 3
-                hifiasm ~{extraOptions} -o ~{childID} --ul ~{sep="," childReadsUL} --hom-cov ~{homCov} -t~{threadCount} -3 ~{childID}.hap1.phase.bin -4 ~{childID}.hap2.phase.bin fake.fq
+                hifiasm \
+                    ~{extraOptions} \
+                    -o ~{childID} \
+                    --ul ~{sep="," childReadsUL} \
+                    --hom-cov ~{homCov} \
+                    --ul-cut ~{minOntReadLength} \
+                    --dual-scaf \
+                    -t~{threadCount} \
+                    -3 ~{childID}.hap1.phase.bin \
+                    -4 ~{childID}.hap2.phase.bin \
+                    fake.fq
             fi
         else  
             # Run step 1
-            hifiasm ~{extraOptions} -o ~{childID} -t~{threadCount} ~{sep=" " childReadsHiFi}
+            hifiasm \
+                ~{extraOptions} \
+                -o ~{childID} \
+                -t~{threadCount} \
+                ~{sep=" " childReadsHiFi}
         fi
 
         #Move bin and gfa files to saparate folders and compress them 
