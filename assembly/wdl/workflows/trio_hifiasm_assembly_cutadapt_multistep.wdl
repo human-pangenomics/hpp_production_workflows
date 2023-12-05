@@ -15,8 +15,6 @@ workflow trioHifiasmAssembly {
         Array[File] childReadsONT=[]
         Int? minOntReadLength
         Int? homCov
-        File paternalYak
-        File maternalYak
         Boolean filterAdapters=true
         String? hifiasmExtraOptions
         File? inputBinFilesTarGz
@@ -73,8 +71,8 @@ workflow trioHifiasmAssembly {
         File maternalContigGfaTarGz = trioHifiasm.outputMaternalContigGfa 
         File rawUnitigGfaTarGz      = trioHifiasm.outputRawUnitigGfa
         File binFilesTarGz          = trioHifiasm.outputBinFiles
-        File paternalYakDB          = paternalYakCount.outputYak
-        File maternalYakDB          = maternalYakCount.outputYak
+        File paternalYak            = paternalYakCount.outputYak
+        File maternalYak            = maternalYakCount.outputYak
     }
 
     parameter_meta {
