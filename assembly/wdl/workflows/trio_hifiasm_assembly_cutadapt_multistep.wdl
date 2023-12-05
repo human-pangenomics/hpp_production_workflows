@@ -67,13 +67,16 @@ workflow trioHifiasmAssembly {
     }
 
     output {
-        File paternalFastaGz = gfa2fasta.outputPaternalFastaGz
-        File maternalFastaGz = gfa2fasta.outputMaternalFastaGz
+        File paternalFastaGz        = gfa2fasta.outputPaternalFastaGz
+        File maternalFastaG         = gfa2fasta.outputMaternalFastaGz
         File paternalContigGfaTarGz = trioHifiasm.outputPaternalContigGfa 
         File maternalContigGfaTarGz = trioHifiasm.outputMaternalContigGfa 
-        File rawUnitigGfaTarGz = trioHifiasm.outputRawUnitigGfa
-        File binFilesTarGz = trioHifiasm.outputBinFiles
+        File rawUnitigGfaTarGz      = trioHifiasm.outputRawUnitigGfa
+        File binFilesTarGz          = trioHifiasm.outputBinFiles
+        File paternalYakDB          = paternalYakCount.outputYak
+        File maternalYakDB          = maternalYakCount.outputYak
     }
+
     parameter_meta {
         childID: "Sample ID of the child sample whose reads are going to be assembled"
         childReadsHiFi: "An array of files (or a single file) that contain the HiFi reads of the child sample ( Acceptable formats are fastq (or fq), fastq.gz (or fq.gz), bam and cram)"
