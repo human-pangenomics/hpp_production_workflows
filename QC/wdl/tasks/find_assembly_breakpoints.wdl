@@ -485,7 +485,7 @@ task createAssemblyStatistics {
 	}
 
 	command <<<
-		R --no-save --args ~{mashmap} <<Rscript
+		R --no-save --args ~{mashmap} <<EOF
 		args <- commandArgs(trailingOnly = TRUE)
 		filename<-args[1]
 
@@ -506,7 +506,7 @@ task createAssemblyStatistics {
 			largest_assembled_sequence_Mb=max(assembly_length)/coef)%>%
 			arrange(chr,.by_group=TRUE)
 		write.table(filtered_mashmap,file="assembly.statistics.tmp",quote=FALSE,row.names=FALSE,sep="\t")
-		Rscript
+		EOF
 
 		cat assembly.statistics.tmp | sort -k1,1 -V -s >assembly.statistics.txt
 
