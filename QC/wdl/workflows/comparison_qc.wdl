@@ -1,5 +1,6 @@
 version 1.0
 
+import "../../../assembly/wdl/tasks/yak_no_stats.wdl" as yak_t
 import "../../../assembly/wdl/tasks/len_filter_fasta.wdl" as filter_fasta_t
 import "../../../assembly/wdl/tasks/break_into_contigs.wdl" as breakIntoContigs_t
 import "../../../QC/wdl/workflows/short_qc.wdl" as shortQC_t
@@ -20,8 +21,9 @@ workflow comparisonQC {
         File genesFasta
         File hs38Paf
         File matYak
-        File patYak 
-        File childYak
+        File patYak
+        Array[File] childReadsILM
+        File extractReadsReferenceFasta
 
         ## findAssemblyBreakpoints Inputs
         File reference
@@ -76,6 +78,14 @@ workflow comparisonQC {
             min_size=min_len
     }
 
+    ### create yak to get QV ###
+    call yak_t.runYak as childYakCount {
+        input:
+            sampleReadsILM=childReadsILM,
+            sampleName="${sampleName}",
+            referenceFasta=extractReadsReferenceFasta,
+    }
+
     call shortQC_t.shortQC as shortQC_filt {
         input:
             patFasta    = filter_fasta_hap1.filteredFasta,
@@ -83,7 +93,7 @@ workflow comparisonQC {
 
             patYak      = patYak,
             matYak      = matYak,
-            childYak    = childYak,
+            childYak    = childYakCount.outputYak,
             genesFasta  = genesFasta,
             hs38Paf     = hs38Paf,
             childID     = sampleName,
@@ -129,7 +139,7 @@ workflow comparisonQC {
 
                 patYak      = patYak,
                 matYak      = matYak,
-                childYak    = childYak,
+                childYak    = childYakCount.outputYak,
                 genesFasta  = genesFasta,
                 hs38Paf     = hs38Paf,
                 childID     = sampleName,
@@ -182,6 +192,10 @@ workflow comparisonQC {
         File hap2_bed_SD                 = findAssemblyBreakpoints_hap2.bed_SD
         File hap2_bed_CENSAT             = findAssemblyBreakpoints_hap2.bed_CENSAT
         File hap2_assemblyStatistics     = findAssemblyBreakpoints_hap2.assemblyStatistics
+
+
+        ## Yak (so we don't have to rerun)
+        File childYak          = childYakCount.outputYak
 
 
         ## Outputs for filtered assemblies
