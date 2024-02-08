@@ -7,8 +7,6 @@ import "../tasks/hic_group_xy.wdl" as hic_group_xy_wf
 workflow hicHifiasmAssembly {
     input {
         String childID
-        String paternalID
-        String maternalID
         Array[File] childReadsHiFi
         Array[File] childReadsHiC1
         Array[File] childReadsHiC2
