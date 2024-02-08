@@ -185,7 +185,7 @@ task hicHifiasm {
                     --ul ~{sep="," childReadsUL} \
                     --hom-cov ~{homCov} \
                     --ul-cut ~{minOntReadLength} \
-                    --dual-scaf \                    
+                    --dual-scaf \
                     -t~{threadCount} \
                     --h1 "~{sep="," childReadsHiC1}" \
                     --h2 "~{sep="," childReadsHiC2}"  \
@@ -203,7 +203,7 @@ task hicHifiasm {
                     ~{extraOptions} \
                     -o ~{childID} \
                     --ul ~{sep="," childReadsUL} \
-                    --ul-cut ~{minOntReadLength} \                    
+                    --ul-cut ~{minOntReadLength} \
                     --hom-cov ~{homCov} \
                     -t~{threadCount} \
                     fake.fq
