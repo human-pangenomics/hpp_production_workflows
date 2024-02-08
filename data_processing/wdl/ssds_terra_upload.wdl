@@ -55,7 +55,7 @@ task ssds_terra_upload {
 
     command <<<
         set -eux -o pipefail
-
+        
         python << CODE
         
         import os
