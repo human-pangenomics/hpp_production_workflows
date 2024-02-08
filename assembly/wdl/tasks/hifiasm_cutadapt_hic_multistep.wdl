@@ -136,7 +136,7 @@ task hicHifiasm {
     input{
         Array[File]? childReadsHiC1
         Array[File]? childReadsHiC2
-        Array[File] childReadsHiFi
+        Array[File]? childReadsHiFi
         Array[File]? childReadsUL
         Int? homCov
         Int minOntReadLength = 50000
