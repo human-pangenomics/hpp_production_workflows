@@ -24,6 +24,14 @@ RUN cd /home/apps && \
     make
 ENV PATH="/home/apps/yak:$PATH"
 
+# seqtk
+RUN cd /home/apps && \
+    git clone https://github.com/lh3/seqtk.git && \
+    cd seqtk && \
+    git reset --hard 367728dff0f653df87aab51b0911dc1adeb17f6d && \
+    make
+ENV PATH="/home/apps/seqtk:${PATH}"
+
 # Hifiasm-0.19.8
 RUN cd /home/apps && \
     wget https://github.com/chhylp123/hifiasm/archive/refs/tags/0.19.8.zip && \
