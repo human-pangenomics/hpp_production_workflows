@@ -77,7 +77,6 @@ workflow runTrioHifiasm{
             homCov = homCov,
             childID=childID,
             extraOptions="--bin-only",
-            #inputBinFilesTarGz=inputBinFilesTarGz,
             memSizeGB=ceil(memCovRatios[0] * select_first([homCov, 0]) + offsetMem[0]),
             threadCount=threadCount,
             diskSizeGB= floor((childReadHiFiSize + readULSize) * 2.5) + 64,
@@ -129,7 +128,7 @@ workflow runTrioHifiasm{
 }
 
 # hifiasm steps
-# 1st: pass HiFi and both yak files / not need to pass UL (extraOptions="--bin-only")
+# 1st: pass HiFi; no need to pass UL (extraOptions="--bin-only")
 # 2nd: pass UL and both yak files (extraOptions="--bin-only")
 # 3rd: pass UL no need to pass yak files 
 task trioHifiasm {
