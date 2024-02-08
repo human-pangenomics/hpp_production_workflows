@@ -7,6 +7,7 @@ import "../tasks/hic_group_xy.wdl" as hic_group_xy_wf
 workflow hicHifiasmAssembly {
     input {
         String childID
+        Boolean isMaleSample
         Array[File] childReadsHiFi
         Array[File] childReadsHiC1
         Array[File] childReadsHiC2
@@ -59,6 +60,7 @@ workflow hicHifiasmAssembly {
             hap1_gz         = gfa2fasta.outputPaternalFastaGz,
             hap2_gz         = gfa2fasta.outputMaternalFastaGz,
             childID         = childID,
+            isMaleSample    = isMaleSample,
             chrY_no_par_yak = chrY_no_par_yak,
             chrX_no_par_yak = chrX_no_par_yak,
             par_yak         = par_yak
@@ -77,6 +79,7 @@ workflow hicHifiasmAssembly {
 
     parameter_meta {
         childID: "Sample ID of the child sample whose reads are going to be assembled"
+        isMaleSample: "(Boolean) used in last step to partition sex chromosomes in male samples"
         childReadsHiFi: "An array of files (or a single file) that contain the HiFi reads of the child sample ( Acceptable formats are fastq (or fq), fastq.gz (or fq.gz), bam and cram)"
         referenceFasta: "(optional) If any of the read files are in cram format, the reference genome should be provided in .fasta format"
         threadCount: "The number of cores for running hifiasm"
