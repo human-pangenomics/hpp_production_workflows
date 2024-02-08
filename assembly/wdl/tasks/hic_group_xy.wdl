@@ -23,6 +23,7 @@ task group_xy {
         File hap1_gz
         File hap2_gz
         String childID
+        Boolean isMaleSample
 
         File chrY_no_par_yak
         File chrX_no_par_yak
@@ -41,35 +42,46 @@ task group_xy {
         set -u
         set -o xtrace
 
-        yak sexchr \
-            -K2g \
-            -t16 \
-            ~{chrY_no_par_yak} \
-            ~{chrX_no_par_yak} \
-            ~{par_yak} \
-            ~{hap1_gz} \
-            ~{hap2_gz} \
-            > cnt.txt
+        ## Male samples have inconsistent sex chrom assignment. Use Yak to partition properly
+        ## based on chrX and chrY yaks...
+        if [[ ~{isMaleSample} == true ]]; then
+        
+            yak sexchr \
+                -K2g \
+                -t16 \
+                ~{chrY_no_par_yak} \
+                ~{chrX_no_par_yak} \
+                ~{par_yak} \
+                ~{hap1_gz} \
+                ~{hap2_gz} \
+                > cnt.txt
 
-        groupxy.pl \
-            cnt.txt \
-            | awk '$4==1' | cut -f2 \
-                | seqtk subseq -l60 \
-                <(zcat ~{hap1_gz} ~{hap2_gz}) - \
-                | pigz \
-                > {childID}.hap1.corrected.fa.gz
+            groupxy.pl \
+                cnt.txt \
+                | awk '$4==1' | cut -f2 \
+                    | seqtk subseq -l60 \
+                    <(zcat ~{hap1_gz} ~{hap2_gz}) - \
+                    | pigz \
+                    > ~{childID}.hap1.corrected.fa.gz
 
-        groupxy.pl \
-            cnt.txt | \
-            awk '$4==2' | cut -f2 \
-                | seqtk subseq -l60 \
-                <(zcat ~{hap1_gz} ~{hap2_gz}) - \
-                | pigz \
-                > {childID}.hap2.corrected.fa.gz
+            groupxy.pl \
+                cnt.txt | \
+                awk '$4==2' | cut -f2 \
+                    | seqtk subseq -l60 \
+                    <(zcat ~{hap1_gz} ~{hap2_gz}) - \
+                    | pigz \
+                    > ~{childID}.hap2.corrected.fa.gz
 
-        ## rename (in case of input/output name conflicts)
-        mv {childID}.hap1.corrected.fa.gz {childID}.hap1.fa.gz
-        mv {childID}.hap2.corrected.fa.gz {childID}.hap2.fa.gz
+            ## rename (in case of input/output name conflicts)
+            mv ~{childID}.hap1.corrected.fa.gz ~{childID}.hap1.fa.gz
+            mv ~{childID}.hap2.corrected.fa.gz ~{childID}.hap2.fa.gz
+
+
+        ## No need to do anything for female samples. Just rename and exit.
+        else 
+            mv ~{hap1_gz} ~{childID}.hap1.fa.gz
+            mv ~{hap2_gz} ~{childID}.hap2.fa.gz
+        fi
     >>>
 
     output {
