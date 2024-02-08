@@ -66,7 +66,7 @@ workflow trioHifiasmAssembly {
 
     output {
         File paternalFastaGz        = gfa2fasta.outputPaternalFastaGz
-        File maternalFastaG         = gfa2fasta.outputMaternalFastaGz
+        File maternalFastaGz        = gfa2fasta.outputMaternalFastaGz
         File paternalContigGfaTarGz = trioHifiasm.outputPaternalContigGfa 
         File maternalContigGfaTarGz = trioHifiasm.outputMaternalContigGfa 
         File rawUnitigGfaTarGz      = trioHifiasm.outputRawUnitigGfa
