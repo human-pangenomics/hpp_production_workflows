@@ -108,7 +108,7 @@ task shortQC {
         yak qv -t 32 -p -K 3.2g -l 100k ~{childYak} <(zcat ~{hap2Fasta}) > mat.yak_qv.txt
         
 
-        if [[ ! -f "~{patYak}" ]] ; then
+        if [[ -f "~{patYak}" ]] ; then
             # Compute error rates (only if we have trio info)
             yak trioeval -t ~{threadCount} ~{patYak} ~{matYak} ~{hap1Fasta} > pat.error.stats.txt
             yak trioeval -t ~{threadCount} ~{patYak} ~{matYak} ~{hap2Fasta} > mat.error.stats.txt
