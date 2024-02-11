@@ -79,8 +79,8 @@ task group_xy {
 
         ## No need to do anything for female samples. Just rename and exit.
         else 
-            mv ~{hap1_gz} ~{childID}.hap1.fa.gz
-            mv ~{hap2_gz} ~{childID}.hap2.fa.gz
+            cp ~{hap1_gz} ~{childID}.hap1.fa.gz
+            cp ~{hap2_gz} ~{childID}.hap2.fa.gz
         fi
     >>>
 
