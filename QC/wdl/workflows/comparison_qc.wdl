@@ -35,7 +35,7 @@ workflow comparisonQC {
         Int diskSizeQC    = 256
         Int threadCountQC = 32
         Int preemptibleQC = 2
-        String dockerQC   = "quay.io/masri2019/qc-stats:latest"
+        String dockerQC   = "humanpangenomics/hpp_qc_stats@sha256:6a64ac0be88ce9ca760eb7713922f65e66f9d09076b9d17c2c416e5d558bf1d0"
         String zonesQC    = "us-west2-a"
         
     }
