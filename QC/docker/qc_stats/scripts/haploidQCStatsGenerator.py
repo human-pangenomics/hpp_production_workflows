@@ -53,31 +53,37 @@ def printQVStats(inPath, outPath):
 
 def main():
     parser = argparse.ArgumentParser()
+    
     parser.add_argument('--childID')
-    parser.add_argument('--patLenStats')
-    parser.add_argument('--patGeneStats')
+    parser.add_argument('--hap1LenStats')
+    parser.add_argument('--hap1GeneStats')
     parser.add_argument('--patErrorStats')
-    parser.add_argument('--patQVStats')
-    parser.add_argument('--matLenStats')
-    parser.add_argument('--matGeneStats')
+    parser.add_argument('--hap1QVStats')
+    parser.add_argument('--hap2LenStats')
+    parser.add_argument('--hap2GeneStats')
     parser.add_argument('--matErrorStats')
-    parser.add_argument('--matQVStats')
+    parser.add_argument('--hap2QVStats')
     parser.add_argument('--output')
+
     args = parser.parse_args()
+
+
     with open(args.output, 'w') as outFile:
         outFile.write("************* {} *************\n\n".format(args.childID))
-        outFile.write("-Paternal\n")
-    printLengthStats(args.patLenStats, args.output)
-    printGeneStats(args.patGeneStats, args.output)
-    printErrorStats(args.patErrorStats, args.output)
-    printQVStats(args.patQVStats, args.output)
+        outFile.write("-Haplotype 1 (Paternal for Trios)\n")
+    printLengthStats(args.hap1LenStats, args.output)
+    printGeneStats(args.hap1GeneStats, args.output)
+    if args.patErrorStats is not None:
+        printErrorStats(args.patErrorStats, args.output)
+    printQVStats(args.hap1QVStats, args.output)
+    
     with open(args.output, 'a') as outFile:
-        outFile.write("\n-Maternal\n")
-    printLengthStats(args.matLenStats, args.output)
-    printGeneStats(args.matGeneStats, args.output)
-    printErrorStats(args.matErrorStats, args.output)
-    printQVStats(args.matQVStats, args.output)
-
+        outFile.write("\n-Haplotype 2 (Maternal for Trios)\n")
+    printLengthStats(args.hap2LenStats, args.output)
+    printGeneStats(args.hap2GeneStats, args.output)
+    if args.matErrorStats is not None:
+        printErrorStats(args.matErrorStats, args.output)
+    printQVStats(args.hap2QVStats, args.output)
 
 
 if __name__ == "__main__":
