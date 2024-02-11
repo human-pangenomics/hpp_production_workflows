@@ -2,26 +2,41 @@ version 1.0
 
 workflow RunShortQC {
     input {
-        File patFasta
-        File matFasta
-        File patYak
-        File matYak
+        File hap1Fasta   # paternal for trios
+        File hap2Fasta   # maternal for trios
+        File childYak
         File genesFasta
         File hs38Paf
         String childID
+
+        File? patYak
+        File? matYak
+
         # runtime configurations
         Int memSize
         Int threadCount
-        String dockerImage = "quay.io/masri2019/qc-stats:latest"
-        Int preemptible=0
+        String dockerImage = "humanpangenomics/hpp_qc_stats@sha256:6a64ac0be88ce9ca760eb7713922f65e66f9d09076b9d17c2c416e5d558bf1d0"
+        Int preemptible=1
         Int diskSize
         String zones="genomics.default-zones"
     }
 
+    parameter_meta {
+        hap1Fasta: "(Gzipped) assembly to run through QC; paternal is passed as hap1 when trio yaks are available"
+        hap2Fasta: "(Gzipped) assembly to run through QC; maternal is passed as hap2 when trio yaks are available"
+        childYak: "yak file for child illumina or HiFi reads"
+        genesFasta: "from gs://hifiasm/Homo_sapiens.GRCh38.cdna.all.fa"
+        hs38Paf: "from gs://hifiasm/hs38.paf"
+        childID: "ID of assembled sample; used to name output file"
+        patYak: "(optional) yak file for paternal illumina or HiFi reads"
+        matYak: "(optional) yak file for maternal illumina or HiFi reads"
+    }
+
     call shortQC{
         input:
-            patFasta = patFasta ,
-            matFasta = matFasta ,
+            hap1Fasta = hap1Fasta ,
+            hap2Fasta = hap2Fasta ,
+            childYak = childYak,
             patYak = patYak ,
             matYak = matYak ,
             genesFasta = genesFasta ,
@@ -43,14 +58,16 @@ workflow RunShortQC {
 
 task shortQC {
     input{
-        File patFasta
-        File matFasta
-        File patYak
-        File matYak
+        File hap1Fasta   # paternal for trios
+        File hap2Fasta   # maternal for trios
         File childYak
         File genesFasta
         File hs38Paf
         String childID
+
+        File? patYak
+        File? matYak
+        
         # runtime configurations    
         Int memSize
         Int threadCount
@@ -72,31 +89,56 @@ task shortQC {
         set -o xtrace
 
         # Computing length statistics
-        k8 ${CAL_N50_PATH} ~{patFasta} > pat.len.stats.txt
-        k8 ${CAL_N50_PATH} ~{matFasta} > mat.len.stats.txt
+        k8 ${CAL_N50_PATH} ~{hap1Fasta} > hap1.len.stats.txt
+        k8 ${CAL_N50_PATH} ~{hap2Fasta} > hap2.len.stats.txt
 
         # Aligning genes to assembly
-        minimap2 -cx splice:hq -t ~{threadCount} ~{patFasta} ~{genesFasta} > pat.paf
-        minimap2 -cx splice:hq -t ~{threadCount} ~{matFasta} ~{genesFasta} > mat.paf
+        minimap2 -cx splice:hq -t ~{threadCount} ~{hap1Fasta} ~{genesFasta} > hap1.paf
+        minimap2 -cx splice:hq -t ~{threadCount} ~{hap2Fasta} ~{genesFasta} > hap2.paf
 
         # hs38.ensembl.v99.cdna is already aligned to hg38 and its paf file should be given as an input
         # link to hs38.ensembl.v99.cdna : ftp://ftp.ensembl.org/pub/release-99/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
         ln -s ~{hs38Paf} hs38.paf
         # Computing statistics for gene completeness
-        paftools.js asmgene -a hs38.paf pat.paf > pat.gene.stats.txt
-        paftools.js asmgene -a hs38.paf mat.paf > mat.gene.stats.txt
-
-        # Computing error rates
-        yak trioeval -t ~{threadCount} ~{patYak} ~{matYak} ~{patFasta} > pat.error.stats.txt
-        yak trioeval -t ~{threadCount} ~{patYak} ~{matYak} ~{matFasta} > mat.error.stats.txt
+        paftools.js asmgene -a hs38.paf hap1.paf > hap1.gene.stats.txt
+        paftools.js asmgene -a hs38.paf hap2.paf > hap2.gene.stats.txt
 
         # Computing QV stats
-        yak qv -t 32 -p -K 3.2g -l 100k ~{childYak} <(zcat ~{patFasta}) > pat.yak_qv.txt
-        yak qv -t 32 -p -K 3.2g -l 100k ~{childYak} <(zcat ~{matFasta}) > mat.yak_qv.txt
+        yak qv -t 32 -p -K 3.2g -l 100k ~{childYak} <(zcat ~{hap1Fasta}) > pat.yak_qv.txt
+        yak qv -t 32 -p -K 3.2g -l 100k ~{childYak} <(zcat ~{hap2Fasta}) > mat.yak_qv.txt
         
-        # Merging all statistics in a single well-organized text file
-        # ${QC_STATS_GENERATOR_PATH} is the path to a python script used for merging
-        python3 ${QC_STATS_GENERATOR_PATH} --childID ~{childID} --patLenStats pat.len.stats.txt --matLenStats mat.len.stats.txt --patGeneStats pat.gene.stats.txt --matGeneStats mat.gene.stats.txt --patErrorStats pat.error.stats.txt --matErrorStats mat.error.stats.txt --patQVStats pat.yak_qv.txt --matQVStats mat.yak_qv.txt --output ~{childID}.qc.stats.txt
+
+        if [[ ! -f "~{patYak}" ]] ; then
+            # Compute error rates (only if we have trio info)
+            yak trioeval -t ~{threadCount} ~{patYak} ~{matYak} ~{hap1Fasta} > pat.error.stats.txt
+            yak trioeval -t ~{threadCount} ~{patYak} ~{matYak} ~{hap2Fasta} > mat.error.stats.txt
+
+            # Merge all statistics in a single well-organized text file
+            python3 ${QC_STATS_GENERATOR_PATH} \
+                --childID ~{childID} \
+                --hap1LenStats hap1.len.stats.txt \
+                --hap2LenStats hap2.len.stats.txt \
+                --hap1GeneStats hap1.gene.stats.txt \
+                --hap2GeneStats hap2.gene.stats.txt \
+                --patErrorStats pat.error.stats.txt \
+                --matErrorStats mat.error.stats.txt \
+                --hap1QVStats pat.yak_qv.txt \
+                --hap2QVStats mat.yak_qv.txt \
+                --output ~{childID}.qc.stats.txt
+
+        else
+            # Merge all statistics in a single well-organized text file
+            # Don't include hamming/switch error statistics in call for non-trios!
+            python3 ${QC_STATS_GENERATOR_PATH} \
+                --childID ~{childID} \
+                --hap1LenStats hap1.len.stats.txt \
+                --hap2LenStats hap2.len.stats.txt \
+                --hap1GeneStats hap1.gene.stats.txt \
+                --hap2GeneStats hap2.gene.stats.txt \
+                --hap1QVStats pat.yak_qv.txt \
+                --hap2QVStats mat.yak_qv.txt \
+                --output ~{childID}.qc.stats.txt
+        fi 
 
     >>>
 
