@@ -20,8 +20,8 @@ workflow comparisonQC {
         ## QC Inputs
         File genesFasta
         File hs38Paf
-        File matYak
-        File patYak
+        File? matYak
+        File? patYak
         Array[File] childReadsILM
         File extractReadsReferenceFasta
 
@@ -88,8 +88,8 @@ workflow comparisonQC {
 
     call shortQC_t.shortQC as shortQC_filt {
         input:
-            patFasta    = filter_fasta_hap1.filteredFasta,
-            matFasta    = filter_fasta_hap2.filteredFasta,
+            hap1Fasta   = filter_fasta_hap1.filteredFasta,
+            hap2Fasta   = filter_fasta_hap2.filteredFasta,
 
             patYak      = patYak,
             matYak      = matYak,
@@ -134,8 +134,8 @@ workflow comparisonQC {
 
         call shortQC_t.shortQC as shortQC_filt_brk {
             input:
-                patFasta    = breakIntoContigs_hap1.assemblyContigsFaGz,
-                matFasta    = breakIntoContigs_hap2.assemblyContigsFaGz,
+                hap1Fasta   = breakIntoContigs_hap1.assemblyContigsFaGz,
+                hap2Fasta   = breakIntoContigs_hap2.assemblyContigsFaGz,
 
                 patYak      = patYak,
                 matYak      = matYak,
