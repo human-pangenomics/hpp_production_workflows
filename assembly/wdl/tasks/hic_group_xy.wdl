@@ -73,21 +73,21 @@ task group_xy {
                     > ~{childID}.hap2.corrected.fa.gz
 
             ## rename (in case of input/output name conflicts)
-            mv ~{childID}.hap1.corrected.fa.gz ~{childID}.hap1.fa.gz
-            mv ~{childID}.hap2.corrected.fa.gz ~{childID}.hap2.fa.gz
+            mv ~{childID}.hap1.corrected.fa.gz ~{childID}.hap1.xygrouped.fa.gz
+            mv ~{childID}.hap2.corrected.fa.gz ~{childID}.hap2.xygrouped.fa.gz
 
 
         ## No need to do anything for female samples. Just rename and exit.
         else 
-            cp ~{hap1_gz} ~{childID}.hap1.fa.gz
-            cp ~{hap2_gz} ~{childID}.hap2.fa.gz
+            cp ~{hap1_gz} ~{childID}.hap1.xygrouped.fa.gz
+            cp ~{hap2_gz} ~{childID}.hap2.xygrouped.fa.gz
         fi
     >>>
 
     output {
 
-        File outputHap1FastaGz = "~{childID}.hap1.fa.gz"
-        File outputHap2FastaGz = "~{childID}.hap2.fa.gz"
+        File outputHap1FastaGz = "~{childID}.hap1.xygrouped.fa.gz"
+        File outputHap2FastaGz = "~{childID}.hap2.xygrouped.fa.gz"
     }
 
     runtime {
