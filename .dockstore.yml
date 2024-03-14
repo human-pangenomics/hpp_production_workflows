@@ -207,3 +207,6 @@ workflows:
    -  name: ontSummaryStats
       subclass: WDL
       primaryDescriptorPath: /data_processing/wdl/calc_ont_summary_stats.wdl
+   -  name: compleasmRun
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/compleasm.wdl
