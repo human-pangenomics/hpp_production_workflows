@@ -14,7 +14,7 @@ WORKDIR /opt/nucfreq
 RUN git clone https://github.com/mrvollger/NucFreq.git .
 
 # Install Python dependencies
-RUN pip install --upgrade pip
-RUN pip3 install numpy pysam pandas matplotlib seaborn
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip3 install --no-cache-dir numpy pysam pandas matplotlib seaborn
 
 WORKDIR /data
