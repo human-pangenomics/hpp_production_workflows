@@ -31,8 +31,8 @@ task compleasm {
 
     parameter_meta {
         assembly: "Assembly to analyze for gene completeness in BUSCO genes."
-        lineage: "(default is primates) Busco lineage name. For human use primates."
-        lineage_tar: "BUSCO lineage downloaded with compleasm download command. Must match the lineage provided. Cannot use vanilla BUSCO lineages."        
+        lineage: "(default is primates) Busco lineage name. For human use primates. This parameter must match the name of the folder that is extracted from the lineage_tar."
+        lineage_tar: "BUSCO lineage downloaded with compleasm download command. Must match the lineage provided. Cannot use vanilla BUSCO lineages."
         otherArgs: "(default is empty string) Arguments to be passed to compleasm run command such as '--min_complete 0.9'"
     }
   
@@ -41,9 +41,25 @@ task compleasm {
         # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
 
-        ## extract lineage_tar
-        mkdir lineage_folder
-        tar -xzf ~{lineage_tar} -C lineage_folder
+        ## use updated version (since 0.2.5) of compleasm to:
+        ##     1. fix problem with fragmented gene counts
+        ##     2. allow the use of filtered/custom lineages
+        wget https://raw.githubusercontent.com/huangnengCSU/compleasm/fa78bec4e903fd78c1c9c8a32da6889da0406824/compleasm.py
+        
+        ## extract lineage_tar to the expected directory
+        mkdir mb_download
+        cd mb_download
+
+        tar -zxvf ~{lineage_tar}
+        touch ~{lineage}.done
+
+        ## Check that extracted lineage matches the lineage specified 
+        if [[ ! -d "~{lineage}_odb10" && ! -d "~{lineage}" ]]; then
+            echo "lineage tar must create a folder with same name as lineage provided"
+            exit 1
+        fi
+
+        cd ..
 
         ## get assembly prefix, remove fa, fa.gz, fasta, fasta.gz suffixes
         FILEPREFIX=$(basename ~{assembly} | sed 's/\(.*\)\(\.fa\|\.fa\.gz\|\.fasta\|\.fasta\.gz\)$/\1/')
@@ -52,12 +68,12 @@ task compleasm {
         ## Actual run: miniprot --> hmm filter --> summarize
         ## This command includes the lineage folder due to how long the download takes using
         ## the compleasm download/run commands
-        compleasm run \
+        python compleasm.py run \
           -a ~{assembly} \
           -o ${FILEPREFIX}_compleasm \
           -t ~{threadCount} \
           -l ~{lineage} \
-          -L ./lineage_folder \
+          -L ./mb_download \
           ~{otherArgs}
 
 
