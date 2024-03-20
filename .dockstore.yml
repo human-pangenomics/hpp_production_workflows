@@ -210,3 +210,6 @@ workflows:
    -  name: compleasmRun
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/compleasm.wdl
+   -  name: NucFreq
+      subclass: WDL
+      primaryDescriptorPath: /QC/wdl/tasks/nucfreq.wdl
