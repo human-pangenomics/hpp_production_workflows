@@ -215,7 +215,7 @@ task filter_nucfreq {
         # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
 
-        wget https://raw.githubusercontent.com/emics57/nucfreqPipeline/89b1b9a980f78b63e2a79ca2e122269bf284df41/nucfreq_filtering_migalab.R
+        wget https://raw.githubusercontent.com/emics57/nucfreqPipeline/21b3395a7f285962aae9e881db2514e03601c5db/nucfreq_filtering_migalab.R
 
         Rscript nucfreq_filtering_migalab.R \
             ~{nucfreq_loci_bed} \
