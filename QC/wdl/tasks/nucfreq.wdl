@@ -157,7 +157,7 @@ task nucfreq {
                 --bed "split_beds/$FILE_NAME" \
                 --obed "split_beds_out/$FILE_NAME" \
                 input.bam \
-                "output_plots/~{assembly_id}_${chrom}_${start}_${end}" \
+                "output_plots/~{assembly_id}_${chrom}_${start}_${end}.png" \
                 ~{otherArgs}
 
         done < ~{regions_bed}
