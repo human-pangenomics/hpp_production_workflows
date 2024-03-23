@@ -28,7 +28,7 @@ workflow runNucFreq {
             regions_bed    = regions_bed
     }
 
-    call nucfreq {
+    call nucfreq as nucfreq_vanilla {
         input:
             input_bam     = filter_bam.nucfreq_filt_bam,
             input_bam_bai = filter_bam.nucfreq_filt_bam_bai,
@@ -38,15 +38,25 @@ workflow runNucFreq {
 
     call filter_nucfreq {
         input:
-            variant_loci_bed = nucfreq.variant_loci_bed,
+            nucfreq_loci_bed = nucfreq_vanilla.nucfreq_loci_bed,
             assembly_id   = assembly_id
     }
 
-  
+    call nucfreq as nucfreq_all_loci_in_regions {
+        input:
+            input_bam     = filter_bam.nucfreq_filt_bam,
+            input_bam_bai = filter_bam.nucfreq_filt_bam_bai,
+            regions_bed   = regions_bed,
+            assembly_id   = assembly_id,
+            otherArgs     = "--minobed 0"
+    }
+
+
     output {
-        File nucplot_image    = nucfreq.nucplot_png
-        File variant_loci_bed = nucfreq.variant_loci_bed
-        File error_loci_bed   = filter_nucfreq.variant_clusters_bed
+        File nucplot_image_tar  = nucfreq_vanilla.nucplot_images
+        File variant_loci_bed   = nucfreq_vanilla.nucfreq_loci_bed
+        File all_loci_bed       = nucfreq_all_loci_in_regions.nucfreq_loci_bed
+        File error_clusters_bed = filter_nucfreq.variant_clusters_bed        
     }
 }
 
@@ -109,11 +119,10 @@ task nucfreq {
         File regions_bed 
         String assembly_id 
 
-        String sam_omit_flag = "2308"
         String otherArgs   = ""
 
-        Int threadCount    = 20   
-        Int memSizeGB      = 80
+        Int threadCount    = 4   
+        Int memSizeGB      = 32
         Int addldisk       = 64    
         String dockerImage = "humanpangenomics/nucfreq@sha256:6f2f981892567f2a8ba52ba20e87f98e6ca770ea3f4d5430bf67a26673c8f176" 
     }
@@ -130,19 +139,46 @@ task nucfreq {
         ln -s ~{input_bam} input.bam
         ln -s ~{input_bam_bai} input.bam.bai
 
-        ## run nucfreq: find loci with heterozygosity; create plot of regions
-        python /opt/nucfreq/NucPlot.py \
-            -t ~{threadCount} \
-            --bed ~{regions_bed} \
-            --obed ~{assembly_id}_variant_loci.bed \
-            input.bam \
-            ~{assembly_id}_nucplot \
-            ~{otherArgs}
+        # Split bed to one file per row. Run on one row at a time
+        # Create a directory to store split BED files
+        mkdir -p split_beds
+        mkdir -p split_beds_output
+        mkdir -p output_plots
+
+
+        ## run nucfreq: find loci with heterozygosity; create plots for each region
+        while IFS=$'\t' read -r chrom start end rest; do
+            
+            FILE_NAME="${chrom}_${start}_${end}.bed"
+            echo -e "$chrom\t$start\t$end\t$rest" > "split_beds/$FILE_NAME"
+
+            python /opt/nucfreq/NucPlot.py \
+                -t ~{threadCount} \
+                --bed "split_beds/$FILE_NAME" \
+                --obed "split_beds_output/$FILE_NAME" \
+                ~{otherArgs} \
+                input.bam \
+                "output_plots/~{assembly_id}_${chrom}_${start}_${end}"
+
+        done < ~{regions_bed}
+
+        
+        # Process the first file fully, including the header
+        head -n 1 split_beds_output/$(ls split_beds_output | head -n 1) > combined_sorted.bed
+
+        # Concatenate the rest of the files without the header and then sort
+        for file in split_beds_output/*.bed; do
+            tail -n +2 "$file"
+        done | sort -k1,1 -k2,2n >> ~{assembly_id}_nucfreq_loci_bed
+
+        ## tar.gz individual plots 
+        tar -czvf "~{assembly_id}_nucfreq_plots.tar.gz" output_plots
+
   >>>  
 
   output {
-    File variant_loci_bed = "~{assembly_id}_variant_loci.bed"
-    File nucplot_png      = "~{assembly_id}_nucplot.png"
+    File nucfreq_loci_bed = "~{assembly_id}_nucfreq_loci_bed"
+    File nucplot_images   = "~{assembly_id}_nucfreq_plots.tar.gz"
   }
 
   runtime {
@@ -157,7 +193,7 @@ task nucfreq {
 
 task filter_nucfreq {
     input{
-        File variant_loci_bed
+        File nucfreq_loci_bed
         String assembly_id 
 
         String otherArgs   = ""
@@ -168,7 +204,7 @@ task filter_nucfreq {
         String dockerImage = "rocker/verse@sha256:56e60da5b006e1406967e58ad501daaba567d6836029aee94ed16ba1965554f0" # 4.3.1
     }
 
-    Int bed_size = ceil(size(variant_loci_bed, "GB"))
+    Int bed_size = ceil(size(nucfreq_loci_bed, "GB"))
     Int final_disk_dize = bed_size + addldisk
 
     command <<<
@@ -179,10 +215,9 @@ task filter_nucfreq {
         wget https://raw.githubusercontent.com/emics57/nucfreqPipeline/89b1b9a980f78b63e2a79ca2e122269bf284df41/nucfreq_filtering_migalab.R
 
         Rscript nucfreq_filtering_migalab.R \
-            ~{variant_loci_bed} \
+            ~{nucfreq_loci_bed} \
             ~{assembly_id}_nucfreq_errors.bed \
             ~{otherArgs}
-
   >>>  
 
   output {
