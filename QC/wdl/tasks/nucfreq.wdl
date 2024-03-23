@@ -142,7 +142,7 @@ task nucfreq {
         # Split bed to one file per row. Run on one row at a time
         # Create a directory to store split BED files
         mkdir -p split_beds
-        mkdir -p split_beds_output
+        mkdir -p split_beds_out
         mkdir -p output_plots
 
 
@@ -156,15 +156,15 @@ task nucfreq {
                 -t ~{threadCount} \
                 --bed "split_beds/$FILE_NAME" \
                 --obed "split_beds_output/$FILE_NAME" \
-                ~{otherArgs} \
                 input.bam \
-                "output_plots/~{assembly_id}_${chrom}_${start}_${end}"
+                "output_plots/~{assembly_id}_${chrom}_${start}_${end}" \
+                ~{otherArgs}
 
         done < ~{regions_bed}
 
         
         # Process the first file fully, including the header
-        head -n 1 split_beds_output/$(ls split_beds_output | head -n 1) > combined_sorted.bed
+        head -n 1 split_beds_out/$(ls split_beds_out | head -n 1) > ~{assembly_id}_nucfreq_loci_bed
 
         # Concatenate the rest of the files without the header and then sort
         for file in split_beds_output/*.bed; do
