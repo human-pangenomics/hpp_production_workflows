@@ -155,7 +155,7 @@ task nucfreq {
             python /opt/nucfreq/NucPlot.py \
                 -t ~{threadCount} \
                 --bed "split_beds/$FILE_NAME" \
-                --obed "split_beds_output/$FILE_NAME" \
+                --obed "split_beds_out/$FILE_NAME" \
                 input.bam \
                 "output_plots/~{assembly_id}_${chrom}_${start}_${end}" \
                 ~{otherArgs}
@@ -167,7 +167,7 @@ task nucfreq {
         head -n 1 split_beds_out/$(ls split_beds_out | head -n 1) > ~{assembly_id}_nucfreq_loci_bed
 
         # Concatenate the rest of the files without the header and then sort
-        for file in split_beds_output/*.bed; do
+        for file in split_beds_out/*.bed; do
             tail -n +2 "$file"
         done | sort -k1,1 -k2,2n >> ~{assembly_id}_nucfreq_loci_bed
 
