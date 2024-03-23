@@ -33,7 +33,8 @@ workflow runNucFreq {
             input_bam     = filter_bam.nucfreq_filt_bam,
             input_bam_bai = filter_bam.nucfreq_filt_bam_bai,
             regions_bed   = regions_bed,
-            assembly_id   = assembly_id
+            assembly_id   = assembly_id,
+            tag           = "discordant"
     }
 
     call filter_nucfreq {
@@ -48,7 +49,8 @@ workflow runNucFreq {
             input_bam_bai = filter_bam.nucfreq_filt_bam_bai,
             regions_bed   = regions_bed,
             assembly_id   = assembly_id,
-            otherArgs     = "--minobed 0"
+            otherArgs     = "--minobed 0",
+            tag           = "all"
     }
 
 
@@ -119,6 +121,7 @@ task nucfreq {
         File regions_bed 
         String assembly_id 
 
+        String tag = ""
         String otherArgs   = ""
 
         Int threadCount    = 4   
@@ -169,7 +172,7 @@ task nucfreq {
         # Concatenate the rest of the files without the header and then sort
         for file in split_beds_out/*.bed; do
             tail -n +2 "$file"
-        done | sort -k1,1 -k2,2n >> ~{assembly_id}_nucfreq_loci_bed
+        done | sort -k1,1 -k2,2n >> "~{assembly_id}_nucfreq_loci_~{tag}.bed"
 
         ## tar.gz individual plots 
         tar -czvf "~{assembly_id}_nucfreq_plots.tar.gz" output_plots
@@ -177,7 +180,7 @@ task nucfreq {
   >>>  
 
   output {
-    File nucfreq_loci_bed = "~{assembly_id}_nucfreq_loci_bed"
+    File nucfreq_loci_bed = "~{assembly_id}_nucfreq_loci_~{tag}.bed"
     File nucplot_images   = "~{assembly_id}_nucfreq_plots.tar.gz"
   }
 
