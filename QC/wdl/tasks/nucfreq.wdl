@@ -24,8 +24,7 @@ workflow runNucFreq {
     call filter_bam {
         input:
             input_bam      = input_bam,
-            input_bam_bai  = input_bam_bai,
-            regions_bed    = regions_bed
+            input_bam_bai  = input_bam_bai
     }
 
     call nucfreq as nucfreq_vanilla {
@@ -66,7 +65,7 @@ task filter_bam {
     input{
         File input_bam
         File input_bam_bai
-        File regions_bed 
+        File? regions_bed 
         String sam_omit_flag = "2308"
 
         Int threadCount    = 8    
@@ -85,11 +84,18 @@ task filter_bam {
         # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
 
+        if [ ! -f "~{regions_bed}" ]
+        then
+            REGIONS_ARG=""
+        else
+            REGIONS_ARG="--regions-file ~{regions_bed}"
+        fi
+
         samtools view \
             -F ~{sam_omit_flag}\
             --bam \
             --with-header \
-            --regions-file ~{regions_bed} \
+            $REGIONS_ARG \
             --threads ~{threadCount} \
             -X ~{input_bam} ~{input_bam_bai} \
             -o ~{file_prefix}_nucfreq_filtered.bam
