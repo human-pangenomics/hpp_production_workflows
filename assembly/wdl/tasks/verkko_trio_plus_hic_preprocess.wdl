@@ -18,8 +18,7 @@ workflow verkko_preprocess_wf {
         Array[File] sample_illumina
         Array[File] maternal_illumina
         Array[File] paternal_illumina
-        Array[File] hic_r1
-        Array[File] hic_r2
+        Array[File] hic
 
         
         File? referenceFasta        
@@ -76,8 +75,7 @@ workflow verkko_preprocess_wf {
             referenceFasta   = referenceFasta
     }
 
-    Array[File] hic_r1_localized = hic_r1
-    Array[File] hic_r2_localized = hic_r2
+    Array[File] hic_localized = hic
 
     output {
         Array[File] ultralong_fq   = extract_ultralong.extractedRead
@@ -85,8 +83,7 @@ workflow verkko_preprocess_wf {
         File mat_compr_hapmer      = meryl.maternalHapmer
         File pat_compr_hapmer      = meryl.paternalHapmer
         File sample_compr_meryl_db = meryl.sampleMerylDB
-        Array[File] out_hic_r1     = hic_r1_localized
-        Array[File] out_hic_r2     = hic_r2_localized
+        Array[File] out_hic        = hic_localized
     }
 }
 
