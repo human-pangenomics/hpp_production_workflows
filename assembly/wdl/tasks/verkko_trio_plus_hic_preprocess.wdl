@@ -69,6 +69,7 @@ workflow verkko_preprocess_wf {
     call meryl_t.runMeryl as meryl {
         input:
             compress         = true,
+            kmerSize         = 30,
             sampleReadsILM   = sample_illumina,
             maternalReadsILM = maternal_illumina,
             paternalReadsILM = paternal_illumina,
