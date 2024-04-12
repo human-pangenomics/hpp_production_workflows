@@ -20,6 +20,7 @@ workflow runNucFreq {
         regions_bed: "Bed file of regions in which to output NucFreq plots"
     }
 
+    String output_prefix = basename(input_bam, ".bam")
 
     call filter_bam {
         input:
@@ -36,40 +37,70 @@ workflow runNucFreq {
     } 
 
 
-    call create_genome_bed {
+    call create_genome_beds {
         input:
             inputFasta = assembly_fasta
     }
 
-    ## Call nucfreq using rustybam to get just bed files from large
-    ## genomic segments (which cause tradtional nucfreq to crash).
-    call nucfreq_bed_only {
-        input:
-            input_bam     = filter_bam.nucfreq_filt_bam,
-            input_bam_bai = filter_bam.nucfreq_filt_bam_bai,
-            regions_bed   = create_genome_bed.genome_bed
+    scatter (genome_bed in create_genome_beds.genome_beds) {
+        call nucfreq_counts {
+            input:
+                input_bam     = filter_bam.nucfreq_filt_bam,
+                input_bam_bai = filter_bam.nucfreq_filt_bam_bai,
+                regions_bed   = genome_bed
+        }
+
+        call create_nucfreq_output {
+            input:
+                nucfreq_counts_txt = nucfreq_counts.nucfreq_counts_txt
+        }
+
     }
+    
+    
+    call combine_beds as combine_first_bedgraph {
+        input:
+            beds         = create_nucfreq_output.nucfreq_first_bedgraph,
+            prefix       = output_prefix,
+            tag          = "nucfreq_first"
+    }
+
+    call combine_beds as combine_second_bedgraph {
+        input:
+            beds         = create_nucfreq_output.nucfreq_second_bedgraph,
+            prefix       = output_prefix,
+            tag          = "nucfreq_second"            
+    }
+
+    call combine_beds as combine_nucfreq_bed {
+        input:
+            beds         = create_nucfreq_output.nucfreq_bed,
+            prefix       = output_prefix,
+            tag          = "nucfreq"            
+    }    
+
 
     call filter_nucfreq {
         input:
-            nucfreq_loci_bed = nucfreq_bed_only.nucfreq_bed
+            nucfreq_loci_bed = combine_nucfreq_bed.output_bed
     }
 
     call bedgraph_to_bigwig as first_allele_bw {
         input:
-            bedgraph    = nucfreq_bed_only.nucfreq_first_bedgraph,
-            chrom_sizes = create_genome_bed.chrom_sizes
+            bedgraph    = combine_first_bedgraph.output_bed,
+            chrom_sizes = create_genome_beds.chrom_sizes
     }
      
     call bedgraph_to_bigwig as second_allele_bw {
         input:
-            bedgraph    = nucfreq_bed_only.nucfreq_second_bedgraph,
-            chrom_sizes = create_genome_bed.chrom_sizes
+            bedgraph    = combine_second_bedgraph.output_bed,
+            chrom_sizes = create_genome_beds.chrom_sizes
     }       
 
     output {
         ## If regions were passed as inputs
         File nucplot_image_tar        = nucfreq.nucplot_images
+        File nucfreq_all_bed          = combine_nucfreq_bed.output_bed       
         File error_clusters_bed       = filter_nucfreq.variant_clusters_bed        
         File first_allele_bigwig      = first_allele_bw.bigwig
         File second_allele_bigwig     = second_allele_bw.bigwig
@@ -113,16 +144,16 @@ task filter_bam {
             $REGIONS_ARG \
             --threads ~{threadCount} \
             -X ~{input_bam} ~{input_bam_bai} \
-            -o ~{file_prefix}_nucfreq.bam
+            -o ~{file_prefix}_nucfreq_filtered.bam
 
         samtools index \
             --threads ~{threadCount} \
-            ~{file_prefix}_nucfreq.bam
+            ~{file_prefix}_nucfreq_filtered.bam
   >>>  
 
   output {
-    File nucfreq_filt_bam     = "~{file_prefix}_nucfreq.bam"
-    File nucfreq_filt_bam_bai = "~{file_prefix}_nucfreq.bam.bai"
+    File nucfreq_filt_bam     = "~{file_prefix}_nucfreq_filtered.bam"
+    File nucfreq_filt_bam_bai = "~{file_prefix}_nucfreq_filtered.bam.bai"
   }
 
   runtime {
@@ -188,21 +219,21 @@ task nucfreq {
 
         
         # Process the first file fully, including the header
-        head -n 1 split_beds_out/$(ls split_beds_out | head -n 1) > "~{file_prefix}_regions_loci.bed"
+        head -n 1 split_beds_out/$(ls split_beds_out | head -n 1) > "~{file_prefix}_nucfreq_loci.bed"
 
         # Concatenate the rest of the files without the header and then sort
         for file in split_beds_out/*.bed; do
             tail -n +2 "$file"
-        done | sort -k1,1 -k2,2n >> "~{file_prefix}_regions_loci.bed"
+        done | sort -k1,1 -k2,2n >> "~{file_prefix}_nucfreq_regions_loci.bed"
 
         ## tar.gz individual plots 
-        tar -czvf "~{file_prefix}_plots.tar.gz" output_plots
+        tar -czvf "~{file_prefix}_nucfreq_plots.tar.gz" output_plots
 
   >>>  
 
   output {
-    File nucfreq_loci_bed = "~{file_prefix}_regions_loci.bed"
-    File nucplot_images   = "~{file_prefix}_plots.tar.gz"
+    File nucfreq_loci_bed = "~{file_prefix}_nucfreq_regions_loci.bed"
+    File nucplot_images   = "~{file_prefix}_nucfreq_plots.tar.gz"
   }
 
   runtime {
@@ -281,7 +312,7 @@ task define_genome_split_beds {
   }
 }
 
-task create_genome_bed {
+task create_genome_beds {
     input{
         File inputFasta
 
@@ -309,14 +340,32 @@ task create_genome_bed {
 
         ## get contig/scaffold sizes from genome assembly
         samtools faidx "$inputFastaFN" 
-        cut -f1,2 "${inputFastaFN}.fai" > sizes.genome
+        cut -f1,2 "${inputFastaFN}.fai" > unsorted_sizes.genome
 
-        awk 'BEGIN {OFS="\t"} {print $1, "0", $2}' sizes.genome > genome.bed
+        sort -k1,1 unsorted_sizes.genome > sizes.genome
+
+        ## create bed files with one chromosome per file (for scattering on)
+        mkdir -p beds
+
+        ## name with original line number to make aggregating easier
+        line_number=1
+
+        # Read through each line of the file
+        while IFS= read -r line; do
+
+            chrom=$(echo "$line" | awk '{print $1}')
+            size=$(echo "$line" | awk '{print $2}')
+        
+            echo -e "${chrom}\t0\t${size}" > "beds/genome_region_${line_number}.bed"
+
+            ((line_number++))
+
+        done < sizes.genome          
   >>>  
 
   output {
-    File genome_bed  = "genome.bed"
-    File chrom_sizes = "sizes.genome"
+    Array[File] genome_beds  = glob("beds/*.bed")
+    File chrom_sizes         = "sizes.genome"
   }
 
   runtime {
@@ -328,7 +377,7 @@ task create_genome_bed {
   }
 }
 
-task nucfreq_bed_only {
+task nucfreq_counts {
     input{
         File input_bam
         File input_bam_bai
@@ -336,13 +385,13 @@ task nucfreq_bed_only {
 
         Int threadCount    = 8   
         Int memSizeGB      = 32
-        Int addldisk       = 128    
+        Int addldisk       = 128   
         String dockerImage = "quay.io/biocontainers/rustybam@sha256:0c31acc94fe676fd7d853da74660187d9a146acbacb4266abd2ec559fd5641a3" # 0.1.33--h756b843_0
     }
-    String file_prefix = basename(input_bam, ".bam")
+    String file_prefix = basename(regions_bed, ".bed")
 
     Int bam_size = ceil(size(input_bam, "GB"))
-    Int final_disk_dize = bam_size + addldisk
+    Int final_disk_dize = bam_size * 2 + addldisk
 
     command <<<
 
@@ -351,42 +400,18 @@ task nucfreq_bed_only {
 
         ## soft link bam and bai to cwd so they are in the same directory
         ln -s ~{input_bam} input.bam
-        cp ~{input_bam_bai} input.bam.bai ## copy to ensure index is newer than bam
+        cp ~{input_bam_bai} input.bam.bai
 
 
         rustybam nucfreq \
             --bed ~{regions_bed} \
             input.bam \
-            > mpileup.txt
-        
-        awk_prefix="~{file_prefix}"
+            > "~{file_prefix}_nucfreq_counts.txt"
 
-        ## write nucfreq-style bed and bedgraphs for most frequent and second most frequent bases
-        awk -v prefix="$awk_prefix" '{
-            max = $4; second_max = 0; 
-            for(i=5;i<=7;i++) {
-                if($i > max) { second_max = max; max = $i; }
-                else if($i > second_max) { second_max = $i; }
-            }
-            print $1, $2, $3, max             > $prefix"_first_uns.bedGraph";
-            print $1, $2, $3, second_max      > $prefix"_second_uns.bedGraph";
-            print $1, $2, $3, max, second_max > $prefix"_uns.bed";
-        }' < mpileup.txt
-        
-        
-        export LC_ALL=C
-
-        sort -k1,1 -k2,2n ~{file_prefix}_first_uns.bedGraph  > ~{file_prefix}_first.bedGraph &
-        sort -k1,1 -k2,2n ~{file_prefix}_second_uns.bedGraph > ~{file_prefix}_second.bedGraph &
-        sort -k1,1 -k2,2n ~{file_prefix}_uns.bed             > ~{file_prefix}.bed &
-
-        wait
   >>>
 
   output {
-    File nucfreq_first_bedgraph  = "~{file_prefix}_first.bedGraph"
-    File nucfreq_second_bedgraph = "~{file_prefix}_second.bedGraph"
-    File nucfreq_bed             = "~{file_prefix}.bed"
+    File nucfreq_counts_txt  = "~{file_prefix}_nucfreq_counts.txt"
   }
 
   runtime {
@@ -398,6 +423,111 @@ task nucfreq_bed_only {
   }
 }
 
+
+task create_nucfreq_output {
+    input{
+        File nucfreq_counts_txt
+
+        Int threadCount    = 4   
+        Int memSizeGB      = 32
+        Int addldisk       = 64    
+        String dockerImage = "quay.io/biocontainers/mawk@sha256:793a6f7e2f641288585b0714d097c5c6b146d5d54c72eb000de2dc7bef24a784" # 1.3.4--h031d066_7
+    }
+
+    String file_prefix = basename(nucfreq_counts_txt, ".txt")
+
+    Int file_size = ceil(size(nucfreq_counts_txt, "GB"))
+    Int final_disk_dize = file_size * 3 + addldisk
+
+    command <<<
+
+        # exit when a command fails, fail with unset variables, print commands before execution
+        set -eux -o pipefail
+
+        out_name="~{file_prefix}"
+
+        mawk '{
+            max = $4; second_max = 0;
+
+            for (i = 5; i <= 7; i++) {
+                if ($i > max) { second_max = max; max = $i; }
+                else if ($i > second_max) { second_max = $i; }
+            }
+
+            # Construct file names
+            first_file = "'"${out_name}"'_nucfreq_first.bedGraph";
+            second_file = "'"${out_name}"'_nucfreq_second.bedGraph";
+            combined_file = "'"${out_name}"'_nucfreq.bed";
+
+            print $1, $2, $3, max >> first_file;
+            print $1, $2, $3, second_max >> second_file;
+            print $1, $2, $3, max, second_max >> combined_file;
+        }
+
+        END {
+            close(first_file);
+            close(second_file);
+            close(combined_file);
+
+        }' < ~{nucfreq_counts_txt}
+
+        
+  >>>
+
+  output {
+    File nucfreq_first_bedgraph  = "~{file_prefix}_nucfreq_first.bedGraph"
+    File nucfreq_second_bedgraph = "~{file_prefix}_nucfreq_second.bedGraph"
+    File nucfreq_bed             = "~{file_prefix}_nucfreq.bed"
+  }
+
+  runtime {
+    memory: memSizeGB + " GB"
+    cpu: threadCount
+    disks: "local-disk " + final_disk_dize + " SSD"
+    docker: dockerImage
+    preemptible: 1
+  }
+}
+
+task combine_beds {
+    input {
+        Array[File] beds        
+        String prefix = "sample"
+        String tag    = "combined"
+
+        Int memSizeGB   = 64
+        Int threadCount = 4
+        Int addldisk = 128
+    }
+
+    Int file_size = ceil(size(beds, "GB"))
+    Int final_disk_dize = file_size * 2 + addldisk
+
+    String out_bed_fn  = "~{prefix}_~{tag}.bed"
+
+    command <<<
+        set -eux -o pipefail
+
+        ## Combine scattered results into one file
+        LC_ALL=C
+
+        cat ~{sep=" " beds} | sort -k1,1 -k2,2n > ~{out_bed_fn}
+
+    >>>
+
+    output {
+        File output_bed  = out_bed_fn
+    }
+
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + final_disk_dize + " SSD"
+        docker: "juklucas/alphasat_summarize@sha256:872277a3a780c676d32f61045043b638e07889e63faa0de054e5f3d7d362f7b4"
+        preemptible: 1
+    }
+
+}
 
 task filter_nucfreq {
     input{
@@ -449,7 +579,7 @@ task bedgraph_to_bigwig {
         Int threadCount    = 4    
         Int memSizeGB      = 12
         Int addldisk       = 64    
-        String dockerImage = "quay.io/biocontainers/ucsc-bedgraphtobigwig@sha256:9a5a150acf6af3910d939396e928dc3d9468d974624eef7fc74ab6e450c12466"
+        String dockerImage = "quay.io/biocontainers/samtools@sha256:9cd15e719101ae8808e4c3f152cca2bf06f9e1ad8551ed43c1e626cb6afdaa02" # 1.19.2--h50ea8bc_1
     }
     
     String file_prefix = basename(bedgraph, ".bedGraph")
@@ -466,7 +596,7 @@ task bedgraph_to_bigwig {
   >>>  
 
   output {
-    File bigwig = "~{file_prefix}.bw"
+    File bigwig     = "~{file_prefix}.bw"
   }
 
   runtime {
