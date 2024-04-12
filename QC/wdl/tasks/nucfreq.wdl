@@ -579,7 +579,7 @@ task bedgraph_to_bigwig {
         Int threadCount    = 4    
         Int memSizeGB      = 12
         Int addldisk       = 64    
-        String dockerImage = "quay.io/biocontainers/samtools@sha256:9cd15e719101ae8808e4c3f152cca2bf06f9e1ad8551ed43c1e626cb6afdaa02" # 1.19.2--h50ea8bc_1
+        String dockerImage = "quay.io/biocontainers/ucsc-bedgraphtobigwig@sha256:9a5a150acf6af3910d939396e928dc3d9468d974624eef7fc74ab6e450c12466" # 455--h2a80c09_1
     }
     
     String file_prefix = basename(bedgraph, ".bedGraph")
