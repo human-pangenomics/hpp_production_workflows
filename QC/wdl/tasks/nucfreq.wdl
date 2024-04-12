@@ -582,7 +582,7 @@ task bedgraph_to_bigwig {
         String dockerImage = "quay.io/biocontainers/ucsc-bedgraphtobigwig@sha256:9a5a150acf6af3910d939396e928dc3d9468d974624eef7fc74ab6e450c12466" # 455--h2a80c09_1
     }
     
-    String file_prefix = basename(bedgraph, ".bedGraph")
+    String file_prefix = basename(bedgraph, ".bed")
 
     Int bed_size = ceil(size(bedgraph, "GB"))
     Int final_disk_dize = bed_size + addldisk
