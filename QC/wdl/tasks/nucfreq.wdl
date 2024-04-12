@@ -406,7 +406,7 @@ task nucfreq_counts {
         rustybam nucfreq \
             --bed ~{regions_bed} \
             input.bam \
-            > "~{file_prefix}_nucfreq_counts.txt"
+            | grep -v '^#' > "~{file_prefix}_nucfreq_counts.txt"
 
   >>>
 
