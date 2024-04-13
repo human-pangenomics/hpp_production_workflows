@@ -403,10 +403,12 @@ task nucfreq_counts {
         cp ~{input_bam_bai} input.bam.bai
 
 
+        ## Need || true for when there is no coverage and nucfreq only returns header
+        ## alternatively remove set -e from script...
         rustybam nucfreq \
             --bed ~{regions_bed} \
             input.bam \
-            | grep -v '^#' > "~{file_prefix}_nucfreq_counts.txt"
+            | grep -v '^#' || true > "~{file_prefix}_nucfreq_counts.txt"
 
   >>>
 
