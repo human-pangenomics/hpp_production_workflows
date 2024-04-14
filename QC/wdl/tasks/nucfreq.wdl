@@ -394,21 +394,20 @@ task nucfreq_counts {
     Int final_disk_dize = bam_size * 2 + addldisk
 
     command <<<
-
         # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
-
+        
         ## soft link bam and bai to cwd so they are in the same directory
         ln -s ~{input_bam} input.bam
         cp ~{input_bam_bai} input.bam.bai
 
-
-        ## Need || true for when there is no coverage and nucfreq only returns header
-        ## alternatively remove set -e from script...
         rustybam nucfreq \
             --bed ~{regions_bed} \
             input.bam \
-            | grep -v '^#' || true > "~{file_prefix}_nucfreq_counts.txt"
+            > "~{file_prefix}_nucfreq_counts.txt" 2> stderr.txt 
+
+        ## remove header line        
+        sed -i '1d' "~{file_prefix}_nucfreq_counts.txt"
 
   >>>
 
