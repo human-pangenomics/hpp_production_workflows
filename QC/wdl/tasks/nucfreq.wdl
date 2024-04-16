@@ -401,14 +401,11 @@ task nucfreq_counts {
         ln -s ~{input_bam} input.bam
         cp ~{input_bam_bai} input.bam.bai
 
+        ## n.b. regions with no coverage will just output a header
         rustybam nucfreq \
             --bed ~{regions_bed} \
             input.bam \
             > "~{file_prefix}_nucfreq_counts.txt" 2> stderr.txt 
-
-        ## remove header line        
-        sed -i '1d' "~{file_prefix}_nucfreq_counts.txt"
-
   >>>
 
   output {
@@ -447,32 +444,43 @@ task create_nucfreq_output {
 
         out_name="~{file_prefix}"
 
-        mawk '{
-            max = $4; second_max = 0;
+        # Check if the file has more than one line
+        line_count=$(wc -l < "~{nucfreq_counts_txt}")
 
-            for (i = 5; i <= 7; i++) {
-                if ($i > max) { second_max = max; max = $i; }
-                else if ($i > second_max) { second_max = $i; }
+        # Define file names
+        first_file="${out_name}_nucfreq_first.bedGraph"
+        second_file="${out_name}_nucfreq_second.bedGraph"
+        combined_file="${out_name}_nucfreq.bed"
+
+        # Create empty files if only the header is present (so delocalicalization doesn't fail)
+        if [ "$line_count" -le 1 ]; then
+            touch "$first_file" "$second_file" "$combined_file"
+        else
+            ## skip header row and create bedgraphs/bed files.
+            ## first_file    = most common base (will be converted to bigwig for coverage)
+            ## second_file   = next most common base (will be converted to bigwig for errors)
+            ## combined_file = nucfreq style file for input to error detection scripts
+            mawk -v OFS='\t' -v firstFile="$first_file" -v secondFile="$second_file" -v combinedFile="$combined_file" '
+            NR > 1 {
+                max = $4; second_max = 0;
+
+                for (i = 5; i <= 7; i++) {
+                    if ($i > max) { second_max = max; max = $i; }
+                    else if ($i > second_max) { second_max = $i; }
+                }
+
+                # Append data to the respective files
+                print $1, $2, $3, max >> "'"${first_file}"'";
+                print $1, $2, $3, second_max >> "'"${second_file}"'";
+                print $1, $2, $3, max, second_max >> "'"${combined_file}"'";
             }
 
-            # Construct file names
-            first_file = "'"${out_name}"'_nucfreq_first.bedGraph";
-            second_file = "'"${out_name}"'_nucfreq_second.bedGraph";
-            combined_file = "'"${out_name}"'_nucfreq.bed";
-
-            print $1, $2, $3, max >> first_file;
-            print $1, $2, $3, second_max >> second_file;
-            print $1, $2, $3, max, second_max >> combined_file;
-        }
-
-        END {
-            close(first_file);
-            close(second_file);
-            close(combined_file);
-
-        }' < ~{nucfreq_counts_txt}
-
-        
+            END {
+                close("'"${first_file}"'");
+                close("'"${second_file}"'");
+                close("'"${combined_file}"'");
+            }' < ~{nucfreq_counts_txt}
+        fi
   >>>
 
   output {
