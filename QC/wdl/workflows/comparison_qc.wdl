@@ -5,6 +5,7 @@ import "../../../assembly/wdl/tasks/len_filter_fasta.wdl" as filter_fasta_t
 import "../../../assembly/wdl/tasks/break_into_contigs.wdl" as breakIntoContigs_t
 import "../../../QC/wdl/workflows/short_qc.wdl" as shortQC_t
 import "../../../QC/wdl/tasks/produce_fai.wdl" as produceFai_t
+import "../../../QC/wdl/tasks/compleasm.wdl" as compleasm_wf
 import "../../../QC/wdl/tasks/find_assembly_breakpoints.wdl" as findAssemblyBreakpoints_wf
 
 workflow comparisonQC {
@@ -13,7 +14,8 @@ workflow comparisonQC {
         File hap1Fasta # paternal
         File hap2Fasta # maternal
         String sampleName
-
+        Boolean isMaleSample
+        
         Int min_len  = 100000
         Boolean breakFasta = false
 
@@ -30,6 +32,11 @@ workflow comparisonQC {
         File annotationBed
         File annotationSD
         File annotationCENSAT
+
+        ## compleasm inputs
+        File x_hap_compleasm_db
+        File y_hap_compleasm_db
+
 
         Int memSizeQC     = 200
         Int diskSizeQC    = 256
@@ -105,6 +112,20 @@ workflow comparisonQC {
             zones       = zonesQC
     }
 
+
+    call compleasm_wf.compleasm as compleasm_hap1 {
+        input:
+            assembly     = hap1Fasta,
+            lineage_tar  = if isMaleSample then y_hap_compleasm_db else x_hap_compleasm_db,
+            lineage      = "primates"
+    }
+
+    call compleasm_wf.compleasm as compleasm_hap2 {
+        input:
+            assembly     = hap2Fasta,
+            lineage_tar  = x_hap_compleasm_db,
+            lineage      = "primates"
+    }
 
 
     ## Create Fai for filtered fasta
@@ -192,6 +213,17 @@ workflow comparisonQC {
         File hap2_bed_SD                 = findAssemblyBreakpoints_hap2.bed_SD
         File hap2_bed_CENSAT             = findAssemblyBreakpoints_hap2.bed_CENSAT
         File hap2_assemblyStatistics     = findAssemblyBreakpoints_hap2.assemblyStatistics
+
+        
+        ## hap1 compleasm
+        File compleasm_summary_hap1      = compleasm_hap1.summary
+        File compleasm_full_table_hap1   = compleasm_hap1.fullTable
+        File compleasm_tar_hap1          = compleasm_hap1.outputTar
+
+        ## hap2 compleasm
+        File compleasm_summary_hap2      = compleasm_hap2.summary
+        File compleasm_full_table_hap2   = compleasm_hap2.fullTable
+        File compleasm_tar_hap2          = compleasm_hap2.outputTar
 
 
         ## Yak (so we don't have to rerun)
