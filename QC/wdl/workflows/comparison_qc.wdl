@@ -36,6 +36,8 @@ workflow comparisonQC {
         ## compleasm inputs
         File x_hap_compleasm_db
         File y_hap_compleasm_db
+        String x_hap_compleasm_lineage
+        String y_hap_compleasm_lineage
 
 
         Int memSizeQC     = 200
@@ -117,14 +119,14 @@ workflow comparisonQC {
         input:
             assembly     = hap1Fasta,
             lineage_tar  = if isMaleSample then y_hap_compleasm_db else x_hap_compleasm_db,
-            lineage      = "primates"
+            lineage      = if isMaleSample then y_hap_compleasm_lineage else x_hap_compleasm_lineage,
     }
 
     call compleasm_wf.compleasm as compleasm_hap2 {
         input:
             assembly     = hap2Fasta,
             lineage_tar  = x_hap_compleasm_db,
-            lineage      = "primates"
+            lineage      = x_hap_compleasm_lineage
     }
 
 
