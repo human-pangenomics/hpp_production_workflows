@@ -113,7 +113,7 @@ task ntsm_count {
                     echo "Unsupported file type: ${PREFIX}.${SUFFIX}"
                     exit 1
                 else
-                    ln $READFILE output/$FILENAME
+                    ln -s $READFILE output/$FILENAME
                 fi
 
             done
