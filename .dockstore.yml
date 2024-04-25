@@ -49,7 +49,7 @@ workflows:
       primaryDescriptorPath: /QC/wdl/tasks/findMitoContigs.wdl
    -  name: ReadStats
       subclass: WDL
-      primaryDescriptorPath: /QC/wdl/tasks/read_stats.wdl
+      primaryDescriptorPath: /data_processing/wdl/tasks/read_stats.wdl
       testParameterFiles:
         - /QC/test/s3_read_stats.json
    -  name: FullQC
@@ -78,7 +78,7 @@ workflows:
       primaryDescriptorPath: /QC/wdl/tasks/writeUnmappedReads.wdl
    -  name: fastqReadCounts
       subclass: WDL
-      primaryDescriptorPath: /QC/wdl/tasks/fastqReadCounts.wdl
+      primaryDescriptorPath: /data_processing/wdl/tasks/fastqReadCounts.wdl
       testParameterFiles:
         - /QC/test/s3_fastqReadCounts.json
    -  name: fastqReadCoverage
@@ -143,7 +143,7 @@ workflows:
       primaryDescriptorPath: /QC/wdl/workflows/standard_qc_haploid.wdl
    -  name: Primrose
       subclass: WDL
-      primaryDescriptorPath: /data_processing/wdl/primrose.wdl
+      primaryDescriptorPath: /data_processing/wdl/tasks/primrose.wdl
    -  name: Contamination
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/contamination.wdl
@@ -161,7 +161,7 @@ workflows:
       primaryDescriptorPath: /QC/wdl/workflows/SV_assembly.wdl
    -  name: Guppy
       subclass: WDL
-      primaryDescriptorPath: /data_processing/wdl/scatterGuppy.wdl
+      primaryDescriptorPath: /data_processing/wdl/workflows/scatterGuppy.wdl
    -  name: BreakIntoContigs
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/break_into_contigs.wdl
@@ -176,7 +176,7 @@ workflows:
       primaryDescriptorPath: /assembly/wdl/tasks/filter_short_reads.wdl
    -  name: chopperFilter
       subclass: WDL
-      primaryDescriptorPath: /data_processing/wdl/chopper.wdl
+      primaryDescriptorPath: /data_processing/wdl/tasks/chopper.wdl
    -  name: LiftOff
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/liftoff.wdl
@@ -191,10 +191,10 @@ workflows:
       primaryDescriptorPath: /QC/wdl/workflows/comparison_qc_diploid.wdl
    -  name: ssdsTerraUpload
       subclass: WDL
-      primaryDescriptorPath: /data_processing/wdl/ssds_terra_upload.wdl
+      primaryDescriptorPath: /data_processing/wdl/tasks/ssds_terra_upload.wdl
    -  name: s5cmd_download
       subclass: WDL
-      primaryDescriptorPath: /data_processing/wdl/s5cmd_download.wdl      
+      primaryDescriptorPath: /data_processing/wdl/tasks/s5cmd_download.wdl      
    -  name: AssemblyCleanUp
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/assembly_clean_up.wdl
@@ -203,10 +203,10 @@ workflows:
       primaryDescriptorPath: /QC/wdl/workflows/short_diploid_qc.wdl 
    -  name: Readsbam4DC
       subclass: WDL
-      primaryDescriptorPath: /data_processing/wdl/readsbam4dc.wdl
+      primaryDescriptorPath: /data_processing/wdl/tasks/readsbam4dc.wdl
    -  name: ontSummaryStats
       subclass: WDL
-      primaryDescriptorPath: /data_processing/wdl/calc_ont_summary_stats.wdl
+      primaryDescriptorPath: /data_processing/wdl/tasks/calc_ont_summary_stats.wdl
    -  name: compleasmRun
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/compleasm.wdl
