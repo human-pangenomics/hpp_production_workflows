@@ -207,6 +207,9 @@ workflows:
    -  name: compleasmRun
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/compleasm.wdl
+   -  name: hifiQC
+      subclass: WDL
+      primaryDescriptorPath: /read_stats/wdl/workflows/hifi_qc_workflow.wdl
    -  name: NucFreq
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/nucfreq.wdl

@@ -12,7 +12,7 @@ workflow ntsm_workflow {
     }
 
     # Type 1: NTSM count
-    call ntsm_count as ntsm_count_1 {
+    call ntsm_count as ntsm_count_t1 {
         input:
             input_reads    = input_reads_1,
             cram_reference = cram_reference,
@@ -21,7 +21,7 @@ workflow ntsm_workflow {
     }
 
     # Type 2: NTSM count
-    call ntsm_count as ntsm_count_2 {
+    call ntsm_count as ntsm_count_t2 {
         input:
             input_reads    = input_reads_2,
             cram_reference = cram_reference,
@@ -31,16 +31,16 @@ workflow ntsm_workflow {
 
     call ntsm_eval {
         input:
-            count_1_file = ntsm_count_1.ntsm_counts,
-            count_2_file = ntsm_count_2.ntsm_counts,
+            count_1_file = ntsm_count_t1.ntsm_counts,
+            count_2_file = ntsm_count_t2.ntsm_counts,
             sample_id    = sample_id,
             read_1_type  = read_1_type,
             read_2_type  = read_2_type
     }
 
    output {
-        File ntsm_count_1  = ntsm_count_1.ntsm_counts
-        File ntsm_count_2  = ntsm_count_2.ntsm_counts
+        File ntsm_count_1  = ntsm_count_t1.ntsm_counts
+        File ntsm_count_2  = ntsm_count_t2.ntsm_counts
         File ntsm_eval_out = ntsm_eval.ntsm_eval_out
     }
 
