@@ -1,8 +1,7 @@
 version 1.0
 
-import "extract_reads.wdl" as extractReads_t
-import "shard_reads.wdl" as shardReads_t
-import "arithmetic.wdl" as arithmetic_t
+import "../../../QC/wdl/tasks/extract_reads_toGZ.wdl" as extractReads_t
+import "../../../QC/wdl/tasks/arithmetic.wdl" as arithmetic_t
 
 workflow runReadStats {
 
@@ -15,12 +14,12 @@ workflow runReadStats {
         Int fileExtractionDiskSizeGB = 512
         String dockerImage = "humanpangenomics/fai_read_stats:latest"
 
-        String identifierAll = "${identifier}_all"
+        String identifierAll = "~{identifier}_all"
     }
 
     # extract reads
     scatter (readFile in reads) {
-        call extractReads_t.extractReads as readsExtracted {
+        call extractReads_t.extractReadstoGZ as readsExtracted {
             input:
                 readFile=readFile,
                 referenceFasta=referenceFasta,
