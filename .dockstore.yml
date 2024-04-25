@@ -189,9 +189,6 @@ workflows:
    -  name: asmComparisonQCdiploid
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/comparison_qc_diploid.wdl
-   -  name: ssdsTerraUpload
-      subclass: WDL
-      primaryDescriptorPath: /data_processing/wdl/tasks/ssds_terra_upload.wdl
    -  name: s5cmd_download
       subclass: WDL
       primaryDescriptorPath: /data_processing/wdl/tasks/s5cmd_download.wdl      
