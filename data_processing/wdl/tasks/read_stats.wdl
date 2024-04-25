@@ -123,7 +123,7 @@ task indexReads {
         FILE=$(basename ~{readFile})
         OUTPUT="$FILE.fai"
 
-        cat $FILE | awk '{if(NR%4==2) print length($1)}' > $OUTPUT
+        zcat $FILE | awk '{if(NR%4==2) print length($1)}' > $OUTPUT
 
     >>>
 
