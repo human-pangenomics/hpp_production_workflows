@@ -210,6 +210,9 @@ workflows:
    -  name: hifiQC
       subclass: WDL
       primaryDescriptorPath: /data_processing/wdl/workflows/hifi_qc_workflow.wdl
+   -  name: ontQC
+      subclass: WDL
+      primaryDescriptorPath: /data_processing/wdl/workflows/ont_qc_workflow.wdl
    -  name: NucFreq
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/nucfreq.wdl
