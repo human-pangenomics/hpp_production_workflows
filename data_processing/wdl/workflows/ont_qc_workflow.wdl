@@ -87,7 +87,7 @@ task summarize_ont_qc {
         filename="~{file_name}"
 
         # Create output file with a header
-        echo -e "file_name\tpass_read_N50\tpass_Gb\tpass_coverage\tpass_100kb+\tpass_200kb+\tpass_300kb+\tpass_400kb+\tpass_500kb+\tpass_1Mb+\tpass_whales\tfail_read_N50\tfail_Gb\tfail_coverage\tfail_100kb+\tfail_200kb+\tfail_300kb+\tfail_400kb+\tfail_500kb+\tfail_1Mb+\tfail_whales\tntsm_score\tntsm_result" > aggregated_output.tsv
+        echo -e "file_name\tpass_read_N50\tpass_Gb\tpass_coverage\tpass_100kb+\tpass_200kb+\tpass_300kb+\tpass_400kb+\tpass_500kb+\tpass_1Mb+\tpass_whales\tfail_read_N50\tfail_Gb\tfail_coverage\tfail_100kb+\tfail_200kb+\tfail_300kb+\tfail_400kb+\tfail_500kb+\tfail_1Mb+\tfail_whales\tntsm_score\tntsm_result" > "~{file_name}.summary.tsv"
 
         # Extract data from pass_summary including the file name and skip header
         # Note that the file name is formatted as ['file_name_pass.txt']
@@ -99,7 +99,7 @@ task summarize_ont_qc {
 
         # Extract relevant columns from nstm_file and skip any header if present
         nstm_data=$(awk -F'\t' '{print $3"\t"$4}' $nstm_file)
-
+        
         # Append data to the output file
         echo -e "$filename\t$pass_data\t$fail_data\t$nstm_data" >> "~{file_name}.summary.tsv"
     >>>
