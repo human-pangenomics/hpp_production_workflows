@@ -1,7 +1,7 @@
 # Definitions
 repository = humanpangenomics
 identifier = hifiasm
-version = 0.19.8
+version = 0.19.9
 git_commit ?= $(shell git log --pretty=oneline -n 1 | cut -f1 -d " ")
 name = ${repository}/${identifier}
 tag = ${version}--${git_commit}
