@@ -32,7 +32,7 @@ task group_xy {
         Int threadCount = 16
         Int memSizeGB  = 32
         Int diskSizeGB = 96
-        String dockerImage = "humanpangenomics/hifiasm@sha256:d6851d4686b7183b0364274c79311284fb5ab91c957addcc309bb599d42c495f"
+        String dockerImage = "humanpangenomics/hifiasm@sha256:50483d0757e5ce1eaf68f33da8ac8087f8b40f1d1310f60100945fc3d56721c5"
     }
 
     command <<<

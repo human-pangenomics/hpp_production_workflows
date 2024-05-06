@@ -23,7 +23,7 @@ workflow runHiCHifiasm{
         Int threadCount
         Int preemptible
         Int fileExtractionDiskSizeGB = 256
-        String dockerImage = "humanpangenomics/hifiasm@sha256:1fa4d7fa4b587a8f803adf79cd36a6f0c7e0c3b2d79fa501876c949dc8d43435"
+        String dockerImage = "humanpangenomics/hifiasm@sha256:50483d0757e5ce1eaf68f33da8ac8087f8b40f1d1310f60100945fc3d56721c5"
         String zones = "us-west2-a"
     }
 
