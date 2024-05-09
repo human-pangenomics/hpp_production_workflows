@@ -15,6 +15,7 @@ task sumFastqReads {
 
     input {
         Array[File] inputFastq
+        String out_prefix
 
         Int memSizeGB = 4
         Int diskSizeGB = 128
@@ -38,12 +39,12 @@ task sumFastqReads {
               BASES=$(( $BASES + $FILE_BASES ))
         done
 
-        echo $BASES > total_coverage.txt
+        echo $BASES > "~{out_prefix}.txt"
     >>>
 
     output {
 
-        File coverageFile  = "total_coverage.txt"
+        File coverageFile  = "~{out_prefix}.txt"
     }
 
     runtime {
