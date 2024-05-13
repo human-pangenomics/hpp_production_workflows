@@ -26,7 +26,6 @@ workflow RunFCS{
         description: "Runs NCBI FCS-GX and FCS-adapter https://doi.org/10.1101/2023.06.02.543519 on given assembly"
     }
 
-    String GxDB = basename(GXI, ".gxi")
     String asm_name=basename(sub(sub(sub(assembly, "\\.gz$", ""), "\\.fasta$", ""), "\\.fa$", ""))
 
     call FCSGX {
@@ -40,8 +39,6 @@ workflow RunFCS{
             seq_info=seq_info,
             taxa=taxa,
             taxon_id=taxon_id,
-
-            GxDB=GxDB,
             asm_name=asm_name,
 
 
@@ -101,7 +98,6 @@ task FCSGX {
         String taxon_id
 
         String asm_name
-        String GxDB
 
         Int memSizeGB = 550
         Int preemptible = 1
@@ -116,18 +112,32 @@ task FCSGX {
         set -u
         set -o xtrace
 
-        ln -s ~{blast_div}
-        ln -s ~{GXI}
-        ln -s ~{GXS}
-        ln -s ~{manifest}
-        ln -s ~{metaJSON}
-        ln -s ~{seq_info}
-        ln -s ~{taxa}
+        ## soft link in components of GX DB to a folder
+        mkdir gxdb
 
-        ln -s ~{assembly}
+        ln -s ~{blast_div} gxdb/
+        ln -s ~{GXI} gxdb/
+        ln -s ~{GXS} gxdb/
+        ln -s ~{manifest} gxdb/
+        ln -s ~{metaJSON} gxdb/
+        ln -s ~{seq_info} gxdb/
+        ln -s ~{taxa} gxdb/
 
-        python3 /app/bin/run_gx --fasta ~{assembly} --gx-db ~{GxDB} --out-dir . --tax-id ~{taxon_id}
-        zcat ~{assembly} | /app/bin/gx clean-genome --action-report *.~{taxon_id}.fcs_gx_report.txt --output ~{asm_name}.GXclean.fasta --contam-fasta-out ~{asm_name}.GXcontam.fasta 
+        mkdir gx_out
+
+        ## run screen
+        python3 /app/bin/run_gx \
+            --fasta ~{assembly} \
+            --gx-db gxdb \
+            --out-dir gx_out \
+            --tax-id ~{taxon_id}
+        
+        ## remove any found contamination
+        zcat ~{assembly} \
+            | /app/bin/gx clean-genome \
+            --action-report gx_out/*.~{taxon_id}.fcs_gx_report.txt \
+            --output ~{asm_name}.GXclean.fasta \
+            --contam-fasta-out ~{asm_name}.GXcontam.fasta 
 
         gzip ~{asm_name}.GXclean.fasta
         gzip ~{asm_name}.GXcontam.fasta
@@ -171,19 +181,21 @@ task FCS_adapter {
 
         # Run the adapter script 
 
-        /app/fcs/bin/av_screen_x -o . --euk ~{GxCleanFasta}
+        /app/fcs/bin/av_screen_x \
+            -o . \
+            --euk \
+            ~{GxCleanFasta}
+        
+        mv fcs_adaptor_report.txt ~{asm_name}.fcs_adaptor_report.txt
         mv cleaned_sequences/* ~{asm_name}.clean.fa # the output of FCS adapter is not actually gzipped
 
-        rm -rf cleaned_sequences/
-
         gzip ~{asm_name}.clean.fa
-
         
     >>>
 
     output {
         File cleanFasta = "~{asm_name}.clean.fa.gz"
-        File adapter_Report = "fcs_adaptor_report.txt"
+        File adapter_Report = "~{asm_name}.fcs_adaptor_report.txt"
     }
 
     runtime {
