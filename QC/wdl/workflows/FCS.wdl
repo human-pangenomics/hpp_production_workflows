@@ -58,13 +58,17 @@ workflow RunFCS{
     }
 
     output {
-        File GxCleanFasta        = FCSGX.GxCleanFasta
-        File contamFasta         = FCSGX.contamFasta
-        File fcs_gx_report       = FCSGX.report
-        File fcs_taxonomy_report = FCSGX.taxonomy_report
+        ## GX outputs
+        File intermediate_clean_fa = FCSGX.GxCleanFasta
+        File contamFasta           = FCSGX.contamFasta
+        File fcs_gx_report         = FCSGX.report
+        File fcs_taxonomy_report   = FCSGX.taxonomy_report
         
-        File cleanFasta          = FCS_adapter.cleanFasta
-        File adapter_Report      = FCS_adapter.adapter_Report
+        ## Adapter output
+        File adapter_Report        = FCS_adapter.adapter_Report
+
+        ## Final output
+        File output_fasta          = FCS_adapter.cleanFasta
     }
     parameter_meta {
         assembly: "Gzipped assembly to be screened for genomic and adapter contamination"
