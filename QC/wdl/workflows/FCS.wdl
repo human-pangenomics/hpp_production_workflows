@@ -61,7 +61,7 @@ workflow RunFCS{
         ## GX outputs
         File intermediate_clean_fa = FCSGX.GxCleanFasta
         File contamFasta           = FCSGX.contamFasta
-        File fcs_gx_report         = FCSGX.report
+        File fcs_gx_report         = FCSGX.gx_report
         File fcs_taxonomy_report   = FCSGX.taxonomy_report
         
         ## Adapter output
