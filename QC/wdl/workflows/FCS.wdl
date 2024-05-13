@@ -12,6 +12,8 @@ workflow RunFCS{
         File seq_info
         File taxa
 
+        String taxon_id="9606"
+
         Int threadCount
         Int preemptible = 1
         Int diskSizeGBGX  = 500
@@ -37,6 +39,7 @@ workflow RunFCS{
             metaJSON=metaJSON,
             seq_info=seq_info,
             taxa=taxa,
+            taxon_id=taxon_id,
 
             GxDB=GxDB,
             asm_name=asm_name,
@@ -95,7 +98,7 @@ task FCSGX {
         File metaJSON
         File seq_info
         File taxa
-        
+        String taxon_id
 
         String asm_name
         String GxDB
@@ -123,8 +126,8 @@ task FCSGX {
 
         ln -s ~{assembly}
 
-        python3 /app/bin/run_gx --fasta ~{assembly} --gx-db ~{GxDB} --out-dir . --tax-id 9606
-        zcat ~{assembly} | /app/bin/gx clean-genome --action-report *.9606.fcs_gx_report.txt --output ~{asm_name}.GXclean.fasta --contam-fasta-out ~{asm_name}.GXcontam.fasta 
+        python3 /app/bin/run_gx --fasta ~{assembly} --gx-db ~{GxDB} --out-dir . --tax-id ~{taxon_id}
+        zcat ~{assembly} | /app/bin/gx clean-genome --action-report *.~{taxon_id}.fcs_gx_report.txt --output ~{asm_name}.GXclean.fasta --contam-fasta-out ~{asm_name}.GXcontam.fasta 
 
         gzip ~{asm_name}.GXclean.fasta
         gzip ~{asm_name}.GXcontam.fasta
@@ -132,8 +135,8 @@ task FCSGX {
     >>>
 
     output {
-        File GxCleanFasta = "~{asm_name}.GXclean.fasta.gz"
-        File contamFasta = "~{asm_name}.GXcontam.fasta.gz"
+        File GxCleanFasta    = "~{asm_name}.GXclean.fasta.gz"
+        File contamFasta     = "~{asm_name}.GXcontam.fasta.gz"
         File gx_report       = glob("*.fcs_gx_report.txt")[0]
         File taxonomy_report = glob("*.taxonomy.rpt")[0]
         
