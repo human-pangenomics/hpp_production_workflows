@@ -94,7 +94,7 @@ task FCSGX {
         String asm_name
         String GxDB
 
-        Int memSizeGB = 500
+        Int memSizeGB = 550
         Int preemptible = 1
         Int diskSizeGB
         Int threadCount
@@ -136,7 +136,7 @@ task FCSGX {
         memory: memSizeGB + " GB"
         disks: "local-disk " + diskSizeGB + " SSD"
         preemptible : preemptible
-        docker: 'ncbi/fcs-gx:0.4.0'
+        docker: 'ncbi/fcs-gx:0.5.0'
     }
 }
 
@@ -180,7 +180,7 @@ task FCS_adapter {
         memory: memSizeGB + " GB"
         preemptible : preemptible
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "ncbi/fcs-adaptor:0.4.0"
+        docker: "ncbi/fcs-adaptor:0.5.0"
     }
 }
 
