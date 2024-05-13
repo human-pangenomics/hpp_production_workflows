@@ -118,7 +118,7 @@ task FCSGX {
         ln -s ~{assembly}
 
         python3 /app/bin/run_gx --fasta ~{assembly} --gx-db ~{GxDB} --out-dir . --tax-id 9606
-        zcat ~{assembly} | /app/bin/gx clean-genome --action-report ~{asm_name}.9606.fcs_gx_report.txt --output ~{asm_name}.GXclean.fasta --contam-fasta-out ~{asm_name}.GXcontam.fasta 
+        zcat ~{assembly} | /app/bin/gx clean-genome --action-report *.9606.fcs_gx_report.txt --output ~{asm_name}.GXclean.fasta --contam-fasta-out ~{asm_name}.GXcontam.fasta 
 
         gzip ~{asm_name}.GXclean.fasta
         gzip ~{asm_name}.GXcontam.fasta
