@@ -16,9 +16,6 @@ workflow RunFCS{
         Int preemptible = 1
         Int diskSizeGBGX  = 500
         Int diskSizeGBAdapter = 32
-
-        String GxDB = basename(GXI, ".gxi")
-        String asm_name=basename(sub(sub(assembly, "\\.gz$", ""), "\\.fasta$", ""))
     }
 
     meta {
@@ -26,6 +23,9 @@ workflow RunFCS{
         email: "hloucks@ucsc.edu"
         description: "Runs NCBI FCS-GX and FCS-adapter https://doi.org/10.1101/2023.06.02.543519 on given assembly"
     }
+
+    String GxDB = basename(GXI, ".gxi")
+    String asm_name=basename(sub(sub(sub(assembly, "\\.gz$", ""), "\\.fasta$", ""), "\\.fa$", ""))
 
     call FCSGX {
         input:
@@ -70,6 +70,7 @@ workflow RunFCS{
         ## Final output
         File output_fasta          = FCS_adapter.cleanFasta
     }
+
     parameter_meta {
         assembly: "Gzipped assembly to be screened for genomic and adapter contamination"
         blast_div: "Required database file - download instructions https://github.com/ncbi/fcs/wiki/FCS-GX before running"
