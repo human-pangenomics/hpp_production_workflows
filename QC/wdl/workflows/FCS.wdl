@@ -3,7 +3,8 @@ version 1.0
 workflow RunFCS{
     input {
         File assembly
-        
+        String asm_name
+
         File blast_div
         File GXI
         File GXS
@@ -12,7 +13,7 @@ workflow RunFCS{
         File seq_info
         File taxa
 
-        String taxon_id="9606"
+        String taxon_id="9606" # Homo sapiens
 
         Int threadCount
         Int preemptible = 1
@@ -25,8 +26,6 @@ workflow RunFCS{
         email: "hloucks@ucsc.edu"
         description: "Runs NCBI FCS-GX and FCS-adapter https://doi.org/10.1101/2023.06.02.543519 on given assembly"
     }
-
-    String asm_name=basename(sub(sub(sub(assembly, "\\.gz$", ""), "\\.fasta$", ""), "\\.fa$", ""))
 
     call FCSGX {
         input:
@@ -147,8 +146,8 @@ task FCSGX {
     output {
         File GxCleanFasta    = "~{asm_name}.GXclean.fasta.gz"
         File contamFasta     = "~{asm_name}.GXcontam.fasta.gz"
-        File gx_report       = glob("*.fcs_gx_report.txt")[0]
-        File taxonomy_report = glob("*.taxonomy.rpt")[0]
+        File gx_report       = glob("gx_out/*.fcs_gx_report.txt")[0]
+        File taxonomy_report = glob("gx_out/*.taxonomy.rpt")[0]
         
     }
 
