@@ -3,7 +3,8 @@ version 1.0
 workflow RunFCS{
     input {
         File assembly
-        
+        String asm_name
+
         File blast_div
         File GXI
         File GXS
@@ -12,13 +13,12 @@ workflow RunFCS{
         File seq_info
         File taxa
 
+        String taxon_id="9606" # Homo sapiens
+
         Int threadCount
         Int preemptible = 1
         Int diskSizeGBGX  = 500
         Int diskSizeGBAdapter = 32
-
-        String GxDB = basename(GXI, ".gxi")
-        String asm_name=basename(sub(sub(assembly, "\\.gz$", ""), "\\.fasta$", ""))
     }
 
     meta {
@@ -37,8 +37,7 @@ workflow RunFCS{
             metaJSON=metaJSON,
             seq_info=seq_info,
             taxa=taxa,
-
-            GxDB=GxDB,
+            taxon_id=taxon_id,
             asm_name=asm_name,
 
 
@@ -58,13 +57,19 @@ workflow RunFCS{
     }
 
     output {
-        File GxCleanFasta = FCSGX.GxCleanFasta
-        File contamFasta = FCSGX.contamFasta
-        File report = FCSGX.report
+        ## GX outputs
+        File intermediate_clean_fa = FCSGX.GxCleanFasta
+        File contamFasta           = FCSGX.contamFasta
+        File fcs_gx_report         = FCSGX.gx_report
+        File fcs_taxonomy_report   = FCSGX.taxonomy_report
         
-        File cleanFasta = FCS_adapter.cleanFasta
-        File adapter_Report = FCS_adapter.adapter_Report
+        ## Adapter output
+        File adapter_Report        = FCS_adapter.adapter_Report
+
+        ## Final output
+        File output_fasta          = FCS_adapter.cleanFasta
     }
+
     parameter_meta {
         assembly: "Gzipped assembly to be screened for genomic and adapter contamination"
         blast_div: "Required database file - download instructions https://github.com/ncbi/fcs/wiki/FCS-GX before running"
@@ -89,12 +94,11 @@ task FCSGX {
         File metaJSON
         File seq_info
         File taxa
-        
+        String taxon_id
 
         String asm_name
-        String GxDB
 
-        Int memSizeGB = 500
+        Int memSizeGB = 550
         Int preemptible = 1
         Int diskSizeGB
         Int threadCount
@@ -107,18 +111,32 @@ task FCSGX {
         set -u
         set -o xtrace
 
-        ln -s ~{blast_div}
-        ln -s ~{GXI}
-        ln -s ~{GXS}
-        ln -s ~{manifest}
-        ln -s ~{metaJSON}
-        ln -s ~{seq_info}
-        ln -s ~{taxa}
+        ## soft link in components of GX DB to a folder
+        mkdir gxdb
 
-        ln -s ~{assembly}
+        ln -s ~{blast_div} gxdb/
+        ln -s ~{GXI} gxdb/
+        ln -s ~{GXS} gxdb/
+        ln -s ~{manifest} gxdb/
+        ln -s ~{metaJSON} gxdb/
+        ln -s ~{seq_info} gxdb/
+        ln -s ~{taxa} gxdb/
 
-        python3 /app/bin/run_gx --fasta ~{assembly} --gx-db ~{GxDB} --out-dir . --tax-id 9606
-        zcat ~{assembly} | /app/bin/gx clean-genome --action-report ~{asm_name}.9606.fcs_gx_report.txt --output ~{asm_name}.GXclean.fasta --contam-fasta-out ~{asm_name}.GXcontam.fasta 
+        mkdir gx_out
+
+        ## run screen
+        python3 /app/bin/run_gx \
+            --fasta ~{assembly} \
+            --gx-db gxdb \
+            --out-dir gx_out \
+            --tax-id ~{taxon_id}
+        
+        ## remove any found contamination
+        zcat ~{assembly} \
+            | /app/bin/gx clean-genome \
+            --action-report gx_out/*.~{taxon_id}.fcs_gx_report.txt \
+            --output ~{asm_name}.GXclean.fasta \
+            --contam-fasta-out ~{asm_name}.GXcontam.fasta 
 
         gzip ~{asm_name}.GXclean.fasta
         gzip ~{asm_name}.GXcontam.fasta
@@ -126,9 +144,10 @@ task FCSGX {
     >>>
 
     output {
-        File GxCleanFasta = "~{asm_name}.GXclean.fasta.gz"
-        File contamFasta = "~{asm_name}.GXcontam.fasta.gz"
-        File report = "~{asm_name}.9606.fcs_gx_report.txt"
+        File GxCleanFasta    = "~{asm_name}.GXclean.fasta.gz"
+        File contamFasta     = "~{asm_name}.GXcontam.fasta.gz"
+        File gx_report       = glob("gx_out/*.fcs_gx_report.txt")[0]
+        File taxonomy_report = glob("gx_out/*.taxonomy.rpt")[0]
         
     }
 
@@ -136,7 +155,8 @@ task FCSGX {
         memory: memSizeGB + " GB"
         disks: "local-disk " + diskSizeGB + " SSD"
         preemptible : preemptible
-        docker: 'ncbi/fcs-gx:0.4.0'
+        cpu: threadCount
+        docker: 'ncbi/fcs-gx:0.5.0'
     }
 }
 
@@ -161,26 +181,29 @@ task FCS_adapter {
 
         # Run the adapter script 
 
-        /app/fcs/bin/av_screen_x -o . --euk ~{GxCleanFasta}
+        /app/fcs/bin/av_screen_x \
+            -o . \
+            --euk \
+            ~{GxCleanFasta}
+        
+        mv fcs_adaptor_report.txt ~{asm_name}.fcs_adaptor_report.txt
         mv cleaned_sequences/* ~{asm_name}.clean.fa # the output of FCS adapter is not actually gzipped
 
-        rm -rf cleaned_sequences/
-
         gzip ~{asm_name}.clean.fa
-
         
     >>>
 
     output {
         File cleanFasta = "~{asm_name}.clean.fa.gz"
-        File adapter_Report = "fcs_adaptor_report.txt"
+        File adapter_Report = "~{asm_name}.fcs_adaptor_report.txt"
     }
 
     runtime {
         memory: memSizeGB + " GB"
         preemptible : preemptible
+        cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "ncbi/fcs-adaptor:0.4.0"
+        docker: "ncbi/fcs-adaptor:0.5.0"
     }
 }
 
