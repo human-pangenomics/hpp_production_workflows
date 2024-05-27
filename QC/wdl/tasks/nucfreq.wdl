@@ -563,10 +563,19 @@ task filter_nucfreq {
 
         wget https://raw.githubusercontent.com/emics57/nucfreqPipeline/21b3395a7f285962aae9e881db2514e03601c5db/nucfreq_filtering_migalab.R
 
-        Rscript nucfreq_filtering_migalab.R \
-            ~{nucfreq_loci_bed} \
-            ~{file_prefix}_errors.bed \
-            ~{otherArgs}
+        # Check if the file has more than zero lines
+        line_count=$(wc -l < "~{nucfreq_loci_bed}")
+
+        # Create empty output file if nucfreq_loci_bed is empty
+        # (can happen when a contig like mito doesn't have any coverage)
+        if [ "$line_count" -le 1 ]; then
+            touch "~{file_prefix}_errors.bed"
+        else
+            Rscript nucfreq_filtering_migalab.R \
+                ~{nucfreq_loci_bed} \
+                ~{file_prefix}_errors.bed \
+                ~{otherArgs}
+        fi 
   >>>  
 
   output {
