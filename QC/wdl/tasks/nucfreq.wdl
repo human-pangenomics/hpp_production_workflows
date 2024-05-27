@@ -547,8 +547,8 @@ task filter_nucfreq {
         String otherArgs   = ""
 
         Int threadCount    = 4   
-        Int memSizeGB      = 16
-        Int addldisk       = 32    
+        Int memSizeGB      = 96
+        Int addldisk       = 96    
         String dockerImage = "rocker/verse@sha256:56e60da5b006e1406967e58ad501daaba567d6836029aee94ed16ba1965554f0" # 4.3.1
     }
     String file_prefix = basename(nucfreq_loci_bed, ".bed")
