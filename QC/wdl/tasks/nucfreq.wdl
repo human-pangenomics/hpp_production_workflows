@@ -43,6 +43,7 @@ workflow runNucFreq {
     }
 
     scatter (genome_bed in create_genome_beds.genome_beds) {
+        ## call nucfreq on each region
         call nucfreq_counts {
             input:
                 input_bam     = filter_bam.nucfreq_filt_bam,
@@ -50,9 +51,16 @@ workflow runNucFreq {
                 regions_bed   = genome_bed
         }
 
+        ## create beds for 1st/2nd allele, plus traditional nucfreq format
         call create_nucfreq_output {
             input:
                 nucfreq_counts_txt = nucfreq_counts.nucfreq_counts_txt
+        }
+
+        ## filter in for loop to avoid dealing with 200GB bed file
+        call filter_nucfreq {
+            input:
+                nucfreq_loci_bed = create_nucfreq_output.nucfreq_bed
         }
 
     }
@@ -74,16 +82,10 @@ workflow runNucFreq {
 
     call combine_beds as combine_nucfreq_bed {
         input:
-            beds         = create_nucfreq_output.nucfreq_bed,
+            beds         = filter_nucfreq.variant_clusters_bed,
             prefix       = output_prefix,
             tag          = "nucfreq"            
     }    
-
-
-    call filter_nucfreq {
-        input:
-            nucfreq_loci_bed = combine_nucfreq_bed.output_bed
-    }
 
     call bedgraph_to_bigwig as first_allele_bw {
         input:
@@ -98,12 +100,12 @@ workflow runNucFreq {
     }       
 
     output {
-        ## If regions were passed as inputs
-        File nucplot_image_tar        = nucfreq.nucplot_images
-        File nucfreq_all_bed          = combine_nucfreq_bed.output_bed       
-        File error_clusters_bed       = filter_nucfreq.variant_clusters_bed        
+        File error_clusters_bed       = combine_nucfreq_bed.output_bed       
         File first_allele_bigwig      = first_allele_bw.bigwig
         File second_allele_bigwig     = second_allele_bw.bigwig
+
+        ## If regions were passed as inputs
+        File nucplot_image_tar        = nucfreq.nucplot_images
     }
 }
 
