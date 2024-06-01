@@ -544,7 +544,8 @@ task filter_nucfreq {
     input{
         File nucfreq_loci_bed
 
-        String otherArgs   = ""
+        Int clusterSize        = 500
+        Int variantsPerCluster = 5
 
         Int threadCount    = 4   
         Int memSizeGB      = 96
@@ -562,6 +563,7 @@ task filter_nucfreq {
         set -eux -o pipefail
 
         wget https://raw.githubusercontent.com/emics57/nucfreqPipeline/21b3395a7f285962aae9e881db2514e03601c5db/nucfreq_filtering_migalab.R
+        wget https://raw.githubusercontent.com/emics57/nucfreqPipeline/89b1b9a980f78b63e2a79ca2e122269bf284df41/nucfreq_filtering_migalab.R
 
         # Check if the file has more than zero lines
         line_count=$(wc -l < "~{nucfreq_loci_bed}")
@@ -574,9 +576,15 @@ task filter_nucfreq {
             Rscript nucfreq_filtering_migalab.R \
                 ~{nucfreq_loci_bed} \
                 ~{file_prefix}_errors.bed \
-                ~{otherArgs}
+                ~{clusterSize} \
+                ~{variantsPerCluster}
+
+            ## remove header line (to avoid problems with concatenations)
+            ## header was uncommented...
+            ## chr  start   end het_ratio   het_length
+            sed -i '1d' ~{file_prefix}_errors.bed
         fi 
-  >>>  
+  >>> 
 
   output {
     File variant_clusters_bed = "~{file_prefix}_errors.bed"
