@@ -2,7 +2,7 @@
 
 *The [Human Pangenome Reference Consortium's](https://humanpangenome.org/) assembly production pipeline is detailed below.*
 
-![Assembly Process](https://github.com/human-pangenomics/hpp_production_workflows/blob/master/docs/imgs/hprc_assembly_steps.jpeg?raw=true)
+![Assembly Process](https://github.com/human-pangenomics/hpp_production_workflows/blob/master/docs/imgs/hprc_assembly_steps.png?raw=true)
 
 This repository includes WDLs run by the HPRC as part of it's production efforts. If you are unable to run WDL workflows each section includes an "equivalent" command which should produce the same or equivalent outputs to the WDL.
 
