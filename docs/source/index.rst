@@ -12,9 +12,3 @@ The Human Pangenome Reference Consortium's assembly production pipeline:
 .. image:: imgs/hprc_assembly_steps.jpeg
    :alt: alternative text
    :width: 600px
-
-
-Assembly Process
-
-
-
