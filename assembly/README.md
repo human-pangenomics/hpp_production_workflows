@@ -38,7 +38,7 @@ cutadapt \
     --discard-trimmed \
     -o ${PREFIX}.filt.fastq.gz \
     ${readFastqGz} \
-    -j ~{threadCount} \
+    -j ${threadCount} \
     --revcomp \
     -e 0.05
 ```
@@ -91,13 +91,13 @@ childReadsHiFi=$(IFS=' '; echo "${childReadsHiFi[*]}")
 hifiasm \
     --telo-m CCCTAA \
     --dual-scaf \
-    --ul-cut ~{minOntReadLength} \
-    -t~{threadCount} \    
-    -o ~{childID} \
+    --ul-cut ${minOntReadLength} \
+    -t${threadCount} \    
+    -o ${childID} \
     --ul "${childReadsUL}" \
-    --hom-cov ~{homCov} \
-    -1 "~{paternalYak}" \
-    -2 "~{maternalYak}" \
+    --hom-cov ${homCov} \
+    -1 "${paternalYak}" \
+    -2 "${maternalYak}" \
     "${childReadsHiFi}"
 ```
 
@@ -117,11 +117,11 @@ childReadsHiFi=$(IFS=' '; echo "${childReadsHiFi[*]}")
 hifiasm \
     --telo-m CCCTAA \
     --dual-scaf \
-    --ul-cut ~{minOntReadLength} \
-    -t~{threadCount} \    
-    -o ~{childID} \
+    --ul-cut ${minOntReadLength} \
+    -t${threadCount} \    
+    -o ${childID} \
     --ul "${childReadsUL}" \
-    --hom-cov ~{homCov} \
+    --hom-cov ${homCov} \
     --h1 "${childReadsHiC1}" \
     --h2 "${childReadsHiC2}"  \
     "${childReadsHiFi}"
@@ -142,30 +142,29 @@ Hi-C phased assemblies produced by hifiasm place contigs from chromosome Y in bo
 yak sexchr \
     -K2g \
     -t16 \
-    ~{chrY_no_par_yak} \
-    ~{chrX_no_par_yak} \
-    ~{par_yak} \
-    ~{hap1_gz} \
-    ~{hap2_gz} \
+    ${chrY_no_par_yak} \
+    ${chrX_no_par_yak} \
+    ${par_yak} \
+    ${hap1_gz} \
+    ${hap2_gz} \
     > cnt.txt
 
 groupxy.pl \
     cnt.txt \
     | awk '$4==1' | cut -f2 \
         | seqtk subseq -l60 \
-        <(zcat ~{hap1_gz} ~{hap2_gz}) - \
+        <(zcat ${hap1_gz} ${hap2_gz}) - \
         | pigz \
-        > ~{childID}.hap1.corrected.fa.gz
+        > ${childID}.hap1.corrected.fa.gz
 
 groupxy.pl \
     cnt.txt | \
     awk '$4==2' | cut -f2 \
         | seqtk subseq -l60 \
-        <(zcat ~{hap1_gz} ~{hap2_gz}) - \
+        <(zcat ${hap1_gz} ${hap2_gz}) - \
         | pigz \
-        > ~{childID}.hap2.corrected.fa.gz
+        > ${childID}.hap2.corrected.fa.gz
 ```
 
 </details>
-
 
