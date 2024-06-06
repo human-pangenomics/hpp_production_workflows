@@ -2,7 +2,7 @@
 
 # -- Project information
 
-project = 'HPRC Metadata'
+project = 'HPP Production Workflows'
 copyright = '2024, Blair'
 author = 'Andrew Blair'
 
