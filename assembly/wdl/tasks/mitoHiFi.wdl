@@ -3,7 +3,7 @@ version 1.0
 import "../../../QC/wdl/tasks/extract_reads_toGZ.wdl" as extractReadsToGZ_t
 
 
-workflow mitoHifi {
+workflow mitoHifiWorkflow {
 
     input {
         File related_mito_fasta
