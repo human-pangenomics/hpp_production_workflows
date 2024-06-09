@@ -76,13 +76,16 @@ workflow mitoHifiWorkflow {
 
     output {
         ## MitoHiFi outputs
-        File mitoHiFi_assembly     = mitoHifi.mito_assembly
-        File mitoHiFi_stats        = mitoHifi.mito_assembly_stats
-        File mitoHiFi_output_tar   = mitoHifi.assembly_tar
+        File mitoHiFi_assembly             = mitoHifi.mito_assembly
+        File mitoHiFi_stats                = mitoHifi.mito_assembly_stats
+        File mitoHiFi_output_tar           = mitoHifi.assembly_tar
+        
+        ## paf of read alignments to concatenated mito (for troublshooting cutoffs)
+        Array[File?] read_to_concatmito_paf = findMitoReads.read_aligned_to_concat_mito
 
         ## mito assembly evaluations
-        File mitoHiFi_eval_bam     = mitoAssemblyVariants.mito_asm_on_ref_bam
-        File mitoHiFi_eval_vcf     = mitoAssemblyVariants.mito_asm_on_ref_vcf
+        File mitoHiFi_eval_bam             = mitoAssemblyVariants.mito_asm_on_ref_bam
+        File mitoHiFi_eval_vcf             = mitoAssemblyVariants.mito_asm_on_ref_vcf
     }
 }
 
