@@ -61,7 +61,8 @@ workflow mitoHifi {
         input:
             related_mito_fasta   = related_mito_fasta,
             related_mito_genbank = related_mito_genbank,
-            hifi_reads           = hifi_for_assembly
+            hifi_reads           = hifi_for_assembly,
+            sample_id            = sample_id
     }
 
     ## align assembled genome against reference and call variants (to run in downstream QC)
