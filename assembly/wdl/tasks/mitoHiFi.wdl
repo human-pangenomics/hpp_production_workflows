@@ -13,7 +13,6 @@ workflow mitoHifiWorkflow {
 
         ## optional filtering of hifi reads based on alignment to ref
         Boolean filter_hifi = true
-        File? related_concat_mito_fasta
 
         ## for extracting reads to fastq.gz
         File? referenceFasta
