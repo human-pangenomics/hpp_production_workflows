@@ -15,9 +15,9 @@ workflow RunFCS{
 
         String taxon_id="9606" # Homo sapiens
 
-        Int threadCount
-        Int preemptible = 1
-        Int diskSizeGBGX  = 500
+        Int threadCount       = 24
+        Int preemptible       = 1
+        Int diskSizeGBGX      = 800
         Int diskSizeGBAdapter = 32
     }
 
