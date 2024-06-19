@@ -26,7 +26,7 @@ task compleasm {
         Int threadCount    = 24    
         Int memSizeGB      = 48
         Int diskSizeGB     = 64    
-        String dockerImage = "huangnengcsu/compleasm@sha256:795bcdceaa25f15c14b11f2b8c5034423e5efc3310003746beb2d3ae09194d7d" # v0.2.5
+        String dockerImage = "huangnengcsu/compleasm@sha256:34643e3ebbc9a2dde9d648434e1b79cc576b38967cad86341622de5701da8ede" # v0.2.6
     }
 
     parameter_meta {
@@ -40,11 +40,6 @@ task compleasm {
 
         # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
-
-        ## use updated version (since 0.2.5) of compleasm to:
-        ##     1. fix problem with fragmented gene counts
-        ##     2. allow the use of filtered/custom lineages
-        wget https://raw.githubusercontent.com/huangnengCSU/compleasm/fa78bec4e903fd78c1c9c8a32da6889da0406824/compleasm.py
         
         ## extract lineage_tar to the expected directory
         mkdir mb_download
@@ -68,7 +63,7 @@ task compleasm {
         ## Actual run: miniprot --> hmm filter --> summarize
         ## This command includes the lineage folder due to how long the download takes using
         ## the compleasm download/run commands
-        python compleasm.py run \
+        compleasm run \
           -a ~{assembly} \
           -o ${FILEPREFIX}_compleasm \
           -t ~{threadCount} \
