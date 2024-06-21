@@ -60,7 +60,7 @@ In addition to the Hifiasm workflows there is an assembly cleanup workflow which
 
 ## Polishing
 
-Assemblies are polished using a custom pipeline based around [DeepPolisher](https://github.com/google/deeppolisher). The major steps in the HPRC assembly polishing pipeline are:
+Assemblies are polished using a custom pipeline based around [DeepPolisher](https://github.com/google/deeppolisher). The polishing pipeline workflow wdl can be found at `polishing/wdl/workflows/hprc_DeepPolisher.wdl`. The major steps in the HPRC assembly polishing pipeline are:
 * Alignment of all HiFi reads to the diploid assembly using [minimap2](https://github.com/lh3/minimap2)
 * Alignment of all ONT UL reads > 100kb separately to each haplotype assembly using [minimap2](https://github.com/lh3/minimap2)
 * [PHARAOH pipeline](https://github.com/miramastoras/PHARAOH). PHARAOH ensures optimal HiFi read phasing, by leveraging ONT UL information to assign HiFi reads to the correct haplotype in stretches of homozygosity longer than 20kb.
