@@ -66,7 +66,11 @@ task compleasm {
         ## Actual run: miniprot --> hmm filter --> summarize
         ## This command includes the lineage folder due to how long the download takes using
         ## the compleasm download/run commands
-        if [ "~{compleasm_script##*.}" = "py" ]; then
+        
+        ## put optional updated script into bash variable so we can check if it exists
+        UPDATED_SCRIPT="~{compleasm_script}"
+
+        if [ "${UPDATED_SCRIPT##*.}" = "py" ]; then
             python "~{compleasm_script}" run \
                 -a ~{assembly} \
                 -o ${FILEPREFIX}_compleasm \
