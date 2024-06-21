@@ -14,7 +14,7 @@ workflow runDeepPolisher {
         File Fasta
         File ModelFilesTarGZ
         String sampleName
-        String dockerImage
+        String dockerImage="google/deepconsensus:polisher_v0.0.8_12122023"
         Boolean useOptimalGQFilter=true
         String customGQFilter=""
     }
