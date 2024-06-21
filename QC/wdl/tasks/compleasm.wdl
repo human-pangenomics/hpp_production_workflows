@@ -23,6 +23,8 @@ task compleasm {
         String lineage     = "primates"
         String otherArgs   = ""
 
+        File? compleasm_script
+
         Int threadCount    = 24    
         Int memSizeGB      = 48
         Int diskSizeGB     = 64    
@@ -34,6 +36,7 @@ task compleasm {
         lineage: "(default is primates) Busco lineage name. For human use primates. This parameter must match the name of the folder that is extracted from the lineage_tar."
         lineage_tar: "BUSCO lineage downloaded with compleasm download command. Must match the lineage provided. Cannot use vanilla BUSCO lineages."
         otherArgs: "(default is empty string) Arguments to be passed to compleasm run command such as '--min_complete 0.9'"
+        compleasm_script: "(optional) If passed use this script to run compleasm. Useful for updates that haven't been pushed to the official Docker image."
     }
   
     command <<<
@@ -63,14 +66,24 @@ task compleasm {
         ## Actual run: miniprot --> hmm filter --> summarize
         ## This command includes the lineage folder due to how long the download takes using
         ## the compleasm download/run commands
-        compleasm run \
-          -a ~{assembly} \
-          -o ${FILEPREFIX}_compleasm \
-          -t ~{threadCount} \
-          -l ~{lineage} \
-          -L ./mb_download \
-          ~{otherArgs}
-
+        if [ -z "~{compleasm_script}" ]
+        then
+            python "~{compleasm_script}" run \
+                -a ~{assembly} \
+                -o ${FILEPREFIX}_compleasm \
+                -t ~{threadCount} \
+                -l ~{lineage} \
+                -L ./mb_download \
+                ~{otherArgs}
+        else
+            compleasm run \
+                -a ~{assembly} \
+                -o ${FILEPREFIX}_compleasm \
+                -t ~{threadCount} \
+                -l ~{lineage} \
+                -L ./mb_download \
+                ~{otherArgs}
+        fi
 
         ## copy and rename summary file for delocalization (keep original in place)
         cp ${FILEPREFIX}_compleasm/summary.txt ${FILEPREFIX}_compleasm.summary.txt
