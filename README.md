@@ -1,11 +1,11 @@
 # HPP Production Workflows
 
-This repository holds WDL workflows and Docker build scripts for 
+This repository holds WDL workflows and Docker build scripts for
 production workflows for data QC, assembly generation, and assembly QC used by the [Human Pangenome Reference Consortium](https://humanpangenome.org/).
 
 All WDLs and containers created in this repository are licensed under the MIT license. The underlying tools (that the WDLs and containers run) are likely covered under one or more Free and Open Source Software licenses, but we cannot make any guarantees to that fact.
 
------------------- 
+------------------
 
 ## Repository Organization
 Workflows are split across data_processing, assembly, and (assembly) QC folders; each with the following folder structure:
@@ -21,7 +21,7 @@ Workflows are split across data_processing, assembly, and (assembly) QC folders;
  ── wdl/
     └── tasks/
     │   └── taskName.wdl
-    └── workflows/ 
+    └── workflows/
         └── workFlowName.wdl
 ```
 
@@ -58,13 +58,21 @@ In addition to the Hifiasm workflows there is an assembly cleanup workflow which
 * Runs [MitoHiFi](https://github.com/marcelauliano/MitoHiFi) to assemble mitochondrial contigs
 * Assigns chromosome labels to fasta headers of T2T contigs/scaffolds
 
+## Polishing
+
+Assemblies are polished using a custom pipeline based around [DeepPolisher](https://github.com/google/deeppolisher). The polishing pipeline workflow wdl can be found at `polishing/wdl/workflows/hprc_DeepPolisher.wdl`. The major steps in the HPRC assembly polishing pipeline are:
+* Alignment of all HiFi reads to the diploid assembly using [minimap2](https://github.com/lh3/minimap2)
+* Alignment of all ONT UL reads > 100kb separately to each haplotype assembly using [minimap2](https://github.com/lh3/minimap2)
+* [PHARAOH pipeline](https://github.com/miramastoras/PHARAOH). PHARAOH ensures optimal HiFi read phasing, by leveraging ONT UL information to assign HiFi reads to the correct haplotype in stretches of homozygosity longer than 20kb.
+* [DeepPolisher](https://github.com/google/deeppolisher) is an encoder-only transformer model which is run on the PHARAOH-corrected HiFi alignments, to predict polishing edits in the assemblies.
+
 ## QC
 
 ### Automated Assembly QC
 
 Assembly QC is broken down into two types:
 * standard_qc: these tools are relatively fast to run and provide insight into the completeness, correctness, and contiguity of the assemblies.
-* alignment_based_qc: these tools rely on long read alignment of a sample's reads to it's own assembly. The alignments are then used to identify unexpected variation that indicates missassembly. 
+* alignment_based_qc: these tools rely on long read alignment of a sample's reads to it's own assembly. The alignments are then used to identify unexpected variation that indicates missassembly.
 
 The following tools are included in the standard_qc pipeline:
 * [asmgene](https://github.com/lh3/minimap2)
@@ -94,7 +102,7 @@ Before starting, read the [Cromwell 5 minute intro](https://cromwell.readthedocs
 Once you've done that, download the latest version of cromwell and make it executable. (Replace XY with newest version number)  
 ```
 wget https://github.com/broadinstitute/cromwell/releases/download/86/cromwell-XY.jar
-chmod +x cromwell-XY.jar 
+chmod +x cromwell-XY.jar
 ```
 
 And run your WDL:  
@@ -102,10 +110,10 @@ And run your WDL:
 java -jar cromwell-XY.jar run \
    /path/to/my_workflow.wdl \
    -i my_workflow_inputs.json \
-   > run_log.txt 
+   > run_log.txt
 ```
 
-### Input files 
+### Input files
 
 Each workflow requires an input json. You can create a template using womtool:
 
@@ -116,8 +124,3 @@ java -jar womtool-XY.jar \
     > my_workflow_inputs.json
 ```
 ------------------
-
-
-
-
-
