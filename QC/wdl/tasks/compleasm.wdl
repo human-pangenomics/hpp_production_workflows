@@ -51,7 +51,7 @@ task compleasm {
 
         ## Extract lineage_tar. This should be the entire download directory from a prior compleasm run
         ## or compleasm download command.
-        tar -zvf ~{lineage_tar}
+        tar -xzf ~{lineage_tar}
 
 
         ## Check that extracted lineage matches the lineage specified 
