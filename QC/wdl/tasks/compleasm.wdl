@@ -47,7 +47,8 @@ task compleasm {
         ## Find name of the lineage download folder. It is mb_download by convention
         ## but could be named something else. This is the folder which lineages are 
         ## downloaded into, so a primate lineage will also contain a eukaryote lineage, for example.
-        LINEAGE_DOWNLOAD_DIR=$(tar -tzf ~{lineage_tar} | head -1 | cut -d/ -f1)
+        # LINEAGE_DOWNLOAD_DIR=$(tar -tzf ~{lineage_tar} | head -1 | cut -d/ -f1)
+        LINEAGE_DOWNLOAD_DIR="mb_download"
 
         ## Extract lineage_tar. This should be the entire download directory from a prior compleasm run
         ## or compleasm download command.
