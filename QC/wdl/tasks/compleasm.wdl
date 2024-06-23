@@ -53,13 +53,6 @@ task compleasm {
         ## or compleasm download command.
         tar -xzf ~{lineage_tar}
 
-
-        ## Check that extracted lineage matches the lineage specified 
-        if [[ ! -d "${LINEAGE_DOWNLOAD_DIR}/~{lineage}_odb10" && ! -d "${LINEAGE_DOWNLOAD_DIR}/~{lineage}" ]]; then
-            echo "lineage tar must create a folder with same name as lineage provided"
-            exit 1
-        fi
-
         ## get assembly prefix, remove fa, fa.gz, fasta, fasta.gz suffixes
         FILEPREFIX=$(basename ~{assembly} | sed 's/\(.*\)\(\.fa\|\.fa\.gz\|\.fasta\|\.fasta\.gz\)$/\1/')
 
