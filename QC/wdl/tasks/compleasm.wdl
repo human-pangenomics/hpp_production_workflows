@@ -48,7 +48,7 @@ task compleasm {
         mkdir mb_download
         cd mb_download
 
-        tar -zxvf ~{lineage_tar}
+        tar -zvf ~{lineage_tar}
         touch ~{lineage}.done
 
         ## Check that extracted lineage matches the lineage specified 
