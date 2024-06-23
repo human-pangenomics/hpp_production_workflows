@@ -34,7 +34,7 @@ task compleasm {
     parameter_meta {
         assembly: "Assembly to analyze for gene completeness in BUSCO genes."
         lineage: "(default is primates) Busco lineage name. For human use primates. This parameter must match the name of the folder that is extracted from the lineage_tar."
-        lineage_tar: "BUSCO lineage downloaded with compleasm download command. Must match the lineage provided. Cannot use vanilla BUSCO lineages."
+        lineage_tar: "BUSCO lineage download folder -- output of compleasm download command or prior compleasm run. Must match the lineage provided. Cannot use vanilla BUSCO lineages."
         otherArgs: "(default is empty string) Arguments to be passed to compleasm run command such as '--min_complete 0.9'"
         compleasm_script: "(optional) If passed use this script to run compleasm. Useful for updates that haven't been pushed to the official Docker image."
     }
@@ -44,20 +44,21 @@ task compleasm {
         # exit when a command fails, fail with unset variables, print commands before execution
         set -eux -o pipefail
         
-        ## extract lineage_tar to the expected directory
-        mkdir mb_download
-        cd mb_download
+        ## Find name of the lineage download folder. It is mb_download by convention
+        ## but could be named something else. This is the folder which lineages are 
+        ## downloaded into, so a primate lineage will also contain a eukaryote lineage, for example.
+        LINEAGE_DOWNLOAD_DIR=$(tar -tzf ~{lineage_tar} | head -1 | cut -d/ -f1)
 
+        ## Extract lineage_tar. This should be the entire download directory from a prior compleasm run
+        ## or compleasm download command.
         tar -zvf ~{lineage_tar}
-        touch ~{lineage}.done
+
 
         ## Check that extracted lineage matches the lineage specified 
-        if [[ ! -d "~{lineage}_odb10" && ! -d "~{lineage}" ]]; then
+        if [[ ! -d "${LINEAGE_DOWNLOAD_DIR}/~{lineage}_odb10" && ! -d "${LINEAGE_DOWNLOAD_DIR}/~{lineage}" ]]; then
             echo "lineage tar must create a folder with same name as lineage provided"
             exit 1
         fi
-
-        cd ..
 
         ## get assembly prefix, remove fa, fa.gz, fasta, fasta.gz suffixes
         FILEPREFIX=$(basename ~{assembly} | sed 's/\(.*\)\(\.fa\|\.fa\.gz\|\.fasta\|\.fasta\.gz\)$/\1/')
@@ -76,7 +77,7 @@ task compleasm {
                 -o ${FILEPREFIX}_compleasm \
                 -t ~{threadCount} \
                 -l ~{lineage} \
-                -L ./mb_download \
+                -L "$LINEAGE_DOWNLOAD_DIR" \
                 ~{otherArgs}
         else
             compleasm run \
@@ -84,7 +85,7 @@ task compleasm {
                 -o ${FILEPREFIX}_compleasm \
                 -t ~{threadCount} \
                 -l ~{lineage} \
-                -L ./mb_download \
+                -L "$LINEAGE_DOWNLOAD_DIR" \
                 ~{otherArgs}
         fi
 
