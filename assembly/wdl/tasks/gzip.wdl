@@ -26,7 +26,7 @@ task gzip {
         set -o xtrace
         
         FILENAME=$(basename "~{fileInput}")
-        ln ~{fileInput} ${FILENAME}
+        ln -s ~{fileInput} ${FILENAME}
         pigz -p~{threadCount} -c ${FILENAME} > ${FILENAME}.gz
     >>> 
     runtime {
