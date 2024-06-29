@@ -22,7 +22,8 @@ task filter_fastq {
         Int memSizeGB   = 8
         Int addldisk    = 32
 
-        String dockerImage = "quay.io/biocontainers/seqkit:0.15.0--0"
+        ## be careful on versions: too early and compressed outputs aren't supported
+        String dockerImage = "quay.io/biocontainers/seqkit@sha256:19909297560a4e91a72bca1c2ee26c16b45a2a12e211b6f1434098c419ec840f" # 2.5.1--h9ee0642_0
     }
 
     Int fastq_size = ceil(size(input_fastq, "GB"))    
