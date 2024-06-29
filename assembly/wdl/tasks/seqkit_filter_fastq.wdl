@@ -5,7 +5,7 @@ workflow seqkit_filter_fastq {
     call filter_fastq
 
     output {
-        File output_fa_gz = filter_fastq.filteredFasta
+        File seqkit_filtered_fq = filter_fastq.filteredFastq
     }
 }
 
@@ -48,7 +48,7 @@ task filter_fastq {
 
     output {
 
-        File filteredFasta = output_name
+        File filteredFastq = output_name
     }
 
     runtime {
