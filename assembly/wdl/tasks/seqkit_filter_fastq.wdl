@@ -15,8 +15,8 @@ task filter_fastq {
     input {
         File input_fastq
 
-        Int min_size    = 100
-        Int min_q       = 10
+        Int min_size    = -1
+        Float min_q     = 10
         
         Int threadCount = 4
         Int memSizeGB   = 8
@@ -39,8 +39,8 @@ task filter_fastq {
         set -o xtrace
 
         seqkit seq \
-            -m ~{min_size} \
-            -Q ~{min_q} \
+            --min-len ~{min_size} \
+            --min-qual ~{min_q} \
             ~{input_fastq} \
             -o ~{output_name}
 
