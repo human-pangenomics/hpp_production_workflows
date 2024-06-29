@@ -66,8 +66,6 @@ workflow runTrioHifiasm{
                     dockerImage=dockerImage
             }
             
-            Int childReadULSize = floor(size(childReadsOntExtractedGz.extractedRead, 'GB'))
-            
             # filter ONT reads for quality
             if (defined(min_ont_qscore)) {
                 call seqkit_filter_wf.filter_fastq as qscore_filter_ont {
@@ -76,10 +74,9 @@ workflow runTrioHifiasm{
                         min_size     = minOntReadLength,
                         min_q        = min_ont_qscore
                 }
-                ## override size with new (presumably smaller) size for filtered data
-                Int childReadULSize = floor(size(qscore_filter_ont.filteredFastq, 'GB'))
             }
             File ont_reads = select_first([qscore_filter_ont.filteredFastq, childReadsOntExtractedGz.extractedRead])
+            Int childReadULSize = floor(size(ont_reads, 'GB'))
          }
     }
 
