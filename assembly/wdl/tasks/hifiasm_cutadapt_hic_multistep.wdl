@@ -2,7 +2,7 @@ version 1.0
 
 import "../../../QC/wdl/tasks/extract_reads_toGZ.wdl" as extractReadsToGZ_t
 import "filter_hifi_adapter.wdl" as adapter_t
-
+import "seqkit_filter_fastq.wdl" as seqkit_filter_wf
 
 workflow runHiCHifiasm{
     input {
@@ -17,6 +17,7 @@ workflow runHiCHifiasm{
         File? inputBinFilesTarGz
         File? referenceFasta
         Boolean filterAdapters
+        Int? min_ont_qscore        
         Array[Float] offsetMem = [40, 20, 20]
         Array[Float] memCovRatios = [4.7, 3.8, 3.6]
         String excludeStringReadExtraction=""
@@ -64,13 +65,27 @@ workflow runHiCHifiasm{
                     diskSizeGB=fileExtractionDiskSizeGB,
                     dockerImage=dockerImage
             }
-         }
+            
+            Int childReadULSize = floor(size(childReadsOntExtractedGz.extractedRead, 'GB'))
+            
+            # filter ONT reads for quality
+            if (defined(min_ont_qscore)) {
+                call seqkit_filter_wf.filter_fastq as qscore_filter_ont {
+                    input:
+                        input_fastq  = childReadsOntExtractedGz.extractedRead,
+                        min_size     = minOntReadLength,
+                        min_q        = min_ont_qscore
+                }
 
-         Int childReadULSize = floor(size(childReadsOntExtractedGz.extractedRead, 'GB'))
+                Int filtChildReadULSize = floor(size(qscore_filter_ont.filteredFastq, 'GB'))
+            }
+            File ont_reads = select_first([qscore_filter_ont.filteredFastq, childReadsOntExtractedGz.extractedRead])
+         }
     }
 
     # if no ONT data is provided then it would be zero
-    Int readULSize = select_first([childReadULSize, 0])
+    Int readULSize = select_first([filtChildReadULSize, childReadULSize, 0])
+
 
     call hicHifiasm as hifiasmStep1{
         input:
@@ -87,7 +102,7 @@ workflow runHiCHifiasm{
     }
     call hicHifiasm as hifiasmStep2{
         input:
-            childReadsUL=childReadsOntExtractedGz.extractedRead, 
+            childReadsUL=ont_reads, 
             homCov = homCov,
             minOntReadLength = minOntReadLength,
             childID=childID,
@@ -102,7 +117,7 @@ workflow runHiCHifiasm{
     }
     call hicHifiasm as hifiasmStep3{
         input:
-            childReadsUL=childReadsOntExtractedGz.extractedRead, # optional argument
+            childReadsUL=ont_reads,
             childReadsHiC1=childReadsHiC1,
             childReadsHiC2=childReadsHiC2,
             homCov = homCov,
