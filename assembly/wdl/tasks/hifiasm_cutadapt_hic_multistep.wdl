@@ -76,15 +76,15 @@ workflow runHiCHifiasm{
                         min_size     = minOntReadLength,
                         min_q        = min_ont_qscore
                 }
-
-                Int filtChildReadULSize = floor(size(qscore_filter_ont.filteredFastq, 'GB'))
+                ## override size with new (presumably smaller) size for filtered data
+                Int childReadULSize = floor(size(qscore_filter_ont.filteredFastq, 'GB'))
             }
             File ont_reads = select_first([qscore_filter_ont.filteredFastq, childReadsOntExtractedGz.extractedRead])
          }
     }
 
     # if no ONT data is provided then it would be zero
-    Int readULSize = select_first([filtChildReadULSize, childReadULSize, 0])
+    Int readULSize = select_first([childReadULSize, 0])
 
 
     call hicHifiasm as hifiasmStep1{
