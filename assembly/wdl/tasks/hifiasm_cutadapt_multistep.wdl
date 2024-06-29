@@ -76,13 +76,10 @@ workflow runTrioHifiasm{
                 }
             }
             File ont_reads = select_first([qscore_filter_ont.filteredFastq, childReadsOntExtractedGz.extractedRead])
-            Int childReadULSize = floor(size(ont_reads, 'GB'))
          }
     }
-
     # if no ONT data is provided then it would be zero
-    Int readULSize = select_first([childReadULSize, 0])    
-
+    Float readULSize = select_first([size(ont_reads, 'GB'), 0])    
 
     call trioHifiasm as hifiasmStep1{
         input:
