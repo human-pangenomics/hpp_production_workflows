@@ -1,7 +1,7 @@
 # Definitions
 repository = humanpangenomics
 identifier = hpp_paftools
-version = 0.0.0
+version = 2.28-r1209
 git_commit ?= $(shell git log --pretty=oneline -n 1 | cut -f1 -d " ")
 name = ${repository}/${identifier}
 tag = ${version}--${git_commit}

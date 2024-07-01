@@ -5,7 +5,7 @@ WORKDIR /opt
 
 RUN git clone https://github.com/lh3/minimap2 && \
 	cd minimap2 && \
-	git reset --hard 67dd906a80988dddacc8c551623fdc75b0c12dd2 && \
+	git reset --hard 8170693de39b667d11c8931d343c94a23a7690d2 && \
 	make
 
 ENV PATH="/opt/minimap2:/opt/minimap2/misc:$PATH"
