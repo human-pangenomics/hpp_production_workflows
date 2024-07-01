@@ -23,7 +23,7 @@ task minigraphMap {
         Int threadCount = 8
         Int memSizeGB   = 64
         Int diskSizeGB  = 64
-        String dockerImage = "humanpangenomics/hpp_minigraph:latest"
+        String dockerImage = "humanpangenomics/hpp_minigraph@sha256:51cbfe78ca8b9c47de415c2f72a534c6124cd8224302fb2ae3d6e4707c2618df" # v0.21
     }
 
     String outputPafGz = "${sampleName}.${outputFileTag}.paf.gz"
@@ -32,21 +32,13 @@ task minigraphMap {
 
         set -eux -o pipefail
         
-
-        inputFastaFN=$(basename -- "~{inputFasta}")
-
-        ## first check if inputFasta needs to be unzipped
-        if [[ $inputFastaFN =~ \.gz$ ]]; then
-            cp ~{inputFasta} .
-            gunzip -f $inputFastaFN
-            inputFastaFN="${inputFastaFN%.gz}"
-        else
-            ln -s ~{inputFasta}
-        fi 
-
-
         ## Run minigraph
-        minigraph -t ~{threadCount} ~{args} ~{inputGraph} ${inputFastaFN} | gzip > ~{outputPafGz}
+        minigraph \
+            -t ~{threadCount} \
+            ~{args} \
+            ~{inputGraph} \
+            ~{inputFasta} \
+            | gzip > ~{outputPafGz}
 
     >>>
 
