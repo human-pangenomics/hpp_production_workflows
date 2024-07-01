@@ -1,7 +1,7 @@
 # Definitions
 repository = humanpangenomics
 identifier = hpp_minigraph
-version = 0.0.0
+version = 0.21
 git_commit ?= $(shell git log --pretty=oneline -n 1 | cut -f1 -d " ")
 name = ${repository}/${identifier}
 tag = ${version}--${git_commit}
