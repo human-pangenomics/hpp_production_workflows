@@ -9,7 +9,7 @@ workflow hifi_qc_wf {
         File hifi_reads
         Array[File] other_reads
         String sample_id
-        Boolean perform_methylation_check = false  # Optional input to perform methylation check
+        Boolean perform_methylation_check = true  # Optional input to perform methylation check
     }
 
     parameter_meta {
@@ -20,8 +20,8 @@ workflow hifi_qc_wf {
     }
 
     meta {
-        author: "Julian Lucas, Andrew Blair"
-        email: "juklucas@ucsc.edu, apblair@ucsc.edu"
+        maintainer: "Andrew Blair"
+        email: "apblair@ucsc.edu"
     }
     
     call read_stats_wf.runReadStats as read_stats {
@@ -67,7 +67,7 @@ workflow hifi_qc_wf {
         File ext_ntsm_counts = ntsm_wf.ntsm_count_2
         File ntsm_eval = ntsm_wf.ntsm_eval_out
         File hifi_qc_summary = summarize_hifi_qc.summary_file
-        Array[File]? methylation_report = if (perform_methylation_check) then methylation.methylation_outputs else []
+
     }
 }
 
