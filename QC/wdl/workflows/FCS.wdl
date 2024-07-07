@@ -156,7 +156,7 @@ task FCSGX {
         disks: "local-disk " + diskSizeGB + " SSD"
         preemptible : preemptible
         cpu: threadCount
-        docker: 'ncbi/fcs-gx:0.5.0'
+        docker: 'ncbi/fcs-gx:0.5.4'
     }
 }
 
@@ -203,7 +203,7 @@ task FCS_adapter {
         preemptible : preemptible
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "ncbi/fcs-adaptor:0.5.0"
+        docker: "ncbi/fcs-adaptor:0.5.4"
     }
 }
 
