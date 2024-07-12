@@ -1,8 +1,8 @@
 version 1.0
 
+import "../tasks/methylationCheck.wdl" as meth_check
 import "../tasks/read_stats.wdl" as read_stats_wf
 import "../tasks/ntsm.wdl" as ntsm_check
-import "../tasks/methylationCheck.wdl" as meth_check  
 
 workflow hifi_qc_wf {
     input {
@@ -23,7 +23,16 @@ workflow hifi_qc_wf {
         maintainer: "Andrew Blair"
         email: "apblair@ucsc.edu"
     }
-    
+
+    # Optional methylation check
+    if (perform_methylation_check) {
+        call meth_check.methylationWorkflow as methylation {
+            input:
+                bam_files = [hifi_reads],
+                sample_id = sample_id
+        }
+    }
+
     call read_stats_wf.runReadStats as read_stats {
         input: 
             reads = [hifi_reads],
@@ -39,22 +48,12 @@ workflow hifi_qc_wf {
             read_2_type = "other"
     }
 
-    # Optional methylation check
-    if (perform_methylation_check) {
-        call meth_check.methylationWorkflow as methylation {
-            input:
-                bam_files = [hifi_reads],
-                sample_id = sample_id
-        }
-    }
-    
-
     call summarize_hifi_qc {
         input:
             ntsm_output = ntsm_wf.ntsm_eval_out,
             readstat_report = read_stats.ReadStatsReport,
             file_name = sample_id,
-            methylation_report = select_first([if (perform_methylation_check) then methylation.methylation_outputs else []])
+            methylation_report = select_first([if (perform_methylation_check) then methylation.methylation_summary else ""])
     }
 
     output {
@@ -66,8 +65,11 @@ workflow hifi_qc_wf {
         File hifi_ntsm_counts = ntsm_wf.ntsm_count_1
         File ext_ntsm_counts = ntsm_wf.ntsm_count_2
         File ntsm_eval = ntsm_wf.ntsm_eval_out
+        ## methylation check output
+        File? methylation_report = select_first([if (perform_methylation_check) then methylation.methylation_summary else ""])
         File hifi_qc_summary = summarize_hifi_qc.summary_file
 
+  
     }
 }
 
@@ -76,7 +78,7 @@ task summarize_hifi_qc {
         File ntsm_output
         File readstat_report
         String file_name
-        Array[File]? methylation_report
+        File? methylation_report
 
         Int memSizeGB = 4
         Int threadCount = 1
@@ -85,44 +87,50 @@ task summarize_hifi_qc {
     }
 
     command <<<
-		set -eux -o pipefail
+        set -eux -o pipefail
 
-		# Define file paths
-		readstat_file="~{readstat_report}"
-		ntsm_file="~{ntsm_output}"
-		output_file="~{file_name}.summary.tsv"
+        # Log the input files
+        echo "Read stats file: ~{readstat_report}"
+        echo "NTSM output file: ~{ntsm_output}"
+        echo "Methylation report: ~{methylation_report}"
 
-		# Extract values from the TSV file using awk
-		total_reads=$(awk -F'\t' 'NR==2 {print $3}' ${readstat_file})
-		total_bp=$(awk -F'\t' 'NR==3 {print $3}' ${readstat_file})
-		total_Gbp=$(awk -F'\t' 'NR==4 {print $3}' ${readstat_file})
-		total_min=$(awk -F'\t' 'NR==5 {print $3}' ${readstat_file})
-		total_max=$(awk -F'\t' 'NR==6 {print $3}' ${readstat_file})
-		total_mean=$(awk -F'\t' 'NR==7 {print $3}' ${readstat_file})
-		quartile_25=$(awk -F'\t' 'NR==8 {print $3}' ${readstat_file})
-		quartile_50=$(awk -F'\t' 'NR==9 {print $3}' ${readstat_file})
-		quartile_75=$(awk -F'\t' 'NR==10 {print $3}' ${readstat_file})
-		N25=$(awk -F'\t' 'NR==11 {print $3}' ${readstat_file})
-		N50=$(awk -F'\t' 'NR==12 {print $3}' ${readstat_file})
-		N75=$(awk -F'\t' 'NR==13 {print $3}' ${readstat_file})
+        # Define file paths
+        readstat_file="~{readstat_report}"
+        ntsm_file="~{ntsm_output}"
+        output_file="~{file_name}.summary.tsv"
+        temp_file="~{file_name}.temp.tsv"
 
-		# Initialize methylation_status as "N/A"
-		methylation_status="N/A"
+        # Extract values from the TSV file using awk
+        total_reads=$(awk -F'\t' 'NR==2 {print $3}' ${readstat_file})
+        total_bp=$(awk -F'\t' 'NR==3 {print $3}' ${readstat_file})
+        total_Gbp=$(awk -F'\t' 'NR==4 {print $3}' ${readstat_file})
+        total_min=$(awk -F'\t' 'NR==5 {print $3}' ${readstat_file})
+        total_max=$(awk -F'\t' 'NR==6 {print $3}' ${readstat_file})
+        total_mean=$(awk -F'\t' 'NR==7 {print $3}' ${readstat_file})
+        quartile_25=$(awk -F'\t' 'NR==8 {print $3}' ${readstat_file})
+        quartile_50=$(awk -F'\t' 'NR==9 {print $3}' ${readstat_file})
+        quartile_75=$(awk -F'\t' 'NR==10 {print $3}' ${readstat_file})
+        N25=$(awk -F'\t' 'NR==11 {print $3}' ${readstat_file})
+        N50=$(awk -F'\t' 'NR==12 {print $3}' ${readstat_file})
+        N75=$(awk -F'\t' 'NR==13 {print $3}' ${readstat_file})
 
-		# Extract methylation status if available
-		if [[ "~{sep=' ' methylation_report}" != "" ]]; then
-			methylation_file=$(echo ~{sep=' ' methylation_report} | head -n 1)
-			methylation_status=$(grep -oE "yes|no" "$methylation_file")
-		fi
+        ntsm_values=$(awk -F'\t' '{print $(NF-1)"\t"$NF}' ${ntsm_file})
+        ntsm_score=$(echo "$ntsm_values" | awk '{print $1}')
+        ntsm_result=$(echo "$ntsm_values" | awk '{print $2}')
+        
+        # Create output file with a header
+        echo -e "filename\ttotal_reads\ttotal_bp\ttotal_Gbp\tmin\tmax\tmean\tquartile_25\tquartile_50\tquartile_75\tN25\tN50\tN75\tntsm_score\tntsm_result" > ${output_file}
+		echo -e "~{file_name}\t$total_reads\t$total_bp\t$total_Gbp\t$total_min\t$total_max\t$total_mean\t$quartile_25\t$quartile_50\t$quartile_75\t$N25\t$N50\t$N75\t$ntsm_score\t$ntsm_result" >> ${output_file}
 
-		ntsm_values=$(awk -F'\t' '{print $(NF-1)"\t"$NF}' ${ntsm_file})
-		ntsm_score=$(echo "$ntsm_values" | awk '{print $1}')
-		ntsm_result=$(echo "$ntsm_values" | awk '{print $2}')
-
-		# Create output file with a header
-		echo -e "filename\ttotal_reads\ttotal_bp\ttotal_Gbp\tmin\tmax\tmean\tquartile_25\tquartile_50\tquartile_75\tN25\tN50\tN75\tntsm_score\tntsm_result\tmethylation_status" > ${output_file}
-		echo -e "~{file_name}\t$total_reads\t$total_bp\t$total_Gbp\t$total_min\t$total_max\t$total_mean\t$quartile_25\t$quartile_50\t$quartile_75\t$N25\t$N50\t$N75\t$ntsm_score\t$ntsm_result\t$methylation_status" >> ${output_file}
-	>>>
+        # Append methylation report if provided
+        if [ "~{methylation_report}" != "null" ]; then
+            paste ${output_file} ~{methylation_report} > ${temp_file}
+            mv ${temp_file} ${output_file}
+        fi
+        
+        # Log the generated summary file
+        echo "Generated summary file: ${output_file}"
+    >>>
 
     output {
         File summary_file = "~{file_name}.summary.tsv"
