@@ -41,23 +41,23 @@ workflow findMitoContigs {
 
     call parseBlastOutput as parseBlast {
         input:
-            sample_id=sample_id,
-            haplotype=haplotype,
-            blastOutput=blastFasta.blastOutput
+            sample_id   = "~{sample_id}_~{haplotype}",
+            tag         = "mito",
+            blastOutput = blastFasta.blastOutput
     }
 
     call parseBlastOutput as parseNcbiBlast {
         input:
-            sample_id=sample_id,
-            haplotype=haplotype,
-            blastOutput=ncbiBlastFasta.blastOutput
+            sample_id   = "~{sample_id}_~{haplotype}",
+            tag         = "ncbi",
+            blastOutput = ncbiBlastFasta.blastOutput
     }
 
     call pullContigIDs {
         input:
-            mito_hits=[parseBlast.parsedBlastOutput, parseNcbiBlast.parsedBlastOutput],
-            sample_id=sample_id,
-            haplotype=haplotype
+            mito_hits  = [parseBlast.parsedBlastOutput, parseNcbiBlast.parsedBlastOutput],
+            sample_id  = sample_id,
+            tag        = haplotype
     }
 
     output {
@@ -202,7 +202,7 @@ task parseBlastOutput {
 
     input {
         String sample_id
-        String haplotype
+        String tag
         File blastOutput
         Int threadCount    = 1
         Int memSizeGB      = 4
@@ -210,7 +210,7 @@ task parseBlastOutput {
         String dockerImage = "juklucas/parse_mito_blast:latest"
     }
 
-    String parsedBlastOutputName = "${sample_id}.${haplotype}.Parsedmito_blast_out.txt"
+    String parsedBlastOutputName = "${sample_id}.${tag}.parsedMitoBlast.txt"
 
     command <<<
 
@@ -244,7 +244,7 @@ task pullContigIDs {
     input {
         Array[File] mito_hits
         String sample_id
-        String haplotype
+        String tag
 
         Int threadCount    = 1
         Int memSizeGB      = 4
@@ -252,7 +252,7 @@ task pullContigIDs {
         String dockerImage = "juklucas/parse_mito_blast:latest"
     }
 
-    String outputName = "${sample_id}.${haplotype}.mito_ids.txt"
+    String outputName = "${sample_id}.${tag}.mito_ids.txt"
 
     command <<<
 
@@ -264,9 +264,14 @@ task pullContigIDs {
         # Create a temporary file to hold all first columns
         temp_file=$(mktemp)
 
+        ## Expect input to be of the form:
+        ## qseqid  %q_in_match     leng_query      s_length        perc
+        ## h2tg000082l     100.06037553583289      16563   16569   99.96378779648741
+
         # Loop over all provided files and extract the first column
         for file in ~{sep=' ' mito_hits}; do
-            awk '{print $1}' "${file}" >> ${temp_file}
+            ## skip header line, print just contig ID
+            awk 'NR > 1 {print $1}' "${file}" >> ${temp_file}
         done
 
         # Sort and remove duplicates, then output the result
