@@ -53,7 +53,7 @@ workflow hifi_qc_wf {
             ntsm_output = ntsm_wf.ntsm_eval_out,
             readstat_report = read_stats.ReadStatsReport,
             file_name = sample_id,
-            methylation_report = select_first([if (perform_methylation_check) then methylation.methylation_summary else ""])
+            methylation_report = select_first([if (perform_methylation_check) then methylation.methylation_summary else null])
     }
 
     output {
@@ -66,7 +66,7 @@ workflow hifi_qc_wf {
         File ext_ntsm_counts = ntsm_wf.ntsm_count_2
         File ntsm_eval = ntsm_wf.ntsm_eval_out
         ## methylation check output
-        File? methylation_report = select_first([if (perform_methylation_check) then methylation.methylation_summary else ""])
+        File? methylation_report = select_first([if (perform_methylation_check) then methylation.methylation_summary else null])
         File hifi_qc_summary = summarize_hifi_qc.summary_file
 
   
