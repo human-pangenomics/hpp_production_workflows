@@ -53,7 +53,7 @@ workflow hifi_qc_wf {
             ntsm_output = ntsm_wf.ntsm_eval_out,
             readstat_report = read_stats.ReadStatsReport,
             file_name = sample_id,
-            methylation_report = select_first([if (perform_methylation_check) then methylation.methylation_summary else ""])
+            methylation_report = select_first([if (perform_methylation_check) then methylation.methylation_summary else "/dev/null"])
     }
 
     output {
@@ -66,7 +66,7 @@ workflow hifi_qc_wf {
         File ext_ntsm_counts = ntsm_wf.ntsm_count_2
         File ntsm_eval = ntsm_wf.ntsm_eval_out
         ## methylation check output
-        File? methylation_report = select_first([if (perform_methylation_check) then methylation.methylation_summary else ""])
+        File? methylation_report = select_first([if (perform_methylation_check) then methylation.methylation_summary else "/dev/null"])
         File hifi_qc_summary = summarize_hifi_qc.summary_file
 
   
@@ -78,7 +78,7 @@ task summarize_hifi_qc {
         File ntsm_output
         File readstat_report
         String file_name
-        File? methylation_report
+        File? methylation_report = "/dev/null"
 
         Int memSizeGB = 4
         Int threadCount = 1
@@ -120,10 +120,10 @@ task summarize_hifi_qc {
         
         # Create output file with a header
         echo -e "filename\ttotal_reads\ttotal_bp\ttotal_Gbp\tmin\tmax\tmean\tquartile_25\tquartile_50\tquartile_75\tN25\tN50\tN75\tntsm_score\tntsm_result" > ${output_file}
-	echo -e "~{file_name}\t$total_reads\t$total_bp\t$total_Gbp\t$total_min\t$total_max\t$total_mean\t$quartile_25\t$quartile_50\t$quartile_75\t$N25\t$N50\t$N75\t$ntsm_score\t$ntsm_result" >> ${output_file}
+		echo -e "~{file_name}\t$total_reads\t$total_bp\t$total_Gbp\t$total_min\t$total_max\t$total_mean\t$quartile_25\t$quartile_50\t$quartile_75\t$N25\t$N50\t$N75\t$ntsm_score\t$ntsm_result" >> ${output_file}
 
         # Append methylation report if provided
-        if [ "~{methylation_report}" != "null" ]; then
+        if [ "~{methylation_report}" != "/dev/null" ]; then
             paste ${output_file} ~{methylation_report} > ${temp_file}
             mv ${temp_file} ${output_file}
         fi
