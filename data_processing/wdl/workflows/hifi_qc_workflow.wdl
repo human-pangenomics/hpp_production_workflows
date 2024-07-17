@@ -120,7 +120,7 @@ task summarize_hifi_qc {
         
         # Create output file with a header
         echo -e "filename\ttotal_reads\ttotal_bp\ttotal_Gbp\tmin\tmax\tmean\tquartile_25\tquartile_50\tquartile_75\tN25\tN50\tN75\tntsm_score\tntsm_result" > ${output_file}
-	echo -e "~{file_name}\t$total_reads\t$total_bp\t$total_Gbp\t$total_min\t$total_max\t$total_mean\t$quartile_25\t$quartile_50\t$quartile_75\t$N25\t$N50\t$N75\t$ntsm_score\t$ntsm_result" >> ${output_file}
+        echo -e "~{file_name}\t$total_reads\t$total_bp\t$total_Gbp\t$total_min\t$total_max\t$total_mean\t$quartile_25\t$quartile_50\t$quartile_75\t$N25\t$N50\t$N75\t$ntsm_score\t$ntsm_result" >> ${output_file}
 
         # Append methylation report if provided
         if [ "~{methylation_report}" != "/dev/null" ]; then
