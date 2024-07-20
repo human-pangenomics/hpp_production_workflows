@@ -50,6 +50,7 @@ workflow assembly_cleanup_wf {
     ## mitoHiFi to assemble mitochondrial contig
     call mitoHiFi_wf.mitoHifiWorkflow as assemble_mito {
         input:
+            sample_id                = sample_id,
             related_mito_fasta       = related_mito_fasta,
             related_mito_genbank     = related_mito_genbank,
             hifi_reads               = hifi_reads,
