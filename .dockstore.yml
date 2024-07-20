@@ -38,12 +38,12 @@ workflows:
    -  name: MaskAssembly
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/mask_assembly.wdl
-   -  name: FinalizeAssembly
+   -  name: renameContigsAddMT
       subclass: WDL
-      primaryDescriptorPath: /QC/wdl/tasks/finalizeAssembly.wdl
+      primaryDescriptorPath: /assembly/wdl/tasks/renameContigsAddMT.wdl
    -  name: finalizeGenbankAssembly
       subclass: WDL
-      primaryDescriptorPath: /QC/wdl/tasks/finalizeGenbankAssembly.wdl
+      primaryDescriptorPath: /assembly/wdl/tasks/finalizeGenbankAssembly.wdl
    -  name: findMitoContigs
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/findMitoContigs.wdl
