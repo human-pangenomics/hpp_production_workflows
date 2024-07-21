@@ -1,7 +1,7 @@
 version 1.0
 
 workflow runLiftoff {
-	call liftoff
+    call liftoff
         output{
             File outputGff3 = liftoff.outputGff3
         }
@@ -20,7 +20,7 @@ task liftoff {
         String dockerImage = "mobinasri/liftoff:1.6.2"
     }
 
-	command <<<
+    command <<<
         # Set the exit code of a pipeline to that of the rightmost command
         # to exit with a non-zero status, or zero if all commands of the pipeline exit
         set -o pipefail
@@ -35,16 +35,19 @@ task liftoff {
         mkdir output
         cd output
 
+        cp ~{geneGff3} .
+        GENEFILE=$(basename -- "~{geneGff3}")
+
         gunzip -c ~{assemblyFastaGz} > asm.fa
         gunzip -c ~{referenceFastaGz} > ref.fa
 
         # parameteres taken from https://www.science.org/doi/10.1126/science.abj6987 supplementary file
-        liftoff -p ~{threadCount} -sc 0.95 -copies -polish -g ~{geneGff3} -o ~{sample}.~{suffix}.gff3 asm.fa ref.fa
-	        
-	>>>
-	output {
-		File outputGff3 = glob("output/*.gff3")[0]
-	}
+        liftoff -p ~{threadCount} -sc 0.95 -copies -polish -g ${GENEFILE} -o ~{sample}.~{suffix}.gff3 asm.fa ref.fa
+
+    >>>
+    output {
+        File outputGff3 = glob("output/*.gff3")[0]
+    }
     runtime {
         memory: memSizeGB + " GB"
         cpu: threadCount
