@@ -98,7 +98,7 @@ task FCSGX {
 
         String asm_name
 
-        Int memSizeGB = 550
+        Int memSizeGB = 650
         Int preemptible = 1
         Int diskSizeGB
         Int threadCount
