@@ -134,7 +134,7 @@ workflow assembly_cleanup_wf {
 
     call evaluateHumanAssembly_wf.evaluateHumanAssembly as evaluateHap2 {
         input:
-            assembly          = dropHap1Mito.FinalAssembly
+            assembly          = dropHap2Mito.FinalAssembly
     }
 
     ## filter by size
@@ -243,5 +243,16 @@ workflow assembly_cleanup_wf {
         File hap1_bed_SD             = evaluateHap1.bed_SD
         File hap1_bed_CENSAT         = evaluateHap1.bed_CENSAT
         File hap1_assemblyStatistics = evaluateHap1.assemblyStatistics
+
+        ## Assembly evaluation: hap2
+        File hap2_T2Tcontigs         = evaluateHap2.T2Tcontigs
+        File hap2_T2Tscaffolds       = evaluateHap2.T2Tscaffolds
+        File hap2_unifiedAssembly    = evaluateHap2.unifiedAssembly
+        File hap2_chr_names          = evaluateHap2.chromosome_names_from_CHM13
+        File hap2_filteredFlanksBed  = evaluateHap2.filteredFlanksBed
+        File hap2_bed_region         = evaluateHap2.bed_region
+        File hap2_bed_SD             = evaluateHap2.bed_SD
+        File hap2_bed_CENSAT         = evaluateHap2.bed_CENSAT
+        File hap2_assemblyStatistics = evaluateHap2.assemblyStatistics        
     }
 }
