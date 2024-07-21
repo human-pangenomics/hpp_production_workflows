@@ -187,9 +187,7 @@ task FCS_adapter {
             ~{GxCleanFasta}
         
         mv fcs_adaptor_report.txt ~{asm_name}.fcs_adaptor_report.txt
-        mv cleaned_sequences/* ~{asm_name}.clean.fa # the output of FCS adapter is not actually gzipped
-
-        gzip ~{asm_name}.clean.fa
+        mv cleaned_sequences/* ~{asm_name}.clean.fa.gz
         
     >>>
 
