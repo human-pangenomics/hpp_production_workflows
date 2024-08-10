@@ -194,8 +194,7 @@ task FCS_adapter {
         ## it hard to track the contigs (and it causes issues downstream)
         ## see: https://github.com/ncbi/fcs/issues/73
         ## remove the prepended characters manually...
-        sed 's/^>lcl|/>/' cleaned_sequences/* > ~{asm_name}.clean.fa.gz
-        
+        zcat cleaned_sequences/* | sed 's/^>lcl|/>/' | gzip > ~{asm_name}.clean.fa.gz
     >>>
 
     output {
