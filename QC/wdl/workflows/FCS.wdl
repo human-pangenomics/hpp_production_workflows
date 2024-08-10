@@ -187,7 +187,14 @@ task FCS_adapter {
             ~{GxCleanFasta}
         
         mv fcs_adaptor_report.txt ~{asm_name}.fcs_adaptor_report.txt
-        mv cleaned_sequences/* ~{asm_name}.clean.fa.gz
+
+        ## mv cleaned_sequences/* ~{asm_name}.clean.fa.gz
+
+        ## fcs prepends 'lcl|' to the sequence names and this makes
+        ## it hard to track the contigs (and it causes issues downstream)
+        ## see: https://github.com/ncbi/fcs/issues/73
+        ## remove the prepended characters manually...
+        sed 's/^>lcl|/>/' cleaned_sequences/* > ~{asm_name}.clean.fa.gz
         
     >>>
 
