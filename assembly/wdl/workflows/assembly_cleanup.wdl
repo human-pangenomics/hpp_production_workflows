@@ -1,5 +1,6 @@
 version 1.0
 
+import "../tasks/gzip.wdl" as gzip_fasta
 import "../tasks/mitoHiFi.wdl" as mitoHiFi_wf
 import "../../../QC/wdl/workflows/FCS.wdl" as fcs_wf
 import "../../../QC/wdl/tasks/findMitoContigs.wdl" as findMito_wf
@@ -17,8 +18,8 @@ workflow assembly_cleanup_wf {
     }
     
     input {
-        File hap1_fasta_gz
-        File hap2_fasta_gz 
+        File hap1_fasta
+        File hap2_fasta 
         String sample_id
 
         ## for mitoHiFi & findMitoContigs
@@ -46,7 +47,6 @@ workflow assembly_cleanup_wf {
         Int min_sequence_len = 50000
     }
 
-
     ## mitoHiFi to assemble mitochondrial contig
     call mitoHiFi_wf.mitoHifiWorkflow as assemble_mito {
         input:
@@ -59,10 +59,32 @@ workflow assembly_cleanup_wf {
             fileExtractionDiskSizeGB = fileExtractionDiskSizeGB
     }
 
+
+    ## Does hap1 assembly end with ".gz" (if not gzip it!)
+    ## Assume that if hap1 is gzipped, hap2 will be as well
+    Boolean hap1_not_gzipped = basename(hap1_fasta, ".gz") == basename(hap1_fasta)
+
+    # Gzip input fastas for hap1/hap2 (only if needed)
+    if (hap1_not_gzipped) {
+        call gzip_fasta.gzip as gzip_hap1 {
+            input:
+                fileInput = hap1_fasta
+        }
+
+        call gzip_fasta.gzip as gzip_hap2 {
+            input:
+                fileInput = hap2_fasta
+        }
+    }    
+
+    File input_hap1_fasta_gz = select_first([gzip_hap1.fileGz, hap1_fasta])
+    File input_hap2_fasta_gz = select_first([gzip_hap2.fileGz, hap2_fasta])
+
+
     ## NCBI's Foreign Contamination Screen: Hap 1
     call fcs_wf.RunFCS as contam_screen_hap1 {
         input:
-            assembly   = hap1_fasta_gz,
+            assembly   = input_hap1_fasta_gz,
             asm_name   = "~{sample_id}_hap1",
 
             blast_div  = blast_div,
@@ -77,7 +99,7 @@ workflow assembly_cleanup_wf {
     ## NCBI's Foreign Contamination Screen: Hap 2
     call fcs_wf.RunFCS as contam_screen_hap2 {
         input:
-            assembly   = hap2_fasta_gz,
+            assembly   = input_hap2_fasta_gz,
             asm_name   = "~{sample_id}_hap2",
 
             blast_div  = blast_div,
