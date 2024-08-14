@@ -41,7 +41,7 @@ workflow hprc_DeepPolisher {
         String alignerONTKmerSize="15"
 
         Boolean enableHiFiDownsampling=false
-        Float? HiFiDownsamplingCoverage=40
+        Float HiFiDownsamplingCoverage=40
     }
 
     ## parse input fasta files to obtain necessary forHap2s
