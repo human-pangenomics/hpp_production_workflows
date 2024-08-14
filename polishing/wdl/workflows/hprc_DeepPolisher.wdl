@@ -40,7 +40,7 @@ workflow hprc_DeepPolisher {
         String alignerHiFiKmerSize="19"
         String alignerONTKmerSize="15"
 
-        Bool enableHiFiDownsampling=false
+        Boolean enableHiFiDownsampling=false
         Float? HiFiDownsamplingCoverage=40
     }
 
