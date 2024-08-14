@@ -6,6 +6,7 @@ import "../tasks/DeepPolisher.wdl" as deepPolisher_t
 import "../tasks/applyPolish.wdl" as applyPolish_t
 import "../tasks/parse_fastas.wdl" as parse_fastas_t
 import "../tasks/filter_short_reads.wdl" as filter_short_reads_t
+import "../tasks/downsampling.wdl" as downsampling_t
 
 workflow hprc_DeepPolisher {
     meta {
@@ -38,6 +39,9 @@ workflow hprc_DeepPolisher {
         String alignerONTPreset="map-ont"
         String alignerHiFiKmerSize="19"
         String alignerONTKmerSize="15"
+
+        Bool enableHiFiDownsampling=false
+        Float? HiFiDownsamplingCoverage=40
     }
 
     ## parse input fasta files to obtain necessary forHap2s
@@ -55,12 +59,23 @@ workflow hprc_DeepPolisher {
           minReadLength=100000
     }
 
+    ## Downsample hifi reads if requested
+    if (enableHiFiDownsampling){
+        call downsampling_t.RunDownSampling as downsampleHiFi{
+            input:
+                readFiles = HifiReads,
+                downsampledCoverage = HiFiDownsamplingCoverage,
+        }
+    }
+    Array[File] HiFiReadsForAligner = select_first([downsampleHiFi.downsampledFastqGzs, HifiReads])
+
+
     ## Align all hifi reads to diploid assembly
 
     call long_read_aligner_scattered_t.longReadAlignmentScattered as alignHifiToDiploid {
         input:
           assembly=parseFastaStep.dipRawFastaGz,
-          readFiles=HifiReads,
+          readFiles=HiFiReadsForAligner,
           aligner=hifiAlignerToUse,
           preset=alignerHiFiPreset,
           kmerSize=alignerHiFiKmerSize,
