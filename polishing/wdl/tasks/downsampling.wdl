@@ -39,7 +39,7 @@ workflow RunDownSampling{
             input:
                 readFastq=readFastq,
                 samplingRate = downsampledCoverage / sum.sum,
-                sum=sum.sum
+                sum=sum.sum,
                 suffix = "${downsampledCoverage}X",
                 refLength = refLength,
                 memSizeGB=8,
