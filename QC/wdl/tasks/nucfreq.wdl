@@ -106,6 +106,7 @@ workflow runNucFreq {
 
         ## If regions were passed as inputs
         File nucplot_image_tar        = nucfreq.nucplot_images
+        File nucfreq_select_reg_bed   = nucfreq.nucfreq_loci_bed
     }
 }
 
@@ -563,7 +564,6 @@ task filter_nucfreq {
         set -eux -o pipefail
 
         wget https://raw.githubusercontent.com/emics57/nucfreqPipeline/21b3395a7f285962aae9e881db2514e03601c5db/nucfreq_filtering_migalab.R
-        wget https://raw.githubusercontent.com/emics57/nucfreqPipeline/89b1b9a980f78b63e2a79ca2e122269bf284df41/nucfreq_filtering_migalab.R
 
         # Check if the file has more than zero lines
         line_count=$(wc -l < "~{nucfreq_loci_bed}")
