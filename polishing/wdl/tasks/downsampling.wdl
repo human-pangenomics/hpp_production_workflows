@@ -42,6 +42,7 @@ workflow RunDownSampling{
                 sum=sum.sum,
                 suffix = "${downsampledCoverage}X",
                 refLength = refLength,
+                downsampleCoverage=downsampledCoverage,
                 memSizeGB=8,
                 threadCount=8,
                 diskSizeGB= ceil(3 * size(readFastq, "GB")) + 64
@@ -139,6 +140,7 @@ task downsample {
     input{
         File readFastq
         Float samplingRate
+        Float downsampleCoverage
         String suffix
         Float refLength
         Float sum
@@ -166,11 +168,21 @@ task downsample {
         PREFIX=${FILE_NAME%.*}
 
         mkdir downsampled
+        echo ~{sum} " is the sum"
+
+        echo ~{downsampleCoverage} "downsampleCoverage"
+
+        samplerate=`$((~{sum} / ~{downsampleCoverage}))`
+
+        echo "sample rate calc here: " ${samplerate}
+
         seqtk sample ~{readFastq} ~{samplingRate} > downsampled/${PREFIX}.~{suffix}.fq
         samtools faidx downsampled/${PREFIX}.~{suffix}.fq
         cat downsampled/${PREFIX}.~{suffix}.fq.fai | awk -v refLength=~{refLength} '{totalBases += $2}END{printf "%.2f\n", totalBases/refLength}' > cov.txt
         pigz -p8 downsampled/${PREFIX}.~{suffix}.fq
-        echo "Successfully downsampled " $FILENAME " to " ~{suffix} " with rate " ~{samplingRate}
+        echo "Successfully downsampled " $FILE_NAME " to " ~{suffix} " with rate " ~{samplingRate}
+
+
     >>>
 
     runtime {
