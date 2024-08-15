@@ -116,9 +116,9 @@ task getCoverage {
         samtools faidx ${PREFIX}.fq
         cat ${PREFIX}.fq.fai | awk -vrefLength=~{refLength} '{totalBases+=$2}END{printf "%.2f\n",totalBases/refLength}' > coverage.txt
 
-        echo $FILENAME
+        echo ${FILE_NAME}
         val=`cat coverage.txt`
-        echo $val
+        echo ${val}
     >>>
 
     runtime {
