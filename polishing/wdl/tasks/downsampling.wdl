@@ -39,6 +39,7 @@ workflow RunDownSampling{
             input:
                 readFastq=readFastq,
                 samplingRate = downsampledCoverage / sum.sum,
+                sum=sum.sum
                 suffix = "${downsampledCoverage}X",
                 refLength = refLength,
                 memSizeGB=8,
@@ -115,6 +116,9 @@ task getCoverage {
         samtools faidx ${PREFIX}.fq
         cat ${PREFIX}.fq.fai | awk -vrefLength=~{refLength} '{totalBases+=$2}END{printf "%.2f\n",totalBases/refLength}' > coverage.txt
 
+        echo $FILENAME
+        val=`cat coverage.txt`
+        echo $val
     >>>
 
     runtime {
@@ -137,6 +141,7 @@ task downsample {
         Float samplingRate
         String suffix
         Float refLength
+        Float sum
         # runtime configurations
         Int memSizeGB=4
         Int threadCount=8
