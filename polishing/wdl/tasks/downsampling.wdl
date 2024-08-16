@@ -172,7 +172,7 @@ task downsample {
 
         echo ~{downsampleCoverage} "downsampleCoverage"
 
-        SAMPLERATE=`echo "~{sum} ~{downsampleCoverage}" | awk '{print $1 / $2}'`
+        SAMPLERATE=`echo "~{downsampleCoverage} ~{sum}" | awk '{print $1 / $2}'`
 
         echo "sample rate calc here:" ${SAMPLERATE}
 
