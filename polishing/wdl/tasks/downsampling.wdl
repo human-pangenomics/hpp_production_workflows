@@ -172,15 +172,15 @@ task downsample {
 
         echo ~{downsampleCoverage} "downsampleCoverage"
 
-        samplerate=`$((~{sum} / ~{downsampleCoverage}))`
+        SAMPLERATE=`echo "~{sum} ~{downsampleCoverage}" | awk '{print $1 / $2}'`
 
-        echo "sample rate calc here: " ${samplerate}
+        echo "sample rate calc here:" ${SAMPLERATE}
 
-        seqtk sample ~{readFastq} ~{samplingRate} > downsampled/${PREFIX}.~{suffix}.fq
+        seqtk sample ~{readFastq} ${SAMPLERATE} > downsampled/${PREFIX}.~{suffix}.fq
         samtools faidx downsampled/${PREFIX}.~{suffix}.fq
         cat downsampled/${PREFIX}.~{suffix}.fq.fai | awk -v refLength=~{refLength} '{totalBases += $2}END{printf "%.2f\n", totalBases/refLength}' > cov.txt
         pigz -p8 downsampled/${PREFIX}.~{suffix}.fq
-        echo "Successfully downsampled " $FILE_NAME " to " ~{suffix} " with rate " ~{samplingRate}
+        echo "Successfully downsampled " $FILE_NAME " to " ~{suffix} " with rate " ${SAMPLERATE}
 
 
     >>>
