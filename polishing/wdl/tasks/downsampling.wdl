@@ -1,6 +1,6 @@
 version 1.0
 
-import "../../../QC/wdl/tasks/extract_reads.wdl" as extractReads_t
+import "extract_reads.wdl" as extractReads_t
 
 workflow RunDownSampling{
     input {
@@ -174,7 +174,7 @@ task downsample {
 
         SAMPLERATE=`echo "~{downsampleCoverage} ~{sum}" | awk '{print $1 / $2}'`
 
-        echo "sample rate calc here:" ${SAMPLERATE}
+        echo "sample rate calculation:" ${SAMPLERATE}
 
         seqtk sample ~{readFastq} ${SAMPLERATE} > downsampled/${PREFIX}.~{suffix}.fq
         samtools faidx downsampled/${PREFIX}.~{suffix}.fq
