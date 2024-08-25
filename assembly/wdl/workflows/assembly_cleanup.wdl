@@ -161,13 +161,24 @@ workflow assembly_cleanup_wf {
             minContigLength   = min_sequence_len
     }
 
+    ## gzip the "unified" assemblies
+    call gzip_fasta.gzip as gzip_hap1_unified {
+        input:
+            fileInput = evaluateHap1.unifiedAssembly
+    }
+
+    call gzip_fasta.gzip as gzip_hap2_unified {
+        input:
+            fileInput = evaluateHap2.unifiedAssembly
+    }
+
     ## rename contigs for Hap1
     call renameContigsAddMito.renameContigsAddMT as renameHeadersHap1 {
         input:
             sampleName     = sample_id,
             outputFileTag  = "hap1_for_genbank",
             haplotype      = 1,
-            inputFastaGZ   = evaluateHap1.unifiedAssembly,
+            inputFastaGZ   = gzip_hap1_unified.fileGz,
             t2t_sequences  = evaluateHap1.T2Tscaffolds
     }
 
@@ -177,7 +188,7 @@ workflow assembly_cleanup_wf {
             sampleName     = sample_id,
             outputFileTag  = "hap2_for_genbank",
             haplotype      = 2,
-            inputFastaGZ   = evaluateHap2.unifiedAssembly,
+            inputFastaGZ   = gzip_hap2_unified.fileGz,
             t2t_sequences  = evaluateHap2.T2Tscaffolds,
             mitoAssembly   = assemble_mito.mitoHiFi_assembly
     }
