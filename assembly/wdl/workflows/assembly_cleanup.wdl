@@ -151,31 +151,15 @@ workflow assembly_cleanup_wf {
 
     call evaluateHumanAssembly_wf.evaluateHumanAssembly as evaluateHap1 {
         input:
-            assembly          = dropHap1Mito.FinalAssembly
+            assembly          = dropHap1Mito.FinalAssembly,
+            minContigLength   = min_sequence_len
     }
 
     call evaluateHumanAssembly_wf.evaluateHumanAssembly as evaluateHap2 {
         input:
-            assembly          = dropHap2Mito.FinalAssembly
+            assembly          = dropHap2Mito.FinalAssembly,
+            minContigLength   = min_sequence_len
     }
-
-    ## filter by size
-    call filter_fasta_t.filter_fasta as filter_fasta_hap1 {
-        input:
-            inputFasta=evaluateHap1.unifiedAssembly,
-            sampleName=sample_id,
-            outputFileTag="hap1_filt",
-            min_size=min_sequence_len
-    }   
-
-    call filter_fasta_t.filter_fasta as filter_fasta_hap2 {
-        input:
-            inputFasta=evaluateHap2.unifiedAssembly,
-            sampleName=sample_id,
-            outputFileTag="hap2_filt",
-            min_size=min_sequence_len
-    }   
-
 
     ## rename contigs for Hap1
     call renameContigsAddMito.renameContigsAddMT as renameHeadersHap1 {
@@ -183,7 +167,7 @@ workflow assembly_cleanup_wf {
             sampleName     = sample_id,
             outputFileTag  = "hap1_for_genbank",
             haplotype      = 1,
-            inputFastaGZ   = filter_fasta_hap1.filteredFasta,
+            inputFastaGZ   = evaluateHap1.unifiedAssembly,
             t2t_sequences  = evaluateHap1.T2Tscaffolds
     }
 
@@ -193,12 +177,10 @@ workflow assembly_cleanup_wf {
             sampleName     = sample_id,
             outputFileTag  = "hap2_for_genbank",
             haplotype      = 2,
-            inputFastaGZ   = filter_fasta_hap2.filteredFasta,
+            inputFastaGZ   = evaluateHap2.unifiedAssembly,
             t2t_sequences  = evaluateHap2.T2Tscaffolds,
             mitoAssembly   = assemble_mito.mitoHiFi_assembly
     }
-
-
 
     output {
 
