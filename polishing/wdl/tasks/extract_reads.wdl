@@ -55,14 +55,14 @@ task extractReads {
         mkdir output
 
         if [[ "$SUFFIX" == "bam" ]] ; then
-            samtools fastq -@~{threadCount} ~{readFile} > output/${PREFIX}.fq
+            /root/bin/samtools_1.9/samtools fastq -@~{threadCount} ~{readFile} > output/${PREFIX}.fq
         elif [[ "$SUFFIX" == "cram" ]] ; then
             if [[ ! -f "~{referenceFasta}" ]] ; then
                 echo "Could not extract $FILENAME, reference file not supplied"
                 exit 1
             fi
             ln -s ~{referenceFasta}
-            samtools fastq -@~{threadCount} --reference `basename ~{referenceFasta}` ~{readFile} > output/${PREFIX}.fq
+            /root/bin/samtools_1.9/samtools fastq -@~{threadCount} --reference `basename ~{referenceFasta}` ~{readFile} > output/${PREFIX}.fq
         elif [[ "$SUFFIX" == "gz" ]] ; then
             gunzip -k -c ~{readFile} > output/${PREFIX}
         elif [[ "$SUFFIX" == "fastq" ]] || [[ "$SUFFIX" == "fq" ]] ; then
