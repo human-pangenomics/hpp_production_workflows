@@ -37,7 +37,6 @@ blast_cov = pd.read_csv(blast_result_fn,
                         sep="\t", names = my_names, )
 
 #Get the percentage of the query in the blast aligment
-blast_cov['alilength']*100 / (blast_cov['leng_query'])
 blast_cov['%q_in_match'] = blast_cov['alilength']*100 / (blast_cov['leng_query'])
 
 #sum percentages of query sequence in blast match based on column id
@@ -48,14 +47,15 @@ seqsizes = blast_cov[['qseqid', 'leng_query', 's_length']].drop_duplicates(subse
 
 #merge 'a' and 'seqsizes' dataframes by 'qseqid'
 result = pd.merge(a, seqsizes, on='qseqid')
-result
-# Now let's filter the blast matches
-# if the lenght of the query is 5x the size of the subject (close-related mitogenome), drop it. (As its likely the match belongs to a NUMT)
-five_times = (result['s_length'] * 5)
-result1 = result[(result['leng_query'] < five_times)].sort_values(by='%q_in_match', ascending=False)
 
-# if the lenght of the query is 80% smaller than the length of the subject, drop it. It's unlikely you will have a complete mitogenome.
-slen=result1['s_length']
+# Now let's filter the blast matches
+# if the lenght of the query is 10x the size of the subject (close-related mitogenome), drop it. (
+# As its likely the match belongs to a NUMT
+len_cutoff = (result['s_length'] * 10)
+result1 = result[(result['leng_query'] < len_cutoff)].sort_values(by='%q_in_match', ascending=False)
+
+# if the lenght of the query is 80% smaller than the length of the subject, drop it. 
+# It's unlikely you will have a complete mitogenome.
 result1['perc'] = result1["leng_query"]*100/(result1["s_length"])
 ac=result1[result1['perc'] > 80].sort_values(by='%q_in_match')
 
