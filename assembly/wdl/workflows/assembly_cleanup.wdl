@@ -199,6 +199,9 @@ workflow assembly_cleanup_wf {
         File hap1_output_fasta_gz           = renameHeadersHap1.FinalAssembly
         File hap2_output_fasta_gz           = renameHeadersAddMitoHap2.FinalAssembly
 
+        ## IDs of duplicate sequences that are removed
+        File hap1_dups_removed              = renameHeadersHap1.dupIDFile
+        File hap2_dups_removed              = renameHeadersAddMitoHap2.dupIDFile
 
         ## MitoHiFi outputs
         File mitoHiFi_assembly               = assemble_mito.mitoHiFi_assembly

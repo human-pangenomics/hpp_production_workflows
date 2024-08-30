@@ -60,8 +60,9 @@ task renameContigsAddMT {
     }
 
 
-    String unzippedOrigFa = basename(inputFastaGZ, ".gz")
-    String outputFastaGz  = "~{sampleName}.~{outputFileTag}.fa.gz"
+    String unzippedOrigFa  = basename(inputFastaGZ, ".gz")
+    String outputFastaGz   = "~{sampleName}.~{outputFileTag}.fa.gz"
+    String outputDupIDFile = "~{sampleName}_~{outputFileTag}_dup_ids.txt"
 
     command <<<
 
@@ -109,7 +110,7 @@ task renameContigsAddMT {
         ## Convert into:
         # h2tg000005l [chromosome=1]
         # h2tg000014l [chromosome=2]
-        awk 'BEGIN {OFS="\t"} NR > 1 {gsub("chr", "", $4); print $1, "[chromosome=" $4 "]"}' \
+        awk 'BEGIN {OFS="\t"} NR > 1 {gsub("chr", "", $4); print $1, "[location=chromosome][chromosome=" $4 "]"}' \
             ~{t2t_sequences} \
             > contig_to_chrom_map.txt
 
@@ -121,13 +122,20 @@ task renameContigsAddMT {
         
 
         ## Rename contig names to sampleName#1/2#contigName format (1 = paternal, 2 = maternal)
-        sed "s/^>/>~{sampleName}\#~{haplotype}\#/" mito_added_renamed_header.fasta | gzip > ~{outputFastaGz}
+        sed "s/^>/>~{sampleName}\#~{haplotype}\#/" mito_added_renamed_header.fasta \
+            > mito_added_renamed_header_sample_named.fasta
 
+        cat mito_added_renamed_header_sample_named \
+            | seqkit rmdup \
+                --by-seq \
+                -o ~{outputFastaGz} \
+                --dup-num-file ~{outputDupIDFile}
     >>>
 
     output {
 
         File FinalAssembly  = outputFastaGz
+        File dupIDFile      = outputDupIDFile
     }
 
     runtime {
