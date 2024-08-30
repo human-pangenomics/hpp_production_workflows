@@ -4,7 +4,7 @@ workflow findMitoContigs {
     meta{
         author: "Julian Lucas"
         email: "juklucas@ucsc.edu"
-        description: "Workflow to find mitochondrial sequences in an assembly using BLAST. NUMTs are ignored. Process is based on MitoHiFi and NCBI's internal BLAST search implemented for Genbank Screen."
+        description: "Workflow to find mitochondrial sequences in an assembly using BLAST. NUMTs are ignored. Process is based on MitoHiFi's search for assembled mito contigs."
     }
 
     input {
@@ -12,7 +12,6 @@ workflow findMitoContigs {
         String haplotype
         File inputFastaGZ
         File mito_ref
-        File ncbi_mito_blast_db
     }
     
     parameter_meta {
@@ -20,7 +19,6 @@ workflow findMitoContigs {
         haplotype: "Haplotype or additional info for fasta that is being searched. Used for output naming"
         inputFastaGZ: "Assembly to search for Mitochondrial sequences."
         mito_ref: "Mito fasta from same, or closely related, species. Cannot be gzipped. Used to make BLAST DB"
-        ncbi_mito_blast_db: "NCBI Genomic Mitochondrial Reference Sequences as a BLAST DB. [See metadata](https://ftp.ncbi.nlm.nih.gov/blast/db/mito-nucl-metadata.json)"
     }
 
     call blastFasta {
@@ -31,14 +29,6 @@ workflow findMitoContigs {
             haplotype    = haplotype
     }
 
-    call ncbiBlastFasta {
-        input:
-            ncbi_mito_blast_db = ncbi_mito_blast_db,
-            inputFastaGZ       = inputFastaGZ,
-            sample_id          = sample_id,
-            haplotype          = haplotype
-    }
-
     call parseBlastOutput as parseBlast {
         input:
             sample_id   = "~{sample_id}_~{haplotype}",
@@ -46,16 +36,9 @@ workflow findMitoContigs {
             blastOutput = blastFasta.blastOutput
     }
 
-    call parseBlastOutput as parseNcbiBlast {
-        input:
-            sample_id   = "~{sample_id}_~{haplotype}",
-            tag         = "ncbi",
-            blastOutput = ncbiBlastFasta.blastOutput
-    }
-
     call pullContigIDs {
         input:
-            mito_hits  = [parseBlast.parsedBlastOutput, parseNcbiBlast.parsedBlastOutput],
+            mito_hits  = [parseBlast.parsedBlastOutput],
             sample_id  = sample_id,
             tag        = haplotype
     }
@@ -67,10 +50,6 @@ workflow findMitoContigs {
         ## output from blast search for mito
         File blastOutput       = blastFasta.blastOutput
         File parsedBlast       = parseBlast.parsedBlastOutput
-
-        ## output from an emulation of NCBI's blast search
-        File ncbiBlastOutput   = ncbiBlastFasta.blastOutput
-        File ncbiParsedBlast   = parseNcbiBlast.parsedBlastOutput
     }
 }
 
@@ -136,68 +115,6 @@ task blastFasta {
     }
 }
 
-task ncbiBlastFasta {
-
-    input {
-        File ncbi_mito_blast_db
-        String sample_id
-        String haplotype
-        File inputFastaGZ
-        
-        Int threadCount    = 2
-        Int memSizeGB      = 8
-        Int diskSizeGB     = 64
-        String dockerImage = "ncbi/blast@sha256:77a24a340683c2f4883e2d5295bf63277743579239ada939370c19ca5622ef5f" # 2.15.0
-    }
-
-    String inputFasta = basename(inputFastaGZ, ".gz")
-    String blastOutputName = "${sample_id}.${haplotype}.ncbi_mito_blast_out.txt"
-
-    command <<<
-
-        set -o pipefail
-        set -e
-        set -u
-        set -o xtrace
-
-        ## gunzip input fasta 
-        gunzip -c ~{inputFastaGZ} > ~{inputFasta}
-        
-
-        mkdir -p mito_db
-        tar -xzvf ~{ncbi_mito_blast_db} -C mito_db
-
-        blastn \
-            -query ~{inputFasta} \
-            -num_threads 2 \
-            -db mito_db/mito \
-            -out % \
-            -task megablast \
-            -word_size 28 \
-            -best_hit_overhang 0.1 \
-            -best_hit_score_edge 0.1 \
-            -dust yes \
-            -evalue 0.0001 \
-            -perc_identity 98.6 \
-            -soft_masking true \
-            -outfmt '6 std qlen slen' \
-            > ~{blastOutputName}
-
-    >>>
-
-    output {
-        File blastOutput = blastOutputName
-    }
-
-    runtime {
-        cpu: threadCount
-        memory: memSizeGB + " GB"
-        disks: "local-disk " + diskSizeGB + " SSD"
-        docker: dockerImage
-        preemptible: 1
-    }
-}
-
 task parseBlastOutput {
 
     input {
@@ -207,7 +124,7 @@ task parseBlastOutput {
         Int threadCount    = 1
         Int memSizeGB      = 4
         Int diskSizeGB     = 64
-        String dockerImage = "juklucas/parse_mito_blast:latest"
+        String dockerImage = "juklucas/parse_mito_blast@sha256:b82a0810c6dc0c5b1257c0e24a608949f1ada89c72c0a2a60b6f5b4133a4f1dc"
     }
 
     String parsedBlastOutputName = "${sample_id}.${tag}.parsedMitoBlast.txt"
