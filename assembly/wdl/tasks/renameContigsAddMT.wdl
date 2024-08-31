@@ -39,6 +39,7 @@ workflow renameContigsAddMT_wf {
 
     output {
         File FinalAssembly  = renameContigsAddMT.FinalAssembly
+        File dupIDFile      = renameContigsAddMT.dupIDFile
     }
 }
 
@@ -130,6 +131,9 @@ task renameContigsAddMT {
                 --by-seq \
                 -o ~{outputFastaGz} \
                 --dup-num-file ~{outputDupIDFile}
+
+        ## if there are no duplicates create empty ~{outputDupIDFile}
+        touch ~{outputDupIDFile}
     >>>
 
     output {
