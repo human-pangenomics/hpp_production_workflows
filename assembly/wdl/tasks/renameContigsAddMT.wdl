@@ -125,7 +125,7 @@ task renameContigsAddMT {
         sed "s/^>/>~{sampleName}\#~{haplotype}\#/" mito_added_renamed_header.fasta \
             > mito_added_renamed_header_sample_named.fasta
 
-        cat mito_added_renamed_header_sample_named \
+        cat mito_added_renamed_header_sample_named.fasta \
             | seqkit rmdup \
                 --by-seq \
                 -o ~{outputFastaGz} \
