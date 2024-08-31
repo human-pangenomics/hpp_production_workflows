@@ -31,9 +31,6 @@ workflow assembly_cleanup_wf {
         File? referenceFasta
         Int fileExtractionDiskSizeGB = 512
 
-        ## for findMitoContigs
-        File ncbi_mito_blast_db
-
         ## for NCBI's foreign contamination screen
         File blast_div
         File GXI
@@ -117,8 +114,7 @@ workflow assembly_cleanup_wf {
             sample_id          = "~{sample_id}",
             haplotype          = "hap1",
             inputFastaGZ       = contam_screen_hap1.output_fasta,
-            mito_ref           = related_mito_fasta,
-            ncbi_mito_blast_db = ncbi_mito_blast_db
+            mito_ref           = related_mito_fasta
     }
 
     call findMito_wf.findMitoContigs as findMitosInHap2 {
@@ -126,8 +122,7 @@ workflow assembly_cleanup_wf {
             sample_id          = "~{sample_id}",
             haplotype          = "hap2",
             inputFastaGZ       = contam_screen_hap2.output_fasta,
-            mito_ref           = related_mito_fasta,
-            ncbi_mito_blast_db = ncbi_mito_blast_db
+            mito_ref           = related_mito_fasta
     }
 
     ## remove mitos from hap1 (will add back in MitoHiFi version later)
@@ -237,15 +232,11 @@ workflow assembly_cleanup_wf {
         File hap1_mt_contig_ids      = findMitosInHap1.mitoContigs
         File hap1_mt_blast           = findMitosInHap1.blastOutput
         File hap1_mt_parsed_blast    = findMitosInHap1.parsedBlast
-        File hap1_mt_ncbi_blast      = findMitosInHap1.ncbiBlastOutput
-        File hap1_mt_ncbi_filt_blast = findMitosInHap1.ncbiParsedBlast
 
         ## findMitosInHap2 outputs (mitos in assembly; not from mitoHiFi)
         File hap2_mt_contig_ids      = findMitosInHap2.mitoContigs
         File hap2_mt_blast           = findMitosInHap2.blastOutput
         File hap2_mt_parsed_blast    = findMitosInHap2.parsedBlast
-        File hap2_mt_ncbi_blast      = findMitosInHap2.ncbiBlastOutput
-        File hap2_mt_ncbi_filt_blast = findMitosInHap2.ncbiParsedBlast
 
         ## Assembly with mito contigs stripped out
         File hap1_mt_stripped_asm    = dropHap1Mito.FinalAssembly
