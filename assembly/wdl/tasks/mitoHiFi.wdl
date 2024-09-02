@@ -199,7 +199,7 @@ task mitoHifi {
         Int threadCount      = 24
         Int memSizeGB        = 64
         Int addldisk         = 64  
-        String dockerImage   = "humanpangenomics/mitohifi@sha256:ead5e910d12c43e1dcbd3b2dcb601ac865dd904e917db790c725af826a1527f0"
+        String dockerImage   = "humanpangenomics/mitohifi@sha256:a97e7071a6aad06f6043e4846846c4f2904ee88fea5dd7c1ec3548af1b8d6f21"
     }
 
     Int read_size = ceil(size(hifi_reads, "GB"))
