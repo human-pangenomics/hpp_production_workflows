@@ -151,13 +151,20 @@ task findMitoReads {
             "~{sample_id}_aligned_to_concat_mito.paf" \
             > reads_to_pull.txt
 
+        FILENAME=$(basename -- "~{hifi_fastq_gz}" | sed 's/.gz$//' ) 
 
         ## pull reads
-        FILENAME=$(basename -- "~{hifi_fastq_gz}" | sed 's/.gz$//' ) 
-        seqkit grep \
-            -f reads_to_pull.txt \
-            "~{hifi_fastq_gz}" \
-            -o "${FILENAME}_filtered_over_~{min_alignment_block_len}.fastq.gz"
+        if [ -s reads_to_pull.txt ]; then
+
+            seqkit grep \
+                -f reads_to_pull.txt \
+                "~{hifi_fastq_gz}" \
+                -o "${FILENAME}_filtered_over_~{min_alignment_block_len}.fastq.gz"
+        else
+            ## if no reads to pull, create empty fastq.gz file
+            touch "${FILENAME}_filtered_over_~{min_alignment_block_len}.fastq"
+            gzip "${FILENAME}_filtered_over_~{min_alignment_block_len}.fastq"
+        fi
     >>>
 
     output {
