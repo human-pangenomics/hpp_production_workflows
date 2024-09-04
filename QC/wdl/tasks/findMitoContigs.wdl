@@ -63,7 +63,7 @@ task blastFasta {
         File inputFastaGZ
         
         Int threadCount    = 2
-        Int memSizeGB      = 4
+        Int memSizeGB      = 16
         Int diskSizeGB     = 64
         String dockerImage = "ncbi/blast@sha256:77a24a340683c2f4883e2d5295bf63277743579239ada939370c19ca5622ef5f" # 2.15.0
     }
