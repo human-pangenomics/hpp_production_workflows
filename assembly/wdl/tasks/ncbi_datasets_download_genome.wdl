@@ -59,7 +59,7 @@ task ncbi_datasets_download_genome {
         ## unzip archive
         unzip "~{genome_accession}_dataset.zip"
 
-        gzip -c "ncbi_dataset/data/~{genome_accession}/*.fna" > "~{output_fasta_name}"
+        gzip -c ncbi_dataset/data/~{genome_accession}/*.fna > ~{output_fasta_name}
 
     >>> 
     runtime {
