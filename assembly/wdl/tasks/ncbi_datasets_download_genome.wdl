@@ -3,39 +3,65 @@ version 1.0
 workflow ncbi_datasets_download_genome_wf {
 
     input {
-        String genome_accession
         String sample_name
+        String genome_accession
         String haplotype_string
+
+        String? genome_accession_2
+        String? haplotype_string_2
+
         String output_tag        = "asm"
         Boolean reheader_fasta   = false    
     }
 
-    call ncbi_datasets_download_genome {
+    ## download genbank assembly
+    call ncbi_datasets_download_genome as download_asm1 {
         input:
-            genome_accession  = genome_accession,
             sample_name       = sample_name,
+            genome_accession  = genome_accession,
             haplotype_string  = haplotype_string,
             output_tag        = output_tag,
             reheader_fasta    = reheader_fasta
     }
     
+
+    if (defined(genome_accession_2) && defined(haplotype_string_2)) {
+
+        ## download second genbank assembly (other haplotype of the same sample)
+        call ncbi_datasets_download_genome as download_asm2 {
+            input:
+                sample_name       = sample_name,
+                genome_accession  = select_first([genome_accession_2]),
+                haplotype_string  = select_first([haplotype_string_2]),
+                output_tag        = output_tag,
+                reheader_fasta    = reheader_fasta
+        }
+    }
+
     meta {
         author: "Julian Lucas"
         email: "juklucas@ucsc.edu"
-        description: "Downloads genbank assembly using genbank genome accession. gzips and renames file."
+        description: "Downloads genbank assembly using genbank genome accession. gzips and renames file. Optionally downloads two haplotypes."
     }
 
     parameter_meta {
-        genome_accession: "Genbank (or RefSeq) genome accession. Example: GCA_042027545.1"
         sample_name: "Sample ID to use in output file name. Example: HG00408. Output will be named {sample_name}_{haplotype_string}_{output_tag}.fa.gz"
+        genome_accession: "Genbank (or RefSeq) genome accession. Example: GCA_042027545.1"        
         haplotype_string: "Haplotype id to use in output file name. Example: mat/pat/hap1/hap2"
+        genome_accession_2: "Accession for second haplotype, if one is present."
+        haplotype_string_2: "Haplotype id for second haplotype, if one is present."
         output_tag: "Assembly info to put in fasta file name"
         reheader_fasta: "(default false) rename sequences with #sample_name#haplotype_string before sequence ID"
     }
+
     output {
-        File genbank_fasta_gz     = ncbi_datasets_download_genome.fasta_gz
-        File genbank_fasta_gz_gzi = ncbi_datasets_download_genome.fasta_gz_gzi
-        File genbank_fasta_gz_fai = ncbi_datasets_download_genome.fasta_gz_fai
+        File genbank_fa_hap1_gz      = download_asm1.fasta_gz
+        File genbank_fa_hap1_gz_gzi  = download_asm1.fasta_gz_gzi
+        File genbank_fa_hap1_gz_fai  = download_asm1.fasta_gz_fai
+        
+        File? genbank_fa_hap2_gz     = download_asm2.fasta_gz
+        File? genbank_fa_hap2_gz_gzi = download_asm2.fasta_gz_gzi
+        File? genbank_fa_hap2_gz_fai = download_asm2.fasta_gz_fai        
     }
 
 }
