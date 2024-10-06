@@ -75,7 +75,7 @@ task ncbi_datasets_download_genome {
             ## to:
             ## HG00609#hap1#CM086352.1 (for example)
             sed "s/^>\([^ ]*\).*/>~{sample_name}\#~{haplotype_string}\#\1/" ncbi_dataset/data/~{genome_accession}/*.fna \
-                > ~{output_fasta_prefix}
+                > ~{output_fasta_prefix}.fa
         else
             ## copy and rename file
             cp ncbi_dataset/data/~{genome_accession}/*.fna ~{output_fasta_prefix}.fa
