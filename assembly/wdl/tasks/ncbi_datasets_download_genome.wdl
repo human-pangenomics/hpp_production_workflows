@@ -74,7 +74,7 @@ task ncbi_datasets_download_genome {
             ## CM086346.1 Homo sapiens isolate HG00609 chromosome 1, whole genome shotgun sequence
             ## to:
             ## HG00609#hap1#CM086352.1 (for example)
-            sed "s/^>\([^ ]*\).*/>~{sample_name}\#~{haplotype_string}\#\1/" ncbi_dataset/data/${genome_accession}/*.fna \
+            sed "s/^>\([^ ]*\).*/>~{sample_name}\#~{haplotype_string}\#\1/" ncbi_dataset/data/~{genome_accession}/*.fna \
                 > ~{output_fasta_prefix}
         else
             ## copy and rename file
