@@ -4,11 +4,14 @@ workflow ncbi_datasets_download_genome_wf {
 
     input {
         String sample_name
-        String genome_accession
-        String haplotype_string
 
-        String? genome_accession_2
+        Int haplotype_int
+        String haplotype_string
+        String genome_accession         
+
+        Int? haplotype_int_2
         String? haplotype_string_2
+        String? genome_accession_2
 
         String output_tag        = "asm"
         Boolean reheader_fasta   = false    
@@ -19,6 +22,7 @@ workflow ncbi_datasets_download_genome_wf {
         input:
             sample_name       = sample_name,
             genome_accession  = genome_accession,
+            haplotype_int     = haplotype_int,
             haplotype_string  = haplotype_string,
             output_tag        = output_tag,
             reheader_fasta    = reheader_fasta
@@ -32,6 +36,7 @@ workflow ncbi_datasets_download_genome_wf {
             input:
                 sample_name       = sample_name,
                 genome_accession  = select_first([genome_accession_2]),
+                haplotype_int     = select_first([haplotype_int_2]),
                 haplotype_string  = select_first([haplotype_string_2]),
                 output_tag        = output_tag,
                 reheader_fasta    = reheader_fasta
@@ -47,6 +52,7 @@ workflow ncbi_datasets_download_genome_wf {
     parameter_meta {
         sample_name: "Sample ID to use in output file name. Example: HG00408. Output will be named {sample_name}_{haplotype_string}_{output_tag}.fa.gz"
         genome_accession: "Genbank (or RefSeq) genome accession. Example: GCA_042027545.1"        
+        haplotype_int: "Haplotype integer to use in sequence names (according to PanSN spec). 1/2 is used for pat/mat, respectively."
         haplotype_string: "Haplotype id to use in output file name. Example: mat/pat/hap1/hap2"
         genome_accession_2: "Accession for second haplotype, if one is present."
         haplotype_string_2: "Haplotype id for second haplotype, if one is present."
@@ -69,6 +75,7 @@ task ncbi_datasets_download_genome {
     input {
         String genome_accession
         String sample_name
+        Int haplotype_int
         String haplotype_string
         String output_tag
         Boolean reheader_fasta   
@@ -100,7 +107,7 @@ task ncbi_datasets_download_genome {
             ## CM086346.1 Homo sapiens isolate HG00609 chromosome 1, whole genome shotgun sequence
             ## to:
             ## HG00609#hap1#CM086352.1 (for example)
-            sed "s/^>\([^ ]*\).*/>~{sample_name}\#~{haplotype_string}\#\1/" ncbi_dataset/data/~{genome_accession}/*.fna \
+            sed "s/^>\([^ ]*\).*/>~{sample_name}\#~{haplotype_int}\#\1/" ncbi_dataset/data/~{genome_accession}/*.fna \
                 > ~{output_fasta_prefix}.fa
         else
             ## copy and rename file
