@@ -64,10 +64,12 @@ workflow ncbi_datasets_download_genome_wf {
         File genbank_fa_hap1_gz      = download_asm1.fasta_gz
         File genbank_fa_hap1_gz_gzi  = download_asm1.fasta_gz_gzi
         File genbank_fa_hap1_gz_fai  = download_asm1.fasta_gz_fai
+        File genbank_fa_hap1_gz_md5  = download_asm1.fasta_gz_md5
         
         File? genbank_fa_hap2_gz     = download_asm2.fasta_gz
         File? genbank_fa_hap2_gz_gzi = download_asm2.fasta_gz_gzi
         File? genbank_fa_hap2_gz_fai = download_asm2.fasta_gz_fai        
+        File? genbank_fa_hap2_gz_md5 = download_asm2.fasta_gz_md5
     }
 
 }
@@ -118,6 +120,7 @@ task ncbi_datasets_download_genome {
         bgzip -i ~{output_fasta_prefix}.fa
         samtools faidx ~{output_fasta_prefix}.fa.gz
 
+        md5sum ~{output_fasta_prefix}.fa.gz > ~{output_fasta_prefix}.fa.gz.md5
     >>> 
     runtime {
         docker: dockerImage
@@ -130,6 +133,7 @@ task ncbi_datasets_download_genome {
         File fasta_gz     = "~{output_fasta_prefix}.fa.gz"
         File fasta_gz_gzi = "~{output_fasta_prefix}.fa.gz.gzi"
         File fasta_gz_fai = "~{output_fasta_prefix}.fa.gz.fai"
+        File fasta_gz_md5 = "~{output_fasta_prefix}.fa.gz.md5"
     }
 }
 
