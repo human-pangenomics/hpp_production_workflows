@@ -86,7 +86,7 @@ task ncbi_datasets_download_genome {
         Int memSize=8
         Int threadCount=2
         Int diskSize=64
-        String dockerImage="humanpangenomics/ncbi-datasets-cli@sha256:c3b3bb734d2b7eb9cee874bb25ae94d57b8e11f8e06a0e090b7010d9193d37e0" # 16.31.0
+        String dockerImage="humanpangenomics/ncbi-datasets-cli@sha256:bad03e0c7e44f9e9038978d2a570b9d112d58d325f97c7bb6b9de4721b018a31" # 16.31.0
         Int preemptible=2
     }
 
@@ -110,15 +110,21 @@ task ncbi_datasets_download_genome {
             ## to:
             ## HG00609#hap1#CM086352.1 (for example)
             sed "s/^>\([^ ]*\).*/>~{sample_name}\#~{haplotype_int}\#\1/" ncbi_dataset/data/~{genome_accession}/*.fna \
-                > ~{output_fasta_prefix}.fa
+                > ~{output_fasta_prefix}.masked.fa
         else
             ## copy and rename file
-            cp ncbi_dataset/data/~{genome_accession}/*.fna ~{output_fasta_prefix}.fa
+            cp ncbi_dataset/data/~{genome_accession}/*.fna ~{output_fasta_prefix}.masked.fa
         fi
+
+        ## genbank soft masks and has a line width of 80 characters.
+        ## remove soft masking from Genbank and set line width to 60
+        seqkit seq -u -w 60 ~{output_fasta_prefix}.masked.fa > ~{output_fasta_prefix}.fa
+
 
         ## compress and create indices for fasta
         bgzip -i ~{output_fasta_prefix}.fa
         samtools faidx ~{output_fasta_prefix}.fa.gz
+
 
         md5sum ~{output_fasta_prefix}.fa.gz > ~{output_fasta_prefix}.fa.gz.md5
     >>> 
