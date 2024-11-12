@@ -216,3 +216,6 @@ workflows:
    -  name: NucFreq
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/tasks/nucfreq.wdl
+   -  name: bedToBigBed
+      subclass: WDL
+      primaryDescriptorPath: /annotation/wdl/tasks/bed_to_bigbed.wdl
