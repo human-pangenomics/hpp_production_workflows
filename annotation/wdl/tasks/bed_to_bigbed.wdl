@@ -117,7 +117,7 @@ task bed_to_bigbed {
             -type=~{type_str} \
             -as=~{auto_sql} \
             ~{input_bed} \
-            ~{chrom_sizes}
+            ~{chrom_sizes} \
             ~{output_prefix}.bb
     >>>  
 
