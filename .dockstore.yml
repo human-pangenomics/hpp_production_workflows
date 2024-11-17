@@ -219,3 +219,6 @@ workflows:
    -  name: bedToBigBed
       subclass: WDL
       primaryDescriptorPath: /annotation/wdl/tasks/bed_to_bigbed.wdl
+   -  name: repeatMasker
+      subclass: WDL
+      primaryDescriptorPath: /annotation/wdl/workflows/repeat_masker.wdl
