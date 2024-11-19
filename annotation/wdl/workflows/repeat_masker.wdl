@@ -318,7 +318,7 @@ task finalizeFiles {
         File repeatMaskerOutFile = "~{fName}_repeat_masker.out"        
         File rmskBed             = "~{fName}_repeat_masker_rmsk.bed"
         File rmskAlignBed        = "~{fName}_repeat_masker_rmsk.align.bed"
-        File finalMaskedFasta    = "~{fName}_repeat_masker_masked.fasta"
+        File finalMaskedFasta    = "~{fName}_repeat_masker_masked.fasta.gz"
         File repeatMaskerTarGZ   = "~{fName}_repeat_masker.tar.gz"
     }
 
