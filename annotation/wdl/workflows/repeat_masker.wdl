@@ -284,7 +284,7 @@ task finalizeFiles {
         sed '1,3d' ~{sep=' ' outFiles} >> ~{fName}_repeat_masker.out
 
         # concatenate the masked fastas
-        cat ~{sep=' ' maskedFastas} > ~{fName}_repeat_masker_masked.fasta
+        cat ~{sep=' ' maskedFastas} | seqkit sort --natural-order --two-pass | pigz > ~{fName}_repeat_masker_masked.fasta.gz
 
         # concatenate the RM2BED bed files
         cat ~{sep=' ' bedFiles} > ~{fName}.bed
@@ -327,6 +327,6 @@ task finalizeFiles {
         memory: memSizeGB + " GB"
         preemptible : preemptible
         disks: "local-disk " + diskSize + " SSD"
-        docker: "biocontainers/bedtools@sha256:24b8aee2a9e86e11a7b363f845bba091d4feb5906b515b87a5f4a700db936ff8" # v2.28.0_cv2
+        docker: "humanpangenomics/sequence_toolbox@sha256:07fd158dce6b25b1731631cec161e554d0704cbf1227edb890b778c6b6fcb39b"
     }
 }
