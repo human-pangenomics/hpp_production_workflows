@@ -34,12 +34,8 @@ workflow RepeatMasker {
     call finalizeFiles {
         input:
             bedFiles       = outToBed.RMbed,
-            outFiles       = maskContig.outFile,
-            tblFiles       = maskContig.tblFile,
-            alignFiles     = maskContig.alignFile,
             maskedFastas   = maskContig.maskedFa,
-            rmskBeds       = maskContig.rmskBed,
-            rmskAlignBeds  = maskContig.rmskAlignBed,
+            subseqTarGZs   = maskContig.subseqTarGZ,
             fName          = fName
     }
 
@@ -196,6 +192,14 @@ task maskContig {
             mv ~{subsequenceName}.join.tsv  ~{subsequenceName}.rmsk.bed
             mv ~{subsequenceName}.align.tsv ~{subsequenceName}.rmsk.align.bed
         fi
+
+        ## create archive of all outputs for portability
+        mkdir ~{subsequenceName}
+        
+        cp ~{subsequenceName}.{out,tbl,align,masked,rmsk.bed,rmsk.align.bed} ~{subsequenceName}/
+
+        tar -czf ~{subsequenceName}.tar.gz ~{subsequenceName}
+        
     >>>
 
     output {
@@ -205,6 +209,7 @@ task maskContig {
          File maskedFa     = "~{subsequenceName}.masked"
          File rmskBed      = "~{subsequenceName}.rmsk.bed"
          File rmskAlignBed = "~{subsequenceName}.rmsk.align.bed"
+         File subseqTarGZ  = "~{subsequenceName}.tar.gz"
     }
 
     runtime {
@@ -258,12 +263,7 @@ task finalizeFiles {
     input {
         Array[File] bedFiles
         Array[File] maskedFastas
-        Array[File] outFiles
-        Array[File] tblFiles
-        Array[File] alignFiles
-        Array[File] rmskBeds
-        Array[File] rmskAlignBeds
-
+        Array[File] subseqTarGZs
         String fName
 
         Int threadCount = 2
@@ -277,40 +277,45 @@ task finalizeFiles {
         set -e
         set -u
         set -o xtrace
+
+        # Extract all archives
+        mkdir tar_directory
         
+        for tarfile in ~{sep=' ' subseqTarGZs}; do
+            tar xzf ${tarfile} -C tar_directory
+        done
+
         #concatenate the .out files 
-        cat ~{sep=' ' outFiles} > rm.tmp 
+        find ./tar_directory -name "*.out" | xargs cat > rm.tmp
         head -n 3 rm.tmp > ~{fName}_repeat_masker.out
-        sed '1,3d' ~{sep=' ' outFiles} >> ~{fName}_repeat_masker.out
+        find ./tar_directory -name "*.out" -exec sed '1,3d' {} \; >> ~{fName}_repeat_masker.out
+
+        # concatenate the rmsk bed files
+        find ./tar_directory -name "*.rmsk.bed" | xargs cat > ~{fName}.rmsk.bed
+        bedtools sort -i ~{fName}.rmsk.bed > ~{fName}_repeat_masker_rmsk.bed
+
+        # concatenate the rmsk align bed files
+        find ./tar_directory -name "*.rmsk.align.bed" | xargs cat > ~{fName}.rmsk.align.bed
+        bedtools sort -i ~{fName}.rmsk.align.bed > ~{fName}_repeat_masker_rmsk.align.bed
+
 
         # concatenate the masked fastas
         cat ~{sep=' ' maskedFastas} | seqkit sort --natural-order --two-pass | pigz > ~{fName}_repeat_masker_masked.fasta.gz
+
 
         # concatenate the RM2BED bed files
         cat ~{sep=' ' bedFiles} > ~{fName}.bed
         bedtools sort -i ~{fName}.bed > ~{fName}_repeat_masker.bed
 
 
-        # concatenate the rmsk bed files
-        cat ~{sep=' ' rmskBeds} > ~{fName}.rmsk.bed
-        bedtools sort -i ~{fName}.rmsk.bed > ~{fName}_repeat_masker_rmsk.bed
+        # Create an archive of the sequence-level tbl, out, and align files
+        mkdir -p ~{fName}_repeat_masker/{out,tbl,align}
         
-        # concatenate the rmsk align bed files
-        cat ~{sep=' ' rmskAlignBeds} > ~{fName}.rmsk.align.bed
-        bedtools sort -i ~{fName}.rmsk.align.bed > ~{fName}_repeat_masker_rmsk.align.bed
+        find ./tar_directory -name "*.out"   -exec cp {} ~{fName}_repeat_masker/out/ \;
+        find ./tar_directory -name "*.tbl"   -exec cp {} ~{fName}_repeat_masker/tbl/ \;
+        find ./tar_directory -name "*.align" -exec cp {} ~{fName}_repeat_masker/align/ \;
 
-
-        # make a tar.gz of the out, align, and tbl files
-        mkdir -p ~{fName}_repeat_masker/out/
-        ln -s ~{sep=' ' outFiles} ~{fName}_repeat_masker/out/
-        
-        mkdir ~{fName}_repeat_masker/tbl/
-        ln -s ~{sep=' ' tblFiles} ~{fName}_repeat_masker/tbl/
-
-        mkdir ~{fName}_repeat_masker/align/
-        ln -s ~{sep=' ' alignFiles} ~{fName}_repeat_masker/align/
-
-        tar chzf ~{fName}_repeat_masker.tar.gz ~{fName}_repeat_masker
+        tar -czf ~{fName}_repeat_masker.tar.gz ~{fName}_repeat_masker
 
     >>> 
     output {
