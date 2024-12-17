@@ -118,7 +118,10 @@ task ncbi_datasets_download_genome {
 
         ## genbank soft masks and has a line width of 80 characters.
         ## remove soft masking from Genbank and set line width to 60
-        seqkit seq -u -w 60 ~{output_fasta_prefix}.masked.fa > ~{output_fasta_prefix}.fa
+        ## sort sequences
+        seqkit seq -u -w 60 ~{output_fasta_prefix}.masked.fa \
+            | seqkit sort --natural-order --two-pass \
+            > ~{output_fasta_prefix}.fa
 
 
         ## compress and create indices for fasta
