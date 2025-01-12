@@ -14,7 +14,7 @@ task liftoff {
         File assemblyFastaGz
         File referenceFastaGz
         File geneGff3
-        Int memSizeGB = 32
+        Int memSizeGB = 128
         Int threadCount = 8
         Int diskSizeGB = 128
         String dockerImage = "mobinasri/liftoff:1.6.2"
@@ -46,7 +46,7 @@ task liftoff {
 
     >>>
     output {
-        File outputGff3 = glob("output/*.gff3")[0]
+        File outputGff3 = "output/~{sample}.~{suffix}.gff3"
     }
     runtime {
         memory: memSizeGB + " GB"
