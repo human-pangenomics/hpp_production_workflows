@@ -44,16 +44,22 @@ task calc_ont_summary_stats {
     command <<<
         set -eux -o pipefail
 
+        # Check if file is gzipped and set up appropriate cat command
+        if file ~{sequencing_summary} | grep -q "gzip compressed"; then
+            CAT_CMD="zcat"
+        else
+            CAT_CMD="cat"
+        fi
+
         BASENAME=$(basename -- "~{sequencing_summary}" _sequencing_summary.txt.gz)
+        BASENAME=${BASENAME%_sequencing_summary.txt}  # Remove .txt suffix if present
         
         # Create summary for just pass reads
         # grab header, then reads over Q10
-        #gzip -cd ~{sequencing_summary} | sed -n 1p > ${BASENAME}_pass.txt
-        zcat ~{sequencing_summary} | awk '{ if ($15 >= 10) { print } }' >> ${BASENAME}_pass.txt
+        $CAT_CMD ~{sequencing_summary} | awk 'NR==1 || ($15 >= 10)' > ${BASENAME}_pass.txt
 
         # Create summary for just fail reads
-        gzip -cd ~{sequencing_summary} | sed -n 1p > ${BASENAME}_fail.txt
-        zcat ~{sequencing_summary} | awk '{ if ($15 < 10) { print } }' >> ${BASENAME}_fail.txt
+        $CAT_CMD ~{sequencing_summary} | awk 'NR==1 || ($15 < 10)' > ${BASENAME}_fail.txt
 
         python3 /opt/calculate_summary_stats.py ${BASENAME}_pass.txt > ${BASENAME}.pass_summary_stats.txt
         python3 /opt/calculate_summary_stats.py ${BASENAME}_fail.txt > ${BASENAME}.fail_summary_stats.txt
