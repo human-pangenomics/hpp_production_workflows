@@ -24,7 +24,8 @@ workflow comparisonQC {
         File hs38Paf
         File? matYak
         File? patYak
-        Array[File] childReadsILM
+        File? sampleYak
+        Array[File]? childReadsILM
         File extractReadsReferenceFasta
 
         ## findAssemblyBreakpoints Inputs
@@ -87,12 +88,14 @@ workflow comparisonQC {
             min_size=min_len
     }
 
-    ### create yak to get QV ###
-    call yak_t.runYak as childYakCount {
-        input:
-            sampleReadsILM=childReadsILM,
-            sampleName="${sampleName}",
-            referenceFasta=extractReadsReferenceFasta,
+    ### create yak only if sampleYak not provided ###
+    if (!defined(sampleYak) && defined(childReadsILM) && defined(extractReadsReferenceFasta)) {
+        call yak_t.runYak as childYakCount {
+            input:
+                sampleReadsILM=select_first([childReadsILM]),
+                sampleName="${sampleName}",
+                referenceFasta=select_first([extractReadsReferenceFasta]),
+        }
     }
 
     call shortQC_t.shortQC as shortQC_filt {
@@ -102,7 +105,7 @@ workflow comparisonQC {
 
             patYak      = patYak,
             matYak      = matYak,
-            childYak    = childYakCount.outputYak,
+            childYak    = select_first([sampleYak, childYakCount.outputYak]),
             genesFasta  = genesFasta,
             hs38Paf     = hs38Paf,
             childID     = sampleName,
@@ -162,7 +165,7 @@ workflow comparisonQC {
 
                 patYak      = patYak,
                 matYak      = matYak,
-                childYak    = childYakCount.outputYak,
+                childYak    = select_first([sampleYak, childYakCount.outputYak]),
                 genesFasta  = genesFasta,
                 hs38Paf     = hs38Paf,
                 childID     = sampleName,
@@ -229,7 +232,7 @@ workflow comparisonQC {
 
 
         ## Yak (so we don't have to rerun)
-        File childYak          = childYakCount.outputYak
+        File childYak          = select_first([sampleYak, childYakCount.outputYak])
 
 
         ## Outputs for filtered assemblies
