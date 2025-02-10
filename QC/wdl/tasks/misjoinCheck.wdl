@@ -9,6 +9,16 @@ workflow misjoinCheck {
         File ref_centromere_bed
         String name
     }
+    meta {
+        description: "Aligns assembly to reference genome with minigraph then runs paftools MisjoinCheck identify chromosome-level missasemblies"
+    }
+
+    parameter_meta {
+        asm_fasta: "Assembly to check for misjoins"
+        ref_fasta: "Reference fasta such as CHM13"
+        ref_centromere_bed: "BED file of regions which are hard to map and share homology across chromosomes. Alignments in these regions are treated differently."
+        name: "Used in output naming such as {sampleName}.misjoin_summary.txt"
+    }
 
     call minigraph_wf.minigraphMap as minigraph_t {
         input:
