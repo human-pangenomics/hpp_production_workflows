@@ -140,14 +140,19 @@ task filter_bam {
             REGIONS_ARG="--regions-file ~{regions_bed}"
         fi
 
+        ## Soft link bam and bai to ensure they're in same directory with expected names
+        ## copy bai to force the timestamp to be newer than the bam (since inputs are immutable)
+        ln -s ~{input_bam} ./input.bam
+        cp ~{input_bam_bai} ./input.bam.bai
+
         samtools view \
             -F ~{sam_omit_flag}\
             --bam \
             --with-header \
             $REGIONS_ARG \
             --threads ~{threadCount} \
-            -X ~{input_bam} ~{input_bam_bai} \
-            -o ~{file_prefix}_nucfreq_filtered.bam
+            ./input.bam \
+            -o ~{file_prefix}_nucfreq_filtered.bam            
 
         samtools index \
             --threads ~{threadCount} \
