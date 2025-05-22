@@ -89,6 +89,7 @@ workflow RepeatMasker {
 task createArray {
     input {
         File fasta
+	String fName
 
         Int threadCount = 2
         Int memSizeGB   = 16
@@ -97,21 +98,17 @@ task createArray {
     }
     command <<<
 
-        fasta_fn=$(basename -- "~{fasta}")
-
         ## first check if assembly_fa needs to be unzipped 
-        if [[ $fasta_fn =~ \.gz$ ]]; then
-            cp ~{fasta} .
-            gunzip -f $fasta
-            fasta_fn="${fasta_fn%.gz}"
+        if [[ ~{fasta} =~ \.gz$ ]]; then
+            gunzip -fc $fasta > ~{fName}.fa
         else
-            ln -s ~{fasta}
+            cat ~{fasta} > ~{fName}.fa
         fi 
 
         ## split fasta and name outputs with sequence ID.
         ## Note that "#" are converted to "_" in the file names (but not the headers) 
         ## to prevent the "#" being interpreted URL encoded (%23)
-        awk '/^>/ { file=substr($1,2); gsub("#","_",file); file=file ".fa" } { print > file }' $fasta_fn
+        awk '/^>/ { file=substr($1,2); gsub("#","_",file); file=file ".fa" } { print > file }' ~{fName}.fa
 
     >>>
     output {
