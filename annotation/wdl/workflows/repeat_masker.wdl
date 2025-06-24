@@ -15,7 +15,8 @@ workflow RepeatMasker {
     
     call createArray {
         input:
-            fasta=fasta
+            fasta=fasta,
+	    fName=fName
     }
 
     scatter (subFasta in createArray.contigArray) {
