@@ -101,7 +101,7 @@ task createArray {
 
         ## first check if assembly_fa needs to be unzipped 
         if [[ ~{fasta} =~ \.gz$ ]]; then
-            gunzip -fc $fasta > ~{fName}.fa
+            gunzip -fc ~{fasta} > ~{fName}.fa
         else
             cat ~{fasta} > ~{fName}.fa
         fi 
