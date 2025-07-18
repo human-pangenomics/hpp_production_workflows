@@ -90,7 +90,8 @@ workflow RepeatMasker {
 task createArray {
     input {
         File fasta
-	String fName
+        String fName
+        Int numberOfOutputs = 16
 
         Int threadCount = 2
         Int memSizeGB   = 16
@@ -106,20 +107,37 @@ task createArray {
             cat ~{fasta} > ~{fName}.fa
         fi 
 
-        ## split fasta and name outputs with sequence ID.
-        ## Note that "#" are converted to "_" in the file names (but not the headers) 
-        ## to prevent the "#" being interpreted URL encoded (%23)
-        awk '/^>/ { file=substr($1,2); gsub("#","_",file); file=file ".fa" } { print > file }' ~{fName}.fa
+        samtools faidx  ~{fName}.fa
+        cat ~{fName}.fa.fai | awk '{print $1"\t0\t"$2}' | bedtools sort -i - > ~{fName}.bed
+
+        # this script will split the whole genome bed file into as many bed files as requested (default 16)
+        # without splitting any contig it keeps either a whole config in each bed file or none of it
+        # the total length of the output bed files are as close as possible to each other to make sure
+        # running the following tasks on one split does not take way longer than others
+        mkdir -p output 
+        python3 ${SPLIT_BED_CONTIG_WISE_PY} \
+            --bed ~{fName}.bed  \
+            --n ~{numberOfOutputs} \
+            --dir output \
+            --prefix ~{fName}
+
+        # create one fasta per bed file
+        for BED in $(find output)
+        do
+            cat ${BED} | \
+                cut -f1 | \
+                seqtk subseq ~{fName}.fa  - > ${BED%%.bed}.fa 
+        done
 
     >>>
     output {
-        Array[File] contigArray = glob("*.fa")
+        Array[File] contigArray = glob("output/*.fa")
     }
     runtime {
         cpu: threadCount        
         memory: memSizeGB + " GB"
         disks: "local-disk " + diskSize + " SSD"
-        docker: "ubuntu@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98" # 18.04
+        docker: "mobinasri/flagger:v1.1.0"
         preemptible : preemptible
     }
 }
