@@ -6,6 +6,7 @@ workflow run_primrose_with_kinetics_fix {
     meta {
         author: "Julian Lucas"
         email: "juklucas@ucsc.edu"
+        maintainer: "Andrew Blair"
         description: "Fixes kinetics arrays in HiFi BAM files (for files demultiplexed with lima <2.5) then outputs hifi bam file with 5-Methylcytosine (5mC) predictions of each CpG in PacBio HiFi reads with [primrose](https://github.com/PacificBiosciences/primrose). Only run if input bam has kinetics tags which are incorrectly trimmed by lima."
     }
 
@@ -13,10 +14,11 @@ workflow run_primrose_with_kinetics_fix {
         File input_bam
         Boolean drop_mm = true
         String? output_name
+        String sample_id  # Only used to help name outputs if output_name is not given
     }
 
-    # Generate default output name if not provided
-    String default_output_name = sub(basename(input_bam), "\\.bam$", ".fixed_kinetics.bam")
+    # Use sample_id only if output_name wasn't explicitly provided
+    String default_output_name = sample_id + ".fixed_kinetics.bam"
     String final_output_name = select_first([output_name, default_output_name])
 
     call trim_hifi_barcode_kinetics {
@@ -33,7 +35,14 @@ workflow run_primrose_with_kinetics_fix {
 
     output {
         File output_5mc_bam = primrose_task.output_bam
-    }  
+    }
+
+    parameter_meta {
+        input_bam: "Input PacBio HiFi reads BAM file with barcode and kinetics tags"
+        drop_mm: "Whether to drop MM/ML methylation tags (default: true)"
+        output_name: "Optional custom name for the final primrose BAM output"
+        sample_id: "Sample identifier used for default output BAM naming"
+    }
 }
 
 task trim_hifi_barcode_kinetics {
@@ -52,7 +61,6 @@ task trim_hifi_barcode_kinetics {
         drop_mm: "Remove existing MM/ML methylation tags"
     }
 
-    # Estimate disk size required
     Int input_bam_size   = ceil(size(input_bam, "GB"))    
     Int final_disk_size  = input_bam_size * 2 + addlDisk
 
