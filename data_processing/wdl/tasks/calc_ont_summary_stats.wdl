@@ -75,7 +75,7 @@ task calc_ont_summary_stats {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSize + " SSD"
-        docker: "humanpangenomics/ont_summary_stats@sha256:ec6eba759f8f91cf461262ba5155aa951b77acf241f764dda4b58f7d5247d96b"
+        docker: "iviolich/ont_summary_stats:1.0.1"
         preemptible: preempts
     }
 }
