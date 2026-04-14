@@ -1,55 +1,5 @@
 version 1.0
 
-workflow ntsm_workflow {
-    input {
-        Array[File] input_reads_1
-        Array[File] input_reads_2
-        String sample_id   = "sample"
-        String read_1_type = "type1"
-        String read_2_type = "type2"
-
-        File? cram_reference
-    }
-
-    # Type 1: NTSM count
-    call ntsm_count as ntsm_count_t1 {
-        input:
-            input_reads    = input_reads_1,
-            cram_reference = cram_reference,
-            sample_id      = sample_id,
-            read_type      = read_1_type
-    }
-
-    # Type 2: NTSM count
-    call ntsm_count as ntsm_count_t2 {
-        input:
-            input_reads    = input_reads_2,
-            cram_reference = cram_reference,
-            sample_id      = sample_id,
-            read_type      = read_2_type
-    }
-
-    call ntsm_eval {
-        input:
-            count_1_file = ntsm_count_t1.ntsm_counts,
-            count_2_file = ntsm_count_t2.ntsm_counts,
-            sample_id    = sample_id,
-            read_1_type  = read_1_type,
-            read_2_type  = read_2_type
-    }
-
-   output {
-        File ntsm_count_1  = ntsm_count_t1.ntsm_counts
-        File ntsm_count_2  = ntsm_count_t2.ntsm_counts
-        File ntsm_eval_out = ntsm_eval.ntsm_eval_out
-    }
-
-    meta {
-        author: "Julian Lucas"
-        email: "juklucas@ucsc.edu"
-        description: "Calls [ntsm](https://github.com/JustinChu/ntsm) to identify mismatched read files through k-mer analysis"
-    }
-}
 
 task ntsm_count {
     input {
@@ -58,21 +8,21 @@ task ntsm_count {
         String read_type
 
         File? cram_reference
-        Int count_kmer_size = 19
 
-        Int memSizeGB   = 4
-        Int threadCount = 4
-        Int addldisk    = 10
-        Int preempts    = 2
+        Int max_coverage = 10
+        Int memSizeGB    = 4
+        Int threadCount  = 4
+        Int addldisk     = 10
+        Int preempts     = 2
     }
-    
+
     parameter_meta {
-        input_reads: "Files must be in fastq, fastq.gz (preferred), BAM, or CRAM format. CRAM files must be passed with cram_reference"
-        count_kmer_size: "k-mer size to use (sliding window is applied: highest count is stored)"
+        input_reads:  "Files must be in fastq, fastq.gz (preferred), BAM, or CRAM format. CRAM files must be passed with cram_reference"
+        max_coverage: "Stop processing once average site coverage reaches this value. 10x is sufficient for most data; lower if error rate is very low."
     }
 
     # Estimate disk size required
-    Int input_read_size  = ceil(size(input_reads, "GB"))       
+    Int input_read_size  = ceil(size(input_reads, "GB"))
     Int final_disk_dize   = input_read_size * 5 + addldisk
 
     # Create output file name
@@ -104,11 +54,10 @@ task ntsm_count {
                         exit 1
                     fi
                     ln -s ~{cram_reference}
-                    # samtools fastq -@~{threadCount} -c 1 -1 output/${PREFIX}_1.fastq.gz -2 output/${PREFIX}_2.fastq.gz --reference `basename ~{cram_reference}` $READFILE
-                    samtools fastq -@~{threadCount} --reference `basename ~{cram_reference}` $READFILE | gzip --fast --stdout >  output/${PREFIX}.fastq.gz              
+                    samtools fastq -@~{threadCount} --reference `basename ~{cram_reference}` $READFILE | gzip --fast --stdout >  output/${PREFIX}.fastq.gz
                 elif [[ "$SUFFIX" == "fastq" ]] ; then
                     gzip $READFILE > output/${PREFIX}.fastq.gz
-                
+
                 elif [[ "$SUFFIX" != "gz" ]] ; then
                     echo "Unsupported file type: ${PREFIX}.${SUFFIX}"
                     exit 1
@@ -119,17 +68,12 @@ task ntsm_count {
             done
 
 
-        ## localize kmers
-        ln -s /opt/ntsm/data/31_AT.fa .
-        ln -s /opt/ntsm/data/31_CG.fa .
-
-        ## Count number of k-mers found 
-        /opt/ntsm/src/ntsmCount \
-            -r 31_AT.fa \
-            -a 31_CG.fa \
-            -k ~{count_kmer_size} \
+        ## Count number of k-mers found
+        /opt/ntsm/bin/ntsmCount \
+            -s /opt/ntsm/data/human_sites_n10.fa \
             -t ~{threadCount} \
-            <(pigz -cd output/*) \
+            -m ~{max_coverage} \
+            output/*.fastq.gz \
             > ~{output_counts_fn}
     >>>
 
@@ -141,18 +85,15 @@ task ntsm_count {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + final_disk_dize + " SSD"
-        docker: "humanpangenomics/ntsm:latest"
+        docker: "iviolich/ntsm:1.2.1"
         preemptible: preempts
     }
 }
 
 task ntsm_eval {
     input {
-        File count_1_file
-        File count_2_file       
-        String sample_id
-        String read_1_type
-        String read_2_type
+        Array[File] count_files
+        String output_prefix
 
         Int memSizeGB   = 4
         Int threadCount = 4
@@ -160,15 +101,25 @@ task ntsm_eval {
         Int preempts    = 2
     }
 
-    # Create output file name
-    String output_eval_fn = "${sample_id}_${read_1_type}_vs_${read_2_type}.txt"
+    parameter_meta {
+        count_files: "Count files produced by ntsm_count, one per sample/read-type. All files are evaluated together."
+        output_prefix: "Prefix for the output eval file."
+    }
+
+    String output_eval_fn = "${output_prefix}_ntsm_eval.tsv"
 
     command <<<
         set -eux -o pipefail
 
-        /opt/ntsm/src/ntsmEval \
-            ~{count_1_file} \
-            ~{count_2_file} \
+        ## Symlink count files by basename so ntsmEval uses clean sample names
+        COUNT_FILES=(~{sep=" " count_files})
+        for f in "${COUNT_FILES[@]}"; do
+            ln -s "$f" "$(basename $f)"
+        done
+
+        /opt/ntsm/bin/ntsmEval \
+            --all \
+            $(for f in "${COUNT_FILES[@]}"; do basename "$f"; done) \
             > ~{output_eval_fn}
     >>>
 
@@ -180,7 +131,7 @@ task ntsm_eval {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSize + " SSD"
-        docker: "humanpangenomics/ntsm:latest"
+        docker: "iviolich/ntsm:1.2.1"
         preemptible: preempts
     }
 }
