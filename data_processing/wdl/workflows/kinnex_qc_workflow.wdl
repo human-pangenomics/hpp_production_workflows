@@ -57,10 +57,10 @@ task summarize_kinnex_qc {
     }
 
     command <<<
-        set -euo pipefail
+set -euo pipefail
 
-        ## Write parser to a temp file (avoids WDL/bash interpolation inside heredoc)
-        cat << 'PYEOF' > /tmp/parse_pigeon.py
+## Write parser to a temp file (avoids WDL/bash interpolation inside heredoc)
+cat << 'PYEOF' > /tmp/parse_pigeon.py
 import sys
 import re
 
@@ -150,7 +150,7 @@ with open(out_file, 'w') as out:
 print(f"Generated: {out_file}")
 PYEOF
 
-        python3 /tmp/parse_pigeon.py ~{pigeon_summary} ~{file_name}
+python3 /tmp/parse_pigeon.py ~{pigeon_summary} ~{file_name}
     >>>
 
     output {
