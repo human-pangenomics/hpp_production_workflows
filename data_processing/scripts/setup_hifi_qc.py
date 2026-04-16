@@ -115,20 +115,28 @@ def main():
         writer.writerows(samples)
 
     n = len(samples)
+    submit_path = os.path.join(cwd, "submit.sh")
+    with open(submit_path, "w") as fh:
+        fh.write(f"#!/bin/bash\n")
+        fh.write(f"cd {cwd}\n")
+        fh.write(f"source ~/toil_env/bin/activate\n")
+        fh.write(
+            f"sbatch \\\n"
+            f"    --job-name={args.job_name} \\\n"
+            f"    --array=[1-{n}]%{n} \\\n"
+            f"    --partition={args.partition} \\\n"
+            f"    {TOIL_SCRIPT} \\\n"
+            f"    --wdl {args.wdl} \\\n"
+            f"    --sample_csv {csv_path} \\\n"
+            f"    --input_json_path '{json_dir}/${{SAMPLE_ID}}_hifi_qc_workflow.json'\n"
+        )
+    os.chmod(submit_path, 0o755)
+
     print(f"\nCreated {n} input JSON(s) in {json_dir}/")
-    print(f"Created {csv_path}\n")
-    print("Run the following to submit:\n")
-    print(
-        f"sbatch \\\n"
-        f"    --job-name={args.job_name} \\\n"
-        f"    --array=[1-{n}]%{n} \\\n"
-        f"    --partition={args.partition} \\\n"
-        f"    {TOIL_SCRIPT} \\\n"
-        f"    --wdl {args.wdl} \\\n"
-        f"    --sample_csv {csv_path} \\\n"
-        f"    --input_json_path '{json_dir}/${{SAMPLE_ID}}_hifi_qc_workflow.json'"
-    )
-    print()
+    print(f"Created {csv_path}")
+    print(f"Created {submit_path}\n")
+    print("To submit:")
+    print(f"    bash {submit_path}\n")
 
 
 if __name__ == "__main__":

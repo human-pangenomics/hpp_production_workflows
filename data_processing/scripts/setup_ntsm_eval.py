@@ -66,22 +66,31 @@ def main():
     with open(json_path, "w") as fh:
         json.dump(entry, fh, indent=2)
 
+    os.makedirs(os.path.join(cwd, "analysis"), exist_ok=True)
     analysis_dir = os.path.join(cwd, "analysis")
     output_file = os.path.join(cwd, f"{args.output_prefix}_ntsm_eval_outputs.json")
 
-    print(f"\nCreated {json_path} ({len(files)} count files)\n")
-    print("Run the following to submit:\n")
-    print(
-        f"sbatch \\\n"
-        f"    --job-name={args.output_prefix}_ntsm_eval \\\n"
-        f"    --partition={args.partition} \\\n"
-        f"    {args.toil_script} \\\n"
-        f"    --wdl {args.wdl} \\\n"
-        f"    --input_json {json_path} \\\n"
-        f"    --output_dir {analysis_dir} \\\n"
-        f"    --output_file {output_file}"
-    )
-    print()
+    submit_path = os.path.join(cwd, "submit.sh")
+    with open(submit_path, "w") as fh:
+        fh.write("#!/bin/bash\n")
+        fh.write(f"cd {cwd}\n")
+        fh.write("source ~/toil_env/bin/activate\n")
+        fh.write(
+            f"sbatch \\\n"
+            f"    --job-name={args.output_prefix}_ntsm_eval \\\n"
+            f"    --partition={args.partition} \\\n"
+            f"    {args.toil_script} \\\n"
+            f"    --wdl {args.wdl} \\\n"
+            f"    --input_json {json_path} \\\n"
+            f"    --output_dir {analysis_dir} \\\n"
+            f"    --output_file {output_file}\n"
+        )
+    os.chmod(submit_path, 0o755)
+
+    print(f"\nCreated {json_path} ({len(files)} count files)")
+    print(f"Created {submit_path}\n")
+    print("To submit:")
+    print(f"    bash {submit_path}\n")
 
 
 if __name__ == "__main__":
