@@ -107,8 +107,8 @@ cols = (
     ['sample']
     + [f'n_{t}' for t in type_cols]
     + ['n_files',
-       'n_within', 'exp_within', 'mean_within(exp<0.25)', 'max_within(exp<0.25)',
-       'n_cross',  'exp_cross',  'min_cross(exp>0.5)',    'mean_cross(exp>0.5)',
+       'n_within', 'exp_within', 'min_within(exp>0)', 'mean_within(exp<0.25)', 'max_within(exp<0.25)',
+       'n_cross',  'exp_cross',  'min_cross(exp>0.5)', 'mean_cross(exp>0.5)',  'max_cross(exp<3.0)',
        'flag']
 )
 
@@ -119,11 +119,13 @@ for s in samples:
     if not ws or not cs:
         print(f"Warning: no data for {s}", file=sys.stderr)
         continue
+    min_w  = min(ws)
     mean_w = sum(ws) / len(ws)
     max_w  = max(ws)
     min_c  = min(cs)
     mean_c = sum(cs) / len(cs)
-    flag   = 'PASS' if max_w < 0.5 and min_c > 0.5 else 'FAIL'
+    max_c  = max(cs)
+    flag   = 'PASS' if min_w > 0 and max_w < 0.5 and min_c > 0.5 else 'FAIL'
     n_by_type = [len(files[s][t]) for t in type_cols]
     n = sum(n_by_type)
     exp_w = n * (n - 1) // 2
@@ -132,8 +134,8 @@ for s in samples:
         [s]
         + n_by_type
         + [n,
-           len(ws), exp_w, f'{mean_w:.3f}', f'{max_w:.3f}',
-           len(cs), exp_c, f'{min_c:.3f}',  f'{mean_c:.3f}',
+           len(ws), exp_w, f'{min_w:.3f}', f'{mean_w:.3f}', f'{max_w:.3f}',
+           len(cs), exp_c, f'{min_c:.3f}', f'{mean_c:.3f}', f'{max_c:.3f}',
            flag]
     )
 
