@@ -177,7 +177,7 @@ task assign_chrom {
     }
 
     runtime {
-        docker: "humanpangenomics/chrom_assignment@sha256:21c3f085320fe246d1fa862236a74440ffe02d09d42935408b48645c559c161d"
+        docker: "humanpangenomics/chrom_assignment@sha256:c1661050c4d7a3681732fa14b57c98acce3e305cbd0b7f9f1df7c97c895731de"
         cpu: thread_count
         memory: "~{mem_gb}GB"
         disks: "local-disk ~{disk_size} SSD"
