@@ -14,6 +14,11 @@ class SequenceInfo(NamedTuple):
     num_gaps: int
     total_gap_length: int
 
+def extract_genbank_id(seq_id: str) -> str:
+    """Extract Genbank ID from sequence ID. Falls back to full ID if no '#' delimiters."""
+    parts = seq_id.split('#')
+    return parts[2] if len(parts) >= 3 else parts[-1]
+
 def read_mashmap(mashmap_file: str) -> pd.DataFrame:
     """
     Read and process mashmap output file.
@@ -93,7 +98,8 @@ def process_sequence(seq_id: str,
     level = "scaffold" if num_gaps > 0 else "contig"
     
     # Extract Genbank ID from sequence ID (format: sample_id#hap_int#genbank_id)
-    genbank_id = seq_id.split('#')[2]
+    genbank_id = extract_genbank_id(seq_id)
+    
     
     # If no valid alignments exist, classify as chrUn
     if len(valid_aligns) == 0:
@@ -209,7 +215,7 @@ def main():
         # Write data lines with extracted Genbank ID
         for seq_id, chrom_name in sorted(chrom_assignments.items()):
             # Extract Genbank ID from sequence ID (format: sample_id#hap_int#genbank_id)
-            genbank_id = seq_id.split('#')[2]
+            genbank_id = extract_genbank_id(seq_id)
             f.write(f"{seq_id}\t{chrom_name}\t{genbank_id}\n")
     
     # Write T2T chromosomes file (only for T2T sequences)
