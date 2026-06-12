@@ -52,18 +52,6 @@ workflows:
       primaryDescriptorPath: /data_processing/wdl/tasks/read_stats.wdl
       testParameterFiles:
         - /QC/test/s3_read_stats.json
-   -  name: FullQC
-      subclass: WDL
-      primaryDescriptorPath: /QC/wdl/workflows/full_qc.wdl
-   -  name: StandardQC
-      subclass: WDL
-      primaryDescriptorPath: /QC/wdl/workflows/standard_qc.wdl
-   -  name: StandardQCnoQV
-      subclass: WDL
-      primaryDescriptorPath: /QC/wdl/workflows/standard_qc_no_qv.wdl
-   -  name: StandardQCnonTrio
-      subclass: WDL
-      primaryDescriptorPath: /QC/wdl/workflows/standard_qc_nontrio.wdl    
    -  name: FilterHiFiAdapter
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/filter_hifi_adapter.wdl
@@ -105,30 +93,6 @@ workflows:
    -  name: HiCHifiasmAssemblyStep3
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/hifiasm_cutadapt_hic_step3.wdl
-   -  name: TrioVerkkoAssembly
-      subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/workflows/trio_verkko_assembly.wdl
-   -  name: TrioVerkkoAssemblyScatter
-      subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/workflows/trio_verkko_assembly_scatter.wdl
-   -  name: VerkkoAssemblyScatter
-      subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/workflows/verkko_assembly_scatter.wdl
-   -  name: VerkkoCreateUnphasedGFA
-      subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/tasks/verkko_create_unphased_gfa.wdl
-   -  name: VerkkoConsensusFromGFAse
-      subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/tasks/verkko_consensus_from_gfase.wdl
-   -  name: VerkkoHiCPhasing
-      subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/tasks/verkko_hic.wdl
-   -  name: VerkkoExtractPhasedAsms
-      subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/tasks/verkko_extract_run_folder.wdl
-   -  name: VerkkoRephaseRukki
-      subclass: WDL
-      primaryDescriptorPath: /assembly/wdl/tasks/verkko_rerun_rukki.wdl
    -  name: YakNoStats
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/yak_no_stats.wdl
@@ -138,9 +102,6 @@ workflows:
    -  name: PhasedGFAs2Fasta
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/gfatools.wdl
-   -  name: StandardQCHaploid
-      subclass: WDL
-      primaryDescriptorPath: /QC/wdl/workflows/standard_qc_haploid.wdl
    -  name: Primrose
       subclass: WDL
       primaryDescriptorPath: /data_processing/wdl/tasks/primrose.wdl
@@ -186,12 +147,9 @@ workflows:
    -  name: asmComparisonQC
       subclass: WDL
       primaryDescriptorPath: /QC/wdl/workflows/comparison_qc.wdl
-   -  name: asmComparisonQCdiploid
-      subclass: WDL
-      primaryDescriptorPath: /QC/wdl/workflows/comparison_qc_diploid.wdl
    -  name: s5cmd_download
       subclass: WDL
-      primaryDescriptorPath: /data_processing/wdl/tasks/s5cmd_download.wdl      
+      primaryDescriptorPath: /data_processing/wdl/tasks/s5cmd_download.wdl
    -  name: AssemblyCleanUp
       subclass: WDL
       primaryDescriptorPath: /assembly/wdl/tasks/assembly_clean_up.wdl
