@@ -1,6 +1,6 @@
-# HPP Production Workflows
+# HPRC Assembly Workflow
 
-WDL workflows for HPRC data processing, assembly, QC, and polishing.
+Benchmarking using HG002 v1.1 and GQC · extended with HPRC production QC, TTT, and Panpatch
 
 ## Overview
 
