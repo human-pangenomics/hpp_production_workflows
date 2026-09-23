@@ -1,0 +1,1637 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="WDL workflows for HPRC assembly production, QC, and data processing">
+      
+      
+      
+      
+        <link rel="prev" href="../../data_processing/">
+      
+      
+        <link rel="next" href="../verkko/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>1–3 · Download & Correction - HPP Production Workflows</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#download-correction" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HPP Production Workflows" class="md-header__button md-logo" aria-label="HPP Production Workflows" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HPP Production Workflows
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              1–3 · Download & Correction
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/human-pangenomics/hpp_production_workflows" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    human-pangenomics/hpp_production_workflows
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HPP Production Workflows" class="md-nav__button md-logo" aria-label="HPP Production Workflows" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    HPP Production Workflows
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/human-pangenomics/hpp_production_workflows" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    human-pangenomics/hpp_production_workflows
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Assembly
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1–3 · Download & Correction
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1–3 · Download & Correction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#assembly-1-download-the-input-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assembly 1 — Download the input data
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assembly 1 — Download the input data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hifi-revio-60-bam" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HiFi Revio · ~60× · BAM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ont-r10-ul-60-bam" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ONT R10 UL · ~60× · BAM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ont-r9-ul-optional-fastqgz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ONT R9 UL · optional · FASTQ.GZ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hi-c-50-fastqgz-paired" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hi-C · ~50× · FASTQ.GZ (paired)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#precomputed-shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precomputed shortcuts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assembly-2-define-inputs-and-shell-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assembly 2 — Define inputs and shell variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assembly-3-correction-with-hifiasm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assembly 3 — Correction with hifiasm
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assembly 3 — Correction with hifiasm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-normalize-input-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 — Normalize input formats
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-prepare-the-hifi-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 — Prepare the HiFi input
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-prepare-the-ont-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 — Prepare the ONT input
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-estimate-hom-cov" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 — Estimate --hom-cov
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-run-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 — Run correction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-compress-and-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 — Compress and index
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-split-corrected-reads-by-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7 — Split corrected reads by platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#38-finalize-and-clean-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8 — Finalize and clean up
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../verkko/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4–5 · Verkko Assembly
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../verkko-fillet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6 · verkko-fillet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ttt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7 · TTT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../panpatch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8 · Panpatch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QC
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QC
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../qc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../qc/gqc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QC 1 · GQC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../qc/censat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QC 2 · CenSat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../qc/compleasm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QC 3 · Compleasm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../qc/t2t/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QC 4 · T2T
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../qc/quaak/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QC 5 · Quaak
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../qc/assembly-qc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QC 6 · assembly_qc / Yak QV
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../qc/flagger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QC 7 · Flagger
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../qc/nucflag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QC 8 · NucFlag
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../polishing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Polishing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../annotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Annotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../references/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    References
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#assembly-1-download-the-input-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assembly 1 — Download the input data
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assembly 1 — Download the input data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hifi-revio-60-bam" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HiFi Revio · ~60× · BAM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ont-r10-ul-60-bam" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ONT R10 UL · ~60× · BAM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ont-r9-ul-optional-fastqgz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ONT R9 UL · optional · FASTQ.GZ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hi-c-50-fastqgz-paired" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hi-C · ~50× · FASTQ.GZ (paired)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#precomputed-shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precomputed shortcuts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assembly-2-define-inputs-and-shell-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assembly 2 — Define inputs and shell variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assembly-3-correction-with-hifiasm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assembly 3 — Correction with hifiasm
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assembly 3 — Correction with hifiasm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-normalize-input-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 — Normalize input formats
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-prepare-the-hifi-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 — Prepare the HiFi input
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-prepare-the-ont-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 — Prepare the ONT input
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-estimate-hom-cov" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 — Estimate --hom-cov
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-run-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 — Run correction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-compress-and-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 — Compress and index
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-split-corrected-reads-by-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7 — Split corrected reads by platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#38-finalize-and-clean-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8 — Finalize and clean up
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Overview
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="./" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Assembly
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="download-correction">Download &amp; Correction<a class="headerlink" href="#download-correction" title="Permanent link">&para;</a></h1>
+<h2 id="assembly-1-download-the-input-data">Assembly 1 — Download the input data<a class="headerlink" href="#assembly-1-download-the-input-data" title="Permanent link">&para;</a></h2>
+<h3 id="hifi-revio-60-bam">HiFi Revio · ~60× · BAM<a class="headerlink" href="#hifi-revio-60-bam" title="Permanent link">&para;</a></h3>
+<p>PacBio Revio HiFi reads, aligned to HG002 v1.0. Used as the error-correction guide in Stage 3 and passed directly to verkko in Stage 4.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>wget<span class="w"> </span>https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/polishing/HG002/v1.0/mapping/hifi_revio_pbmay24/hg002v1.0.1_hifi_revio_pbmay24.bam
+</code></pre></div>
+<h3 id="ont-r10-ul-60-bam">ONT R10 UL · ~60× · BAM<a class="headerlink" href="#ont-r10-ul-60-bam" title="Permanent link">&para;</a></h3>
+<p>Oxford Nanopore R10 ultra-long reads basecalled with Dorado, aligned to HG002 v1.0. These are the reads that will be corrected in Stage 3 using the HiFi data.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>wget<span class="w"> </span>https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/polishing/HG002/v1.0/mapping/ont_r10_ul_dorado/hg002v1.0_ont_r10_ul_dorado.bam
+</code></pre></div>
+<h3 id="ont-r9-ul-optional-fastqgz">ONT R9 UL · optional · FASTQ.GZ<a class="headerlink" href="#ont-r9-ul-optional-fastqgz" title="Permanent link">&para;</a></h3>
+<p>Oxford Nanopore R9 ultra-long reads (guppy 6.3.7 rebasecalling). Not corrected; enters verkko at Stage 4 as additional resolving data. Only the three files below were used in the reference assembly. If you skip R9, leave the <code>ONT</code> variable empty in Stage 2 — the verkko command is unchanged.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>wget<span class="w"> </span>https://s3-us-west-2.amazonaws.com/human-pangenomics/NHGRI_UCSC_panel/HG002/nanopore/ultra-long/03_08_22_R941_HG002_rebasecalling-guppy-6.3.7/03_08_22_R941_HG002_4.fq.gz
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>wget<span class="w"> </span>https://s3-us-west-2.amazonaws.com/human-pangenomics/NHGRI_UCSC_panel/HG002/nanopore/ultra-long/03_08_22_R941_HG002_rebasecalling-guppy-6.3.7/03_08_22_R941_HG002_5.fq.gz
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>wget<span class="w"> </span>https://s3-us-west-2.amazonaws.com/human-pangenomics/NHGRI_UCSC_panel/HG002/nanopore/ultra-long/03_08_22_R941_HG002_rebasecalling-guppy-6.3.7/03_08_22_R941_HG002_6.fq.gz
+</code></pre></div>
+<h3 id="hi-c-50-fastqgz-paired">Hi-C · ~50× · FASTQ.GZ (paired)<a class="headerlink" href="#hi-c-50-fastqgz-paired" title="Permanent link">&para;</a></h3>
+<p>Downsampled Hi-C read pairs from the HPRC panel. Used only in Stage 4 by verkko for phasing. <code>HIC1</code> and <code>HIC2</code> must be listed in matching order since verkko pairs them positionally.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Read 1 files</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>wget<span class="w"> </span>https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC_PLUS/HG002/raw_data/hic/downsampled/HG002.HiC_1_S1_R1_001.fastq.gz
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>wget<span class="w"> </span>https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC_PLUS/HG002/raw_data/hic/downsampled/HG002.HiC_1_S2_R1_001.fastq.gz
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>wget<span class="w"> </span>https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC_PLUS/HG002/raw_data/hic/downsampled/HG002.HiC_1_S3_R1_001.fastq.gz
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># Read 2 files (same order as R1)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>wget<span class="w"> </span>https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC_PLUS/HG002/raw_data/hic/downsampled/HG002.HiC_1_S1_R2_001.fastq.gz
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>wget<span class="w"> </span>https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC_PLUS/HG002/raw_data/hic/downsampled/HG002.HiC_1_S2_R2_001.fastq.gz
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>wget<span class="w"> </span>https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC_PLUS/HG002/raw_data/hic/downsampled/HG002.HiC_1_S3_R2_001.fastq.gz
+</code></pre></div>
+<h3 id="precomputed-shortcuts">Precomputed shortcuts<a class="headerlink" href="#precomputed-shortcuts" title="Permanent link">&para;</a></h3>
+<p>If you want to enter the pipeline at a later stage, precomputed files are available.</p>
+<p>S3 prefix: <code>s3://human-pangenomics/submissions/09cd8aa1-726c-4cb3-aeea-36e71bab75ff--HG002_hybrid_benchmark/</code></p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Enter at</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>r10-hifiasm-correct.ec.ont.fq.gz</code></td>
+<td>Assembly 4</td>
+</tr>
+<tr>
+<td><code>assembly.fasta.gz</code></td>
+<td>Assembly 6</td>
+</tr>
+<tr>
+<td><code>assembly.haplotype1.fasta.gz</code>, <code>assembly.haplotype2.fasta.gz</code></td>
+<td>Assembly 6</td>
+</tr>
+<tr>
+<td><code>gqc.tar.gz</code></td>
+<td>QC · GQC</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="assembly-2-define-inputs-and-shell-variables">Assembly 2 — Define inputs and shell variables<a class="headerlink" href="#assembly-2-define-inputs-and-shell-variables" title="Permanent link">&para;</a></h2>
+<p>Everything downstream refers to these. Set them once in the shell you will run the rest of the pipeline from, or put them in a small sourced file so a resumed session picks them up.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nv">HIFI</span><span class="o">=</span><span class="s2">"hg002v1.0.1_hifi_revio_pbmay24.bam"</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nv">ONT_R10</span><span class="o">=</span><span class="s2">"hg002v1.0_ont_r10_ul_dorado.bam"</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nv">ONT</span><span class="o">=</span><span class="s2">"03_08_22_R941_HG002_4.fq.gz 03_08_22_R941_HG002_5.fq.gz 03_08_22_R941_HG002_6.fq.gz"</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="nv">HIC1</span><span class="o">=</span><span class="s2">"HG002.HiC_1_S1_R1_001.fastq.gz HG002.HiC_1_S2_R1_001.fastq.gz HG002.HiC_1_S3_R1_001.fastq.gz"</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nv">HIC2</span><span class="o">=</span><span class="s2">"HG002.HiC_1_S1_R2_001.fastq.gz HG002.HiC_1_S2_R2_001.fastq.gz HG002.HiC_1_S3_R2_001.fastq.gz"</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="nv">zipCPUs</span><span class="o">=</span><span class="m">8</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="nv">zipOpt</span><span class="o">=</span><span class="s2">"-l 9 -i"</span><span class="w">   </span><span class="c1"># -i creates the .gzi index; -I names it</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nv">threads</span><span class="o">=</span><span class="m">64</span><span class="w">          </span><span class="c1"># set to the core count on your system</span>
+</code></pre></div>
+<p>Keep <code>-i</code> in <code>zipOpt</code>. The commands below pass <code>-I</code> to name the index file, but <code>-I</code> on its own will not create one.</p>
+<p><code>HIC1</code> and <code>HIC2</code> must list read 1 and read 2 files in the same order, since verkko pairs them positionally.</p>
+<hr />
+<h2 id="assembly-3-correction-with-hifiasm">Assembly 3 — Correction with hifiasm<a class="headerlink" href="#assembly-3-correction-with-hifiasm" title="Permanent link">&para;</a></h2>
+<p>Only reads over 20 kbp are corrected here, which saves compute time and memory given how deeply covered this dataset is. For a typical dataset, 10 kbp is the recommended threshold. Lower it if your ONT coverage is modest.</p>
+<h3 id="31-normalize-input-formats">3.1 — Normalize input formats<a class="headerlink" href="#31-normalize-input-formats" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>to_fastq<span class="o">()</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="k">for</span><span class="w"> </span>f<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="s2">"</span><span class="nv">$f</span><span class="s2">"</span><span class="w"> </span><span class="k">in</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span>*.bam<span class="o">)</span><span class="w">                  </span>samtools<span class="w"> </span>fastq<span class="w"> </span><span class="s2">"</span><span class="nv">$f</span><span class="s2">"</span><span class="w"> </span><span class="p">;;</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">      </span>*.fastq.gz<span class="p">|</span>*.fq.gz<span class="o">)</span><span class="w">     </span>zcat<span class="w"> </span><span class="s2">"</span><span class="nv">$f</span><span class="s2">"</span><span class="w"> </span><span class="p">;;</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">      </span>*.fastq.bz2<span class="p">|</span>*.fq.bz2<span class="o">)</span><span class="w">  </span>bzcat<span class="w"> </span><span class="s2">"</span><span class="nv">$f</span><span class="s2">"</span><span class="w"> </span><span class="p">;;</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">      </span>*.fastq<span class="p">|</span>*.fq<span class="o">)</span><span class="w">           </span>cat<span class="w"> </span><span class="s2">"</span><span class="nv">$f</span><span class="s2">"</span><span class="w"> </span><span class="p">;;</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">      </span>*<span class="o">)</span><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Warning: unrecognized format for </span><span class="nv">$f</span><span class="s2">"</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span><span class="w"> </span><span class="p">;;</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="k">esac</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">  </span><span class="k">done</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="o">}</span>
+</code></pre></div>
+<h3 id="32-prepare-the-hifi-input">3.2 — Prepare the HiFi input<a class="headerlink" href="#32-prepare-the-hifi-input" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>to_fastq<span class="w"> </span><span class="nv">$HIFI</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>bgzip<span class="w"> </span>-@<span class="w"> </span><span class="nv">$zipCPUs</span><span class="w"> </span><span class="nv">$zipOpt</span><span class="w"> </span>-c<span class="w"> </span>-I<span class="w"> </span>hifi.input.fastq.gz.gzi<span class="w"> </span>-<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>&gt;<span class="w"> </span>hifi.input.fastq.gz
+</code></pre></div>
+<h3 id="33-prepare-the-ont-input">3.3 — Prepare the ONT input<a class="headerlink" href="#33-prepare-the-ont-input" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>to_fastq<span class="w"> </span><span class="nv">$ONT_R10</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>seqtk<span class="w"> </span>seq<span class="w"> </span>-L<span class="w"> </span><span class="m">20000</span><span class="w"> </span>-<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>bgzip<span class="w"> </span>-@<span class="w"> </span><span class="nv">$zipCPUs</span><span class="w"> </span><span class="nv">$zipOpt</span><span class="w"> </span>-c<span class="w"> </span>-I<span class="w"> </span>r10-hifiasm-correct.input.fastq.gz.gzi<span class="w"> </span>-<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span>&gt;<span class="w"> </span>r10-hifiasm-correct.input.fastq.gz
+</code></pre></div>
+<p>Note this uses <code>$ONT_R10</code> only. The optional R9 data is not corrected and enters the pipeline only at the verkko stage.</p>
+<h3 id="34-estimate-hom-cov">3.4 — Estimate <code>--hom-cov</code><a class="headerlink" href="#34-estimate-hom-cov" title="Permanent link">&para;</a></h3>
+<p><code>--hom-cov</code> is the combined coverage of the ONT and HiFi data going into correction: total bases divided by the genome size (3.1 Gbp for human).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># With seqkit:</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>seqkit<span class="w"> </span>stats<span class="w"> </span>-T<span class="w"> </span>hifi.input.fastq.gz<span class="w"> </span>r10-hifiasm-correct.input.fastq.gz
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Without seqkit:</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="k">for</span><span class="w"> </span>f<span class="w"> </span><span class="k">in</span><span class="w"> </span>hifi.input.fastq.gz<span class="w"> </span>r10-hifiasm-correct.input.fastq.gz<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">  </span>zcat<span class="w"> </span><span class="s2">"</span><span class="nv">$f</span><span class="s2">"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span>-v<span class="w"> </span><span class="nv">f</span><span class="o">=</span><span class="s2">"</span><span class="nv">$f</span><span class="s2">"</span><span class="w"> </span><span class="s1">'NR%4==2 {n+=length($0)} END {print f, n}'</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="k">done</span>
+</code></pre></div>
+<p>Sum the base counts, divide by 3,100,000,000, and round. The value used for this dataset was <strong>185</strong>. This is computed on the length-filtered ONT input from 3.3, not the raw ONT reads.</p>
+<h3 id="35-run-correction">3.5 — Run correction<a class="headerlink" href="#35-run-correction" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>hifiasm<span class="w"> </span>-e<span class="w"> </span>--write-ec<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>--ont<span class="w"> </span>r10-hifiasm-correct.input.fastq.gz<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>--hf<span class="w"> </span>hifi.input.fastq.gz<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span>--hom-cov<span class="w"> </span><span class="m">185</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">  </span>-o<span class="w"> </span>r10-hifiasm-correct.WORKING<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">  </span>-t<span class="w"> </span><span class="nv">$threads</span>
+</code></pre></div>
+<p><code>--ont</code> supplies the reads to be corrected and <code>--hf</code> the reads used to correct them. <code>-e</code> with <code>--write-ec</code> runs the correction stage and writes corrected reads to disk rather than proceeding to a finished assembly.</p>
+<p>The <code>WORKING</code> prefix is deliberate — outputs stay under that name until every downstream step succeeds, so an interrupted run cannot leave a truncated file at the final path.</p>
+<p>Main output: <code>r10-hifiasm-correct.WORKING.ec.fq</code></p>
+<h3 id="36-compress-and-index">3.6 — Compress and index<a class="headerlink" href="#36-compress-and-index" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>bgzip<span class="w"> </span>-@<span class="w"> </span><span class="nv">$zipCPUs</span><span class="w"> </span><span class="nv">$zipOpt</span><span class="w"> </span>r10-hifiasm-correct.WORKING.ec.fq
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>samtools<span class="w"> </span>faidx<span class="w"> </span>r10-hifiasm-correct.WORKING.ec.fq.gz
+</code></pre></div>
+<h3 id="37-split-corrected-reads-by-platform">3.7 — Split corrected reads by platform<a class="headerlink" href="#37-split-corrected-reads-by-platform" title="Permanent link">&para;</a></h3>
+<p>Hifiasm writes HiFi and ONT reads into one corrected file, so they need separating. The split keys on read name prefix: PacBio names begin with the movie ID (<code>m84039_...</code>) while ONT names are UUIDs. Since <code>m</code> is not a hex character, no UUID can start with it, making <code>^m</code> a clean discriminator.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>grep<span class="w">    </span><span class="s2">"^m"</span><span class="w"> </span>r10-hifiasm-correct.WORKING.ec.fq.gz.fai<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">'{print $1}'</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span>&gt;<span class="w"> </span>r10-hifiasm-correct.hifi.ids
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>grep<span class="w"> </span>-v<span class="w"> </span><span class="s2">"^m"</span><span class="w"> </span>r10-hifiasm-correct.WORKING.ec.fq.gz.fai<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">'{print $1}'</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span>&gt;<span class="w"> </span>r10-hifiasm-correct.ont.ids
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>wc<span class="w"> </span>-l<span class="w"> </span>r10-hifiasm-correct.hifi.ids<span class="w"> </span>r10-hifiasm-correct.ont.ids
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Check the counts before continuing. If either file is empty or the ratio looks wrong, your reads were renamed somewhere upstream and the prefix rule no longer applies. Reads pulled from SRA are the common case, since they arrive with accession-style names.</p>
+</div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>seqtk<span class="w"> </span>subseq<span class="w"> </span>r10-hifiasm-correct.WORKING.ec.fq.gz<span class="w"> </span>r10-hifiasm-correct.hifi.ids<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>bgzip<span class="w"> </span>-@<span class="w"> </span><span class="nv">$zipCPUs</span><span class="w"> </span><span class="nv">$zipOpt</span><span class="w"> </span>-c<span class="w"> </span>-I<span class="w"> </span>r10-hifiasm-correct.ec.hifi.fq.gz.gzi<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span>&gt;<span class="w"> </span>r10-hifiasm-correct.ec.hifi.fq.gz
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>seqtk<span class="w"> </span>subseq<span class="w"> </span>r10-hifiasm-correct.WORKING.ec.fq.gz<span class="w"> </span>r10-hifiasm-correct.ont.ids<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>bgzip<span class="w"> </span>-@<span class="w"> </span><span class="nv">$zipCPUs</span><span class="w"> </span><span class="nv">$zipOpt</span><span class="w"> </span>-c<span class="w"> </span>-I<span class="w"> </span>r10-hifiasm-correct.ec.ont.fq.gz.gzi<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">  </span>&gt;<span class="w"> </span>r10-hifiasm-correct.ec.ont.fq.gz
+</code></pre></div>
+<h3 id="38-finalize-and-clean-up">3.8 — Finalize and clean up<a class="headerlink" href="#38-finalize-and-clean-up" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>mv<span class="w"> </span>r10-hifiasm-correct.WORKING.ec.fq.gz<span class="w">     </span>r10-hifiasm-correct.ec.fq.gz
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>mv<span class="w"> </span>r10-hifiasm-correct.WORKING.ec.fq.gz.gzi<span class="w"> </span>r10-hifiasm-correct.ec.fq.gz.gzi
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>mv<span class="w"> </span>r10-hifiasm-correct.WORKING.ec.fq.gz.fai<span class="w"> </span>r10-hifiasm-correct.ec.fq.gz.fai
+</code></pre></div>
+<p>Only <code>r10-hifiasm-correct.ec.ont.fq.gz</code> is used downstream. Once confirmed intact:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>rm<span class="w"> </span>r10-hifiasm-correct.ec.fq.gz*
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>rm<span class="w"> </span>r10-hifiasm-correct.ec.hifi.fq.gz*
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>rm<span class="w"> </span>r10-hifiasm-correct.WORKING.*
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.path", "navigation.top", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

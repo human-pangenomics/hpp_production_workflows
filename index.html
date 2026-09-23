@@ -12,7 +12,7 @@
       
       
       
-        <link rel="next" href="assembly/correction/">
+        <link rel="next" href="data_processing/">
       
       
         
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#hprc-assembly-workflow" class="md-skip">
+        <a href="#hpp-production-workflows" class="md-skip">
           Skip to content
         </a>
       
@@ -351,6 +351,33 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     
     
     
@@ -365,17 +392,17 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
   <span class="md-ellipsis">
     
   
-    Assembly Pipeline
+    Assembly
   
 
     
@@ -386,12 +413,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Assembly Pipeline
+    Assembly
   
 
           </label>
@@ -564,17 +591,17 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
   <span class="md-ellipsis">
     
   
-    QC Pipeline
+    QC
   
 
     
@@ -585,12 +612,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    QC Pipeline
+    QC
   
 
           </label>
@@ -862,6 +889,60 @@
   
   
     <li class="md-nav__item">
+      <a href="polishing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Polishing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="annotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Annotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="references/" class="md-nav__link">
         
   
@@ -958,8 +1039,8 @@
   
 
 
-<h1 id="hprc-assembly-workflow">HPRC Assembly Workflow<a class="headerlink" href="#hprc-assembly-workflow" title="Permanent link">&para;</a></h1>
-<p>Benchmarking using HG002 v1.1 and GQC · extended with HPRC production QC, TTT, and Panpatch</p>
+<h1 id="hpp-production-workflows">HPP Production Workflows<a class="headerlink" href="#hpp-production-workflows" title="Permanent link">&para;</a></h1>
+<p>WDL workflows for HPRC data processing, assembly, QC, and polishing.</p>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>The pipeline has two assembly stages. ONT UL reads are first error-corrected by hifiasm using HiFi reads as a guide, then the corrected ONT UL, raw HiFi, raw ONT UL, and Hi-C data are co-assembled with verkko. The result is validated against the HG002 v1.1 benchmark using GQC, then processed through the full HPRC QC suite. Optional TTT (Trivial Tangle Traverser) gap-filling resolves complex assembly graph tangles to produce the TTT assemblies, which can be further refined with Panpatch.</p>
 <p>Input coverage follows the HPRC recipe: roughly 60× HiFi, 60× ONT UL over 100 kbp, and 50× Hi-C.</p>
