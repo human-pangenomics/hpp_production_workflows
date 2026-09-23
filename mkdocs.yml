@@ -58,6 +58,7 @@ nav:
     - "6 · verkko-fillet": assembly/verkko-fillet.md
     - "7 · TTT": assembly/ttt.md
     - "8 · Panpatch": assembly/panpatch.md
+    - References: references.md
   - Assembly QC:
     - Overview: qc/index.md
     - "GQC": qc/gqc.md
@@ -68,6 +69,4 @@ nav:
     - "assembly_qc / Yak QV": qc/assembly-qc.md
     - "Flagger": qc/flagger.md
     - "NucFlag": qc/nucflag.md
-  - Polishing: polishing/index.md
   - Annotation: annotation/index.md
-  - References: references.md
