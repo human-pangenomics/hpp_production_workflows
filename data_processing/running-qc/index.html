@@ -11,10 +11,10 @@
       
       
       
-        <link rel="prev" href="../censat/">
+        <link rel="prev" href="../">
       
       
-        <link rel="next" href="../t2t/">
+        <link rel="next" href="../ntsm-eval/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>Compleasm - HPP Production Workflows</title>
+        <title>Running Per-Sample QC - HPP Production Workflows</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#compleasm" class="md-skip">
+        <a href="#running-per-sample-qc" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Compleasm
+              Running Per-Sample QC
             
           </span>
         </div>
@@ -255,8 +255,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -267,13 +269,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
         
           
           <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
@@ -294,7 +294,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -312,7 +312,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data_processing/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -337,10 +337,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../data_processing/running-qc/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Per-Sample QC
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -356,6 +383,92 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-prepare-a-working-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Prepare a working directory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-build-input-file-lists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Build input file lists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-generate-input-jsons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Generate input JSONs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-submit-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Submit jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-check-outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Check outputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-aggregate-summary-tsvs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Aggregate summary TSVs
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -368,7 +481,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data_processing/ntsm-eval/" class="md-nav__link">
+      <a href="../ntsm-eval/" class="md-nav__link">
         
   
   
@@ -396,7 +509,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data_processing/troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -657,8 +770,6 @@
       
   
   
-    
-  
   
   
     
@@ -671,11 +782,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
@@ -696,7 +809,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -714,7 +827,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../qc/" class="md-nav__link">
         
   
   
@@ -742,7 +855,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../gqc/" class="md-nav__link">
+      <a href="../../qc/gqc/" class="md-nav__link">
         
   
   
@@ -770,7 +883,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../censat/" class="md-nav__link">
+      <a href="../../qc/censat/" class="md-nav__link">
         
   
   
@@ -795,37 +908,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Compleasm
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../qc/compleasm/" class="md-nav__link">
         
   
   
@@ -841,37 +927,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#outputs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Outputs
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -884,7 +939,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../t2t/" class="md-nav__link">
+      <a href="../../qc/t2t/" class="md-nav__link">
         
   
   
@@ -912,7 +967,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../quaak/" class="md-nav__link">
+      <a href="../../qc/quaak/" class="md-nav__link">
         
   
   
@@ -940,7 +995,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../assembly-qc/" class="md-nav__link">
+      <a href="../../qc/assembly-qc/" class="md-nav__link">
         
   
   
@@ -968,7 +1023,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../flagger/" class="md-nav__link">
+      <a href="../../qc/flagger/" class="md-nav__link">
         
   
   
@@ -996,7 +1051,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../nucflag/" class="md-nav__link">
+      <a href="../../qc/nucflag/" class="md-nav__link">
         
   
   
@@ -1078,10 +1133,65 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#outputs" class="md-nav__link">
+  <a href="#1-prepare-a-working-directory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Outputs
+        1. Prepare a working directory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-build-input-file-lists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Build input file lists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-generate-input-jsons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Generate input JSONs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-submit-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Submit jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-check-outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Check outputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-aggregate-summary-tsvs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Aggregate summary TSVs
       
     </span>
   </a>
@@ -1114,29 +1224,85 @@
   
 
 
-<h1 id="compleasm">Compleasm<a class="headerlink" href="#compleasm" title="Permanent link">&para;</a></h1>
-<p>BUSCO-based gene completeness assessment using the <code>primates_odb10</code> database. Reports the fraction of single-copy orthologs that are complete (single copy or duplicated), fragmented, or missing. Run per haplotype FASTA.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>compleasm<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>-a<span class="w"> </span><span class="o">{</span>haplotype.fasta<span class="o">}</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>-o<span class="w"> </span><span class="o">{</span>outdir<span class="o">}</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span>-l<span class="w"> </span>primates_odb10<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span>-t<span class="w"> </span><span class="o">{</span>threads<span class="o">}</span>
+<h1 id="running-per-sample-qc">Running Per-Sample QC<a class="headerlink" href="#running-per-sample-qc" title="Permanent link">&para;</a></h1>
+<p>Step-by-step guide for submitting HiFi, ONT, and HiC QC jobs via Toil on SLURM.</p>
+<h2 id="1-prepare-a-working-directory">1. Prepare a working directory<a class="headerlink" href="#1-prepare-a-working-directory" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>/path/to/qc/<span class="o">{</span>hifi_blood,hifi_lcl,ont,hic,ntsm_eval<span class="o">}</span>
 </code></pre></div>
-<h2 id="outputs">Outputs<a class="headerlink" href="#outputs" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>File</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>summary.txt</code></td>
-<td>S/D/F/M gene counts and percentages</td>
-</tr>
-</tbody>
-</table>
+<p>Create separate subdirectories per data type. Outputs land relative to the directory from which <code>sbatch</code> is submitted — see <a href="#4-submit-jobs">Step 4</a>.</p>
+<h2 id="2-build-input-file-lists">2. Build input file lists<a class="headerlink" href="#2-build-input-file-lists" title="Permanent link">&para;</a></h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">HiFi</label><label for="__tabbed_1_2">ONT</label><label for="__tabbed_1_3">HiC</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>One BAM (or fastq.gz) per line — use <code>hifi_reads</code> files only, not <code>fail_reads</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>/path/to/HG08434/m84046_251223_003203_s1.hifi_reads.bc2077.bam
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>s3://human-pangenomics/submissions/.../HG08444/PacBio_HiFi/m84081_260128_015537_s3.hifi_reads.bc2004.bam
+</code></pre></div>
+<p>S3 paths are supported — Toil workers download files directly.</p>
+</div>
+<div class="tabbed-block">
+<p>Reads BAM and sequencing summary, tab-separated, one entry per line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>/path/to/HG08434_1.bam  /path/to/HG08434_1_summary.txt.gz
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Use actual paths, not symlinks</p>
+<p>Symlinks in upload directories may point to pre-basecalling paths that no longer exist.</p>
+</div>
+</div>
+<div class="tabbed-block">
+<p>R1 and R2 fastq.gz per lane, tab-separated, one lane per line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>/path/to/HG08434_1_LIB141063_..._R1_001.fastq.gz    /path/to/HG08434_1_LIB141063_..._R2_001.fastq.gz
+</code></pre></div>
+<p>Submit one job per lane (not per library) to preserve per-lane traceability in sample swap detection.</p>
+</div>
+</div>
+</div>
+<h2 id="3-generate-input-jsons">3. Generate input JSONs<a class="headerlink" href="#3-generate-input-jsons" title="Permanent link">&para;</a></h2>
+<p>Run each setup script from inside the corresponding data type directory:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">source</span><span class="w"> </span>~/toil_env/bin/activate
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nb">cd</span><span class="w"> </span>/path/to/qc/hifi_blood
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>python3<span class="w"> </span>/private/nanopore/tools/hpp_production_workflows/data_processing/scripts/setup_hifi_qc.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span>files.txt<span class="w"> </span>--job_name<span class="w"> </span>hifi_blood_qc
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="nb">cd</span><span class="w"> </span>/path/to/qc/ont
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>python3<span class="w"> </span>/private/nanopore/tools/hpp_production_workflows/data_processing/scripts/setup_ont_qc.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span>files.txt<span class="w"> </span>--job_name<span class="w"> </span>ont_qc
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="nb">cd</span><span class="w"> </span>/path/to/qc/hic
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>python3<span class="w"> </span>/private/nanopore/tools/hpp_production_workflows/data_processing/scripts/setup_hic_qc.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span>files.txt<span class="w"> </span>--job_name<span class="w"> </span>hic_qc
+</code></pre></div>
+<p>Each script creates <code>input_jsons/</code>, <code>samples.csv</code>, <code>slurm_logs/</code>, and <code>analysis/</code> directories, and prints the sbatch command to run.</p>
+<p><strong>Sample ID parsing</strong>: IDs are extracted from the file path using the regex <code>(HG|NA|PG)\d{5}</code>. The sample ID is <code>{HPRC_ID}_{filename}</code>. <code>PG</code> prefixes are normalized to <code>HG</code>. If no HPRC ID is found in the path, the raw filename is used and a warning is printed.</p>
+<p><strong>HiFi methylation</strong>: Included by default. Pass <code>--no_methylation</code> to skip it.</p>
+<h2 id="4-submit-jobs">4. Submit jobs<a class="headerlink" href="#4-submit-jobs" title="Permanent link">&para;</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Submit from the data type directory</p>
+<p>Toil creates sample subdirectories relative to the submission working directory. Submitting from the wrong directory mixes all outputs together.</p>
+</div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">cd</span><span class="w"> </span>/path/to/qc/hifi_blood<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sbatch<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span>--job-name<span class="o">=</span>hifi_blood_qc<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span>--array<span class="o">=[</span><span class="m">1</span>-N<span class="o">]</span>%10<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span>--partition<span class="o">=</span>long<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span>/private/nanopore/hprc_qc/scripts/toil_sbatch_slurm.sh<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span>--wdl<span class="w"> </span>/private/nanopore/tools/hpp_production_workflows/data_processing/wdl/workflows/hifi_qc_workflow.wdl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span>--sample_csv<span class="w"> </span>/path/to/qc/hifi_blood/samples.csv<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span>--input_json_path<span class="w"> </span><span class="s1">'/path/to/qc/hifi_blood/input_jsons/${SAMPLE_ID}_hifi_qc_workflow.json'</span>
+</code></pre></div>
+<p>The <code>%10</code> limits concurrent array tasks to 10. Adjust as needed.</p>
+<p>Replace <code>hifi_qc_workflow.wdl</code> with <code>ont_qc_workflow.wdl</code> or <code>hic_qc_workflow.wdl</code> for the other data types, and update <code>--sample_csv</code> and <code>--input_json_path</code> accordingly.</p>
+<h2 id="5-check-outputs">5. Check outputs<a class="headerlink" href="#5-check-outputs" title="Permanent link">&para;</a></h2>
+<p>Outputs land in <code>&lt;sample_id&gt;/analysis/&lt;workflow&gt;_outputs/&lt;uuid&gt;/</code>. Each job produces:</p>
+<ul>
+<li><code>&lt;sample_id&gt;.summary.tsv</code> — coverage stats</li>
+<li><code>&lt;sample_id&gt;_hifi_counts.txt</code> (or <code>_ont_counts.txt</code>, <code>_hic_counts.txt</code>) — ntsm count file</li>
+</ul>
+<h2 id="6-aggregate-summary-tsvs">6. Aggregate summary TSVs<a class="headerlink" href="#6-aggregate-summary-tsvs" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>python3<span class="w"> </span>/private/nanopore/tools/hpp_production_workflows/data_processing/scripts/aggregate_qc_summary.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span>*/analysis/*/*.summary.tsv<span class="w"> </span>&gt;<span class="w"> </span>combined_summary.tsv
+</code></pre></div>
+<p>Run this from within each data type directory to produce a per-type summary, or combine paths across directories.</p>
 
 
 

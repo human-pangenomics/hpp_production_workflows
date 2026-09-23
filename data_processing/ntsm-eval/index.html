@@ -11,10 +11,10 @@
       
       
       
-        <link rel="prev" href="../censat/">
+        <link rel="prev" href="../running-qc/">
       
       
-        <link rel="next" href="../t2t/">
+        <link rel="next" href="../troubleshooting/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>Compleasm - HPP Production Workflows</title>
+        <title>Batch ntsm Evaluation - HPP Production Workflows</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#compleasm" class="md-skip">
+        <a href="#batch-ntsm-evaluation" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Compleasm
+              Batch ntsm Evaluation
             
           </span>
         </div>
@@ -255,8 +255,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -267,13 +269,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
         
           
           <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
@@ -294,7 +294,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -312,7 +312,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data_processing/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -340,7 +340,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data_processing/running-qc/" class="md-nav__link">
+      <a href="../running-qc/" class="md-nav__link">
         
   
   
@@ -365,10 +365,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../data_processing/ntsm-eval/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Batch ntsm Evaluation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -384,6 +411,59 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-collect-count-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Collect count files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-generate-input-json-and-submit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Generate input JSON and submit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-interpret-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Interpret results
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -396,7 +476,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data_processing/troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -657,8 +737,6 @@
       
   
   
-    
-  
   
   
     
@@ -671,11 +749,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
@@ -696,7 +776,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -714,7 +794,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../qc/" class="md-nav__link">
         
   
   
@@ -742,7 +822,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../gqc/" class="md-nav__link">
+      <a href="../../qc/gqc/" class="md-nav__link">
         
   
   
@@ -770,7 +850,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../censat/" class="md-nav__link">
+      <a href="../../qc/censat/" class="md-nav__link">
         
   
   
@@ -795,37 +875,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Compleasm
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../qc/compleasm/" class="md-nav__link">
         
   
   
@@ -841,37 +894,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#outputs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Outputs
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -884,7 +906,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../t2t/" class="md-nav__link">
+      <a href="../../qc/t2t/" class="md-nav__link">
         
   
   
@@ -912,7 +934,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../quaak/" class="md-nav__link">
+      <a href="../../qc/quaak/" class="md-nav__link">
         
   
   
@@ -940,7 +962,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../assembly-qc/" class="md-nav__link">
+      <a href="../../qc/assembly-qc/" class="md-nav__link">
         
   
   
@@ -968,7 +990,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../flagger/" class="md-nav__link">
+      <a href="../../qc/flagger/" class="md-nav__link">
         
   
   
@@ -996,7 +1018,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../nucflag/" class="md-nav__link">
+      <a href="../../qc/nucflag/" class="md-nav__link">
         
   
   
@@ -1078,10 +1100,32 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#outputs" class="md-nav__link">
+  <a href="#1-collect-count-files" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Outputs
+        1. Collect count files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-generate-input-json-and-submit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Generate input JSON and submit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-interpret-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Interpret results
       
     </span>
   </a>
@@ -1114,29 +1158,61 @@
   
 
 
-<h1 id="compleasm">Compleasm<a class="headerlink" href="#compleasm" title="Permanent link">&para;</a></h1>
-<p>BUSCO-based gene completeness assessment using the <code>primates_odb10</code> database. Reports the fraction of single-copy orthologs that are complete (single copy or duplicated), fragmented, or missing. Run per haplotype FASTA.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>compleasm<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>-a<span class="w"> </span><span class="o">{</span>haplotype.fasta<span class="o">}</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>-o<span class="w"> </span><span class="o">{</span>outdir<span class="o">}</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span>-l<span class="w"> </span>primates_odb10<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span>-t<span class="w"> </span><span class="o">{</span>threads<span class="o">}</span>
+<h1 id="batch-ntsm-evaluation">Batch ntsm Evaluation<a class="headerlink" href="#batch-ntsm-evaluation" title="Permanent link">&para;</a></h1>
+<p>Run after all per-sample QC jobs are complete. Collects all count files across data types and produces a single TSV of pairwise comparisons for sample swap detection.</p>
+<p>Run all data types together so cross-data-type comparisons (e.g. HiFi vs. ONT for the same sample) are available.</p>
+<h2 id="1-collect-count-files">1. Collect count files<a class="headerlink" href="#1-collect-count-files" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">QC</span><span class="o">=</span>/path/to/qc
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>find<span class="w"> </span><span class="nv">$QC</span>/hifi_blood<span class="w"> </span>-name<span class="w"> </span><span class="s2">"*_hifi_counts.txt"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>&gt;<span class="w">  </span><span class="nv">$QC</span>/ntsm_eval/count_files.txt
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>find<span class="w"> </span><span class="nv">$QC</span>/hifi_lcl<span class="w">   </span>-name<span class="w"> </span><span class="s2">"*_hifi_counts.txt"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>&gt;&gt;<span class="w"> </span><span class="nv">$QC</span>/ntsm_eval/count_files.txt
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>find<span class="w"> </span><span class="nv">$QC</span>/ont<span class="w">        </span>-name<span class="w"> </span><span class="s2">"*_ont_counts.txt"</span><span class="w">  </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>&gt;&gt;<span class="w"> </span><span class="nv">$QC</span>/ntsm_eval/count_files.txt
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>find<span class="w"> </span><span class="nv">$QC</span>/hic<span class="w">        </span>-name<span class="w"> </span><span class="s2">"*_hic_counts.txt"</span><span class="w">  </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>&gt;&gt;<span class="w"> </span><span class="nv">$QC</span>/ntsm_eval/count_files.txt
 </code></pre></div>
-<h2 id="outputs">Outputs<a class="headerlink" href="#outputs" title="Permanent link">&para;</a></h2>
+<p>Verify the total count matches expectations before submitting:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>wc<span class="w"> </span>-l<span class="w"> </span><span class="nv">$QC</span>/ntsm_eval/count_files.txt
+</code></pre></div>
+<h2 id="2-generate-input-json-and-submit">2. Generate input JSON and submit<a class="headerlink" href="#2-generate-input-json-and-submit" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">cd</span><span class="w"> </span>/path/to/qc/ntsm_eval
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>python3<span class="w"> </span>/private/nanopore/tools/hpp_production_workflows/data_processing/scripts/setup_ntsm_eval.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span>count_files.txt<span class="w"> </span>--output_prefix<span class="w"> </span>&lt;batch_name&gt;
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nb">source</span><span class="w"> </span>~/toil_env/bin/activate
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>sbatch<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span>--job-name<span class="o">=</span>&lt;batch_name&gt;_ntsm_eval<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span>--partition<span class="o">=</span>long<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span>/private/nanopore/tools/hpp_production_workflows/data_processing/scripts/toil_sbatch_single_job.sh<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span>--wdl<span class="w"> </span>/private/nanopore/tools/hpp_production_workflows/data_processing/wdl/workflows/ntsm_eval_workflow.wdl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span>--input_json<span class="w"> </span>/path/to/qc/ntsm_eval/&lt;batch_name&gt;_ntsm_eval_inputs.json<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span>--output_dir<span class="w"> </span>/path/to/qc/ntsm_eval/analysis<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span>--output_file<span class="w"> </span>/path/to/qc/ntsm_eval/&lt;batch_name&gt;_ntsm_eval_outputs.json
+</code></pre></div>
+<h2 id="3-interpret-results">3. Interpret results<a class="headerlink" href="#3-interpret-results" title="Permanent link">&para;</a></h2>
+<p>Output: <code>analysis/&lt;uuid&gt;/&lt;batch_name&gt;_ntsm_eval.tsv</code></p>
+<p>Key columns:</p>
 <table>
 <thead>
 <tr>
-<th>File</th>
-<th>Description</th>
+<th>Column</th>
+<th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>summary.txt</code></td>
-<td>S/D/F/M gene counts and percentages</td>
+<td><code>same</code></td>
+<td>1 if samples match, 0 if swap detected</td>
+</tr>
+<tr>
+<td><code>relate</code></td>
+<td>Relatedness score — &gt;0.98 expected for same sample across data types</td>
+</tr>
+<tr>
+<td><code>ibs0</code></td>
+<td>Sites where both samples are homozygous for different alleles — should be ~0 for same sample</td>
 </tr>
 </tbody>
 </table>
+<p>A <code>same=0</code> for two files expected to be the same sample indicates a potential sample swap and requires investigation before the sample proceeds to assembly.</p>
 
 
 
