@@ -6,15 +6,11 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="WDL workflows for HPRC assembly production, QC, and data processing">
+        <meta name="description" content="Assembly production pipeline and QC — verkko, TTT, Panpatch, and the full HPRC QC suite">
       
       
       
       
-        <link rel="prev" href="..">
-      
-      
-        <link rel="next" href="../assembly/correction/">
       
       
         
@@ -25,7 +21,7 @@
     
     
       
-        <title>Data Processing - HPP Production Workflows</title>
+        <title>Data Processing - HPRC Assembly Workflow</title>
       
     
     
@@ -92,7 +88,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="HPP Production Workflows" class="md-header__button md-logo" aria-label="HPP Production Workflows" data-md-component="logo">
+    <a href=".." title="HPRC Assembly Workflow" class="md-header__button md-logo" aria-label="HPRC Assembly Workflow" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -106,7 +102,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            HPP Production Workflows
+            HPRC Assembly Workflow
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -228,13 +224,13 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="HPP Production Workflows" class="md-nav__button md-logo" aria-label="HPP Production Workflows" data-md-component="logo">
+    <a href=".." title="HPRC Assembly Workflow" class="md-nav__button md-logo" aria-label="HPRC Assembly Workflow" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    HPP Production Workflows
+    HPRC Assembly Workflow
   </label>
   
     <div class="md-nav__source">
@@ -282,113 +278,6 @@
       
   
   
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data Processing
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data Processing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#workflows" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflows
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#batch-ntsm-evaluation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Batch ntsm evaluation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ntsm-v121-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ntsm v1.2.1 changes
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
   
   
     
@@ -405,17 +294,17 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
   <span class="md-ellipsis">
     
   
-    Assembly
+    Assembly Pipeline
   
 
     
@@ -426,12 +315,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Assembly
+    Assembly Pipeline
   
 
           </label>
@@ -604,17 +493,17 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
   <span class="md-ellipsis">
     
   
-    QC
+    Assembly QC
   
 
     
@@ -625,12 +514,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    QC
+    Assembly QC
   
 
           </label>
@@ -678,7 +567,7 @@
   <span class="md-ellipsis">
     
   
-    QC 1 · GQC
+    GQC
   
 
     
@@ -706,7 +595,7 @@
   <span class="md-ellipsis">
     
   
-    QC 2 · CenSat
+    CenSat
   
 
     
@@ -734,7 +623,7 @@
   <span class="md-ellipsis">
     
   
-    QC 3 · Compleasm
+    Compleasm
   
 
     
@@ -762,7 +651,7 @@
   <span class="md-ellipsis">
     
   
-    QC 4 · T2T
+    T2T
   
 
     
@@ -790,7 +679,7 @@
   <span class="md-ellipsis">
     
   
-    QC 5 · Quaak
+    Quaak
   
 
     
@@ -818,7 +707,7 @@
   <span class="md-ellipsis">
     
   
-    QC 6 · assembly_qc / Yak QV
+    assembly_qc / Yak QV
   
 
     
@@ -846,7 +735,7 @@
   <span class="md-ellipsis">
     
   
-    QC 7 · Flagger
+    Flagger
   
 
     
@@ -874,7 +763,7 @@
   <span class="md-ellipsis">
     
   
-    QC 8 · NucFlag
+    NucFlag
   
 
     
@@ -891,60 +780,6 @@
           </ul>
         </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../polishing/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Polishing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../annotation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Annotation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
