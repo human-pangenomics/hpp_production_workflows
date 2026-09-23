@@ -10,6 +10,7 @@ theme:
   name: material
   features:
     - navigation.sections
+    - navigation.expand
     - navigation.path
     - navigation.top
     - content.code.copy
@@ -50,6 +51,7 @@ plugins:
 
 nav:
   - Overview: index.md
+  - Data Processing: data_processing/index.md
   - Assembly Pipeline:
     - "1–3 · Download & Correction": assembly/correction.md
     - "4–5 · Verkko Assembly": assembly/verkko.md
@@ -66,4 +68,6 @@ nav:
     - "assembly_qc / Yak QV": qc/assembly-qc.md
     - "Flagger": qc/flagger.md
     - "NucFlag": qc/nucflag.md
+  - Polishing: polishing/index.md
+  - Annotation: annotation/index.md
   - References: references.md
