@@ -1,5 +1,6 @@
 site_name: HPP Production Workflows
 site_description: WDL workflows for HPRC assembly production, QC, and data processing
+site_url: https://human-pangenomics.github.io/hpp_production_workflows/assembly/
 repo_url: https://github.com/human-pangenomics/hpp_production_workflows
 repo_name: human-pangenomics/hpp_production_workflows
 edit_uri: edit/v3/docs/
@@ -9,7 +10,6 @@ docs_dir: docs
 theme:
   name: material
   features:
-    - navigation.tabs
     - navigation.sections
     - navigation.path
     - navigation.top
