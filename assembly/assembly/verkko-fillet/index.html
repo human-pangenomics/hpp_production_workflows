@@ -10,11 +10,13 @@
       
       
       
+        <link rel="canonical" href="https://human-pangenomics.github.io/hpp_production_workflows/assembly/assembly/verkko-fillet/">
       
-        <link rel="prev" href="../correction/">
+      
+        <link rel="prev" href="../verkko/">
       
       
-        <link rel="next" href="../verkko-fillet/">
+        <link rel="next" href="../ttt/">
       
       
         
@@ -25,7 +27,7 @@
     
     
       
-        <title>4–5 · Verkko Assembly - HPP Production Workflows</title>
+        <title>6 · verkko-fillet - HPP Production Workflows</title>
       
     
     
@@ -76,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#verkko-assembly" class="md-skip">
+        <a href="#verkko-fillet" class="md-skip">
           Skip to content
         </a>
       
@@ -88,7 +90,9 @@
     
       
 
-<header class="md-header" data-md-component="header">
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="HPP Production Workflows" class="md-header__button md-logo" aria-label="HPP Production Workflows" data-md-component="logo">
       
@@ -110,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              4–5 · Verkko Assembly
+              6 · verkko-fillet
             
           </span>
         </div>
@@ -210,95 +214,6 @@
       
         
           
-            
-<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
-  <div class="md-grid">
-    <ul class="md-tabs__list">
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
-        
-  
-  
-    
-  
-  Overview
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-    
-  
-  
-    
-    
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../correction/" class="md-tabs__link">
-          
-  
-  
-  Assembly Pipeline
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../../qc/" class="md-tabs__link">
-          
-  
-  
-  QC Pipeline
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../../references/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  References
-
-      </a>
-    </li>
-  
-
-      
-    </ul>
-  </div>
-</nav>
-          
         
       
       <main class="md-main" data-md-component="main">
@@ -312,10 +227,8 @@
                     
 
 
-  
 
-
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="HPP Production Workflows" class="md-nav__button md-logo" aria-label="HPP Production Workflows" data-md-component="logo">
       
@@ -381,9 +294,6 @@
     
       
         
-        
-      
-      
         
       
     
@@ -456,6 +366,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../verkko/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4–5 · Verkko Assembly
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -475,7 +413,7 @@
   <span class="md-ellipsis">
     
   
-    4–5 · Verkko Assembly
+    6 · verkko-fillet
   
 
     
@@ -493,7 +431,7 @@
   <span class="md-ellipsis">
     
   
-    4–5 · Verkko Assembly
+    6 · verkko-fillet
   
 
     
@@ -519,35 +457,41 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#assembly-4-assembly-with-verkko" class="md-nav__link">
+  <a href="#assembly-6-verkko-fillet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Assembly 4 — Assembly with verkko
+        Assembly 6 — verkko-fillet
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assembly 6 — verkko-fillet">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#assembly-5-polishing" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#key-outputs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Assembly 5 — Polishing
+        Key outputs
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#checkpoints" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Checkpoints
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -555,34 +499,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../verkko-fillet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    6 · verkko-fillet
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -662,19 +578,19 @@
     
     
       
-      
+        
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -1016,35 +932,41 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#assembly-4-assembly-with-verkko" class="md-nav__link">
+  <a href="#assembly-6-verkko-fillet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Assembly 4 — Assembly with verkko
+        Assembly 6 — verkko-fillet
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assembly 6 — verkko-fillet">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#assembly-5-polishing" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#key-outputs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Assembly 5 — Polishing
+        Key outputs
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#checkpoints" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Checkpoints
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1116,64 +1038,42 @@
   
 
 
-<h1 id="verkko-assembly">Verkko Assembly<a class="headerlink" href="#verkko-assembly" title="Permanent link">&para;</a></h1>
-<h2 id="assembly-4-assembly-with-verkko">Assembly 4 — Assembly with verkko<a class="headerlink" href="#assembly-4-assembly-with-verkko" title="Permanent link">&para;</a></h2>
-<p>Requires verkko v2.3 or later.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>verkko<span class="w"> </span>--slurm<span class="w"> </span>-d<span class="w"> </span>verkko-hi-c<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--ovb-run<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>--screen-human-contaminants<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span>--hifi<span class="w"> </span><span class="nv">$HIFI</span><span class="w"> </span>r10-hifiasm-correct.ec.ont.fq.gz<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span>--nano<span class="w"> </span><span class="nv">$ONT</span><span class="w"> </span><span class="nv">$ONT_R10</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span>--hic1<span class="w"> </span><span class="nv">$HIC1</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span>--hic2<span class="w"> </span><span class="nv">$HIC2</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span>--unitig-abundance<span class="w"> </span><span class="m">8</span>
+<h1 id="verkko-fillet">verkko-fillet<a class="headerlink" href="#verkko-fillet" title="Permanent link">&para;</a></h1>
+<h2 id="assembly-6-verkko-fillet">Assembly 6 — verkko-fillet<a class="headerlink" href="#assembly-6-verkko-fillet" title="Permanent link">&para;</a></h2>
+<p><a href="https://github.com/marbl/verkko-fillet"><strong>verkko-fillet</strong></a> is a Python toolkit for cleaning, fixing, and gap-filling assemblies produced by Verkko. It is used here primarily for its <strong>internal telomere detection</strong> capability: identifying telomere repeat arrays that fall within a contig rather than at its ends. These internal telomeres mark assembly tangles where distinct chromosomal arms have been incorrectly joined, and the resulting annotations inform the boundary node selection for TTT (Stage 7).</p>
+<p>The toolkit is designed for <strong>interactive Jupyter notebook workflows</strong> rather than a fixed command-line pipeline. Key notebooks: <em>Verkko QC</em> (quality metrics, T2T status, chromosome assignment) and <em>Recovering T2T contigs</em> (internal telomere detection, contig trimming, fixed GAF path output for consensus rebuilding).</p>
+<div class="admonition info">
+<p class="admonition-title">Reference</p>
+<p>Juhi Kim et al., bioRxiv 2025. "Finishing a complete giraffe genome from telomere to telomere with Verkko-Fillet."</p>
+</div>
+<h3 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>verkkofillet
 </code></pre></div>
-<p>The corrected ONT UL is passed to <code>--hifi</code> alongside the raw HiFi, because correction has brought it to high-quality-sequence accuracy. The raw ONT UL goes to <code>--nano</code> as resolving data, so the same underlying reads appear on both sides in different forms. This is intentional, not a copy-paste error.</p>
-<div class="admonition note">
-<p class="admonition-title"><code>--unitig-abundance 8</code></p>
-<p>Recommended for high-coverage datasets. Combined ONT UL and HiFi coverage here is 180×.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title"><code>--slurm</code></p>
-<p>Auto-requests memory and time per job. Drop it to run on a single node, where verkko will auto-detect available CPUs and memory.</p>
-</div>
-<p>Expect around 41 hours walltime on a cluster. Verkko checkpoints internally, so re-running the same command in the same <code>-d</code> directory resumes rather than restarting.</p>
-<hr />
-<h2 id="assembly-5-polishing">Assembly 5 — Polishing<a class="headerlink" href="#assembly-5-polishing" title="Permanent link">&para;</a></h2>
-<p>No polishing step is required. Assembly QV is estimated at 56 using yak with k=31 mers from Illumina data, or Q48 as measured by GQC. Polishing at this accuracy is not recommended and is unlikely to improve the result.</p>
-<hr />
-<h2 id="checkpoints">Checkpoints<a class="headerlink" href="#checkpoints" title="Permanent link">&para;</a></h2>
-<p>Worth confirming before moving to the next stage:</p>
+<p>External dependencies required on <code>$PATH</code>: <code>mashmap</code>, <code>samtools</code> / <code>bgzip</code>, <code>seqtk</code>.</p>
+<h3 id="key-outputs">Key outputs<a class="headerlink" href="#key-outputs" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>After</th>
-<th>Check</th>
+<th>Output</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>3.3</td>
-<td>ONT input is smaller than the raw input — the 20 kbp filter should remove reads</td>
+<td>Internal telomere annotations</td>
+<td>Per-contig summary of internal telomere positions — used to identify TTT boundary node candidates</td>
 </tr>
 <tr>
-<td>3.4</td>
-<td><code>--hom-cov</code> lands near your expected total coverage; a wildly off value usually means a missing input file</td>
+<td>Fixed GAF path file</td>
+<td>Corrected traversal path for consensus rebuilding with Verkko</td>
 </tr>
 <tr>
-<td>3.7</td>
-<td>Both ID files are non-empty and the HiFi/ONT ratio is plausible</td>
-</tr>
-<tr>
-<td>3.8</td>
-<td><code>r10-hifiasm-correct.ec.ont.fq.gz</code> opens cleanly before deleting anything</td>
-</tr>
-<tr>
-<td>4</td>
-<td>Assembly size is near 6.2 Gbp across both haplotypes</td>
+<td>QC metrics</td>
+<td>N50, T2T status, chromosome assignment, completeness</td>
 </tr>
 </tbody>
 </table>
+<p>Can run in parallel with the QC pipeline; both take the raw verkko assembly as input and have no dependency on each other.</p>
 
 
 
@@ -1229,7 +1129,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.path", "navigation.top", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>

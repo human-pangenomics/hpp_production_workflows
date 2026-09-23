@@ -10,29 +10,31 @@
       
       
       
+        <link rel="canonical" href="https://human-pangenomics.github.io/hpp_production_workflows/assembly/qc/">
       
-        <link rel="prev" href="../ttt/">
+      
+        <link rel="prev" href="../assembly/panpatch/">
       
       
-        <link rel="next" href="../../qc/">
+        <link rel="next" href="gqc/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>8 · Panpatch - HPP Production Workflows</title>
+        <title>Overview - HPP Production Workflows</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -51,7 +53,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -76,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#panpatch" class="md-skip">
+        <a href="#qc-pipeline" class="md-skip">
           Skip to content
         </a>
       
@@ -88,9 +90,11 @@
     
       
 
-<header class="md-header" data-md-component="header">
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="HPP Production Workflows" class="md-header__button md-logo" aria-label="HPP Production Workflows" data-md-component="logo">
+    <a href=".." title="HPP Production Workflows" class="md-header__button md-logo" aria-label="HPP Production Workflows" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -110,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              8 · Panpatch
+              Overview
             
           </span>
         </div>
@@ -210,95 +214,6 @@
       
         
           
-            
-<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
-  <div class="md-grid">
-    <ul class="md-tabs__list">
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
-        
-  
-  
-    
-  
-  Overview
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-    
-  
-  
-    
-    
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../correction/" class="md-tabs__link">
-          
-  
-  
-  Assembly Pipeline
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../../qc/" class="md-tabs__link">
-          
-  
-  
-  QC Pipeline
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../../references/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  References
-
-      </a>
-    </li>
-  
-
-      
-    </ul>
-  </div>
-</nav>
-          
         
       
       <main class="md-main" data-md-component="main">
@@ -312,12 +227,10 @@
                     
 
 
-  
 
-
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="HPP Production Workflows" class="md-nav__button md-logo" aria-label="HPP Production Workflows" data-md-component="logo">
+    <a href=".." title="HPP Production Workflows" class="md-nav__button md-logo" aria-label="HPP Production Workflows" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -347,7 +260,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -371,10 +284,8 @@
       
   
   
-    
   
   
-  
     
     
     
@@ -383,16 +294,13 @@
         
         
       
-      
-        
-      
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -413,7 +321,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -431,7 +339,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../correction/" class="md-nav__link">
+      <a href="../assembly/correction/" class="md-nav__link">
         
   
   
@@ -459,7 +367,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../verkko/" class="md-nav__link">
+      <a href="../assembly/verkko/" class="md-nav__link">
         
   
   
@@ -487,7 +395,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../verkko-fillet/" class="md-nav__link">
+      <a href="../assembly/verkko-fillet/" class="md-nav__link">
         
   
   
@@ -515,7 +423,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ttt/" class="md-nav__link">
+      <a href="../assembly/ttt/" class="md-nav__link">
         
   
   
@@ -540,6 +448,95 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../assembly/panpatch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8 · Panpatch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QC Pipeline
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QC Pipeline
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
     
   
   
@@ -559,7 +556,7 @@
   <span class="md-ellipsis">
     
   
-    8 · Panpatch
+    Overview
   
 
     
@@ -577,7 +574,7 @@
   <span class="md-ellipsis">
     
   
-    8 · Panpatch
+    Overview
   
 
     
@@ -603,10 +600,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#assembly-8-panpatch" class="md-nav__link">
+  <a href="#tool-summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Assembly 8 — Panpatch
+        Tool summary
       
     </span>
   </a>
@@ -622,65 +619,6 @@
 
               
             
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    QC Pipeline
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    QC Pipeline
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
               
                 
   
@@ -688,35 +626,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../qc/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../qc/gqc/" class="md-nav__link">
+      <a href="gqc/" class="md-nav__link">
         
   
   
@@ -744,7 +654,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../qc/censat/" class="md-nav__link">
+      <a href="censat/" class="md-nav__link">
         
   
   
@@ -772,7 +682,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../qc/compleasm/" class="md-nav__link">
+      <a href="compleasm/" class="md-nav__link">
         
   
   
@@ -800,7 +710,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../qc/t2t/" class="md-nav__link">
+      <a href="t2t/" class="md-nav__link">
         
   
   
@@ -828,7 +738,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../qc/quaak/" class="md-nav__link">
+      <a href="quaak/" class="md-nav__link">
         
   
   
@@ -856,7 +766,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../qc/assembly-qc/" class="md-nav__link">
+      <a href="assembly-qc/" class="md-nav__link">
         
   
   
@@ -884,7 +794,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../qc/flagger/" class="md-nav__link">
+      <a href="flagger/" class="md-nav__link">
         
   
   
@@ -912,7 +822,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../qc/nucflag/" class="md-nav__link">
+      <a href="nucflag/" class="md-nav__link">
         
   
   
@@ -947,7 +857,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../references/" class="md-nav__link">
+      <a href="../references/" class="md-nav__link">
         
   
   
@@ -994,10 +904,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#assembly-8-panpatch" class="md-nav__link">
+  <a href="#tool-summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Assembly 8 — Panpatch
+        Tool summary
       
     </span>
   </a>
@@ -1029,7 +939,7 @@
   
   
     <li class="md-path__item">
-      <a href="../.." class="md-path__link">
+      <a href=".." class="md-path__link">
         
   <span class="md-ellipsis">
     Overview
@@ -1047,10 +957,10 @@
     
     
       <li class="md-path__item">
-        <a href="../correction/" class="md-path__link">
+        <a href="./" class="md-path__link">
           
   <span class="md-ellipsis">
-    Assembly Pipeline
+    QC Pipeline
   </span>
 
         </a>
@@ -1072,17 +982,106 @@
   
 
 
-<h1 id="panpatch">Panpatch<a class="headerlink" href="#panpatch" title="Permanent link">&para;</a></h1>
-<h2 id="assembly-8-panpatch">Assembly 8 — Panpatch<a class="headerlink" href="#assembly-8-panpatch" title="Permanent link">&para;</a></h2>
-<p>Panpatch is a self-reference assembly patching step applied to a pilot cohort of TTT assemblies. Each sample's own HiFi and ONT reads are used to fill gaps and improve continuity at regions that remain unresolved after TTT.</p>
-<p>Pilot cohort (<strong>panpatch pilot-v1-ttt</strong>): 18 samples. Patched assemblies:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>s3://human-pangenomics/submissions/8b47ec5e-9653-11f1-8a5c-e76d6dc4bd3d--panpatch-pilot-v1/pilot-v1-ttt/patches-v2/{sid}.hap{1,2}.fa.gz
-</code></pre></div>
-<p>After patching, apply the full QC pipeline to the patched FASTAs. Two steps differ from a standard QC run:</p>
-<ul>
-<li><strong>CenSat</strong> must be re-run — the existing BED from the TTT assembly is invalid after patching (see <a href="../../qc/censat/">QC 2 · CenSat</a>)</li>
-<li><strong>Flagger</strong> has a different read policy — DC FASTQs supersede raw HiFi BAMs where available (see <a href="../../qc/flagger/">QC 7 · Flagger</a>)</li>
-</ul>
+<h1 id="qc-pipeline">QC Pipeline<a class="headerlink" href="#qc-pipeline" title="Permanent link">&para;</a></h1>
+<p>The QC pipeline is a standalone suite that can be applied to any assembly. Run it after verkko (Assembly 4), after TTT (Assembly 7), after Panpatch (Assembly 8), or any combination. For R3 we ran it after verkko and again after TTT.</p>
+<p><strong>CenSat must complete before Flagger can start.</strong> All other tools run in parallel with CenSat.</p>
+<pre class="mermaid"><code>flowchart TD
+  asm{{"assembly FASTA"}}
+  hifi{{"HiFi reads"}}
+  ont{{"ONT reads"}}
+  hic{{"Hi-C reads"}}
+  bench{{"HG002 v1.1 benchmark"}}
+
+  asm &amp; bench --&gt; gqc["GQC"]
+  asm --&gt; q1["CenSat"]
+  asm --&gt; q2["Compleasm"]
+  asm --&gt; q3["T2T"]
+  asm --&gt; q4["Quaak"]
+  asm --&gt; q5["assembly_qc"]
+  hic --&gt; q5
+
+  gqc --&gt; gout(["benchmark report"])
+  q1 --&gt; cbed(["cenSat.dip.bed"])
+  cbed &amp; hifi &amp; ont --&gt; q6["Flagger"]
+
+  q2 --&gt; r2(["BUSCO summary"])
+  q3 --&gt; r3(["T2T counts + gaps BED"])
+  q4 --&gt; r4(["kma / ksa_pct"])
+  q5 --&gt; r5(["QV score"])
+
+  q6 --&gt; bams(["prediction BEDs + BAMs"])
+  bams --&gt; q7["NucFlag"]
+  q7 --&gt; nf(["nucflag.bed"])</code></pre>
+<h2 id="tool-summary">Tool summary<a class="headerlink" href="#tool-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Tool</th>
+<th>Input</th>
+<th>Key output</th>
+<th>Depends on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QC 1</td>
+<td>GQC</td>
+<td>assembly + HG002 v1.1 benchmark</td>
+<td>benchmark report</td>
+<td>—</td>
+</tr>
+<tr>
+<td>QC 2</td>
+<td>CenSat</td>
+<td>assembly FASTA</td>
+<td><code>cenSat.dip.bed</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>QC 3</td>
+<td>Compleasm</td>
+<td>assembly FASTA</td>
+<td>BUSCO summary</td>
+<td>—</td>
+</tr>
+<tr>
+<td>QC 4</td>
+<td>T2T</td>
+<td>assembly FASTA</td>
+<td>T2T counts, gaps BED</td>
+<td>—</td>
+</tr>
+<tr>
+<td>QC 5</td>
+<td>Quaak</td>
+<td>assembly FASTA</td>
+<td>kma / ksa_pct</td>
+<td>—</td>
+</tr>
+<tr>
+<td>QC 6</td>
+<td>assembly_qc / Yak QV</td>
+<td>assembly + Hi-C reads</td>
+<td>QV score</td>
+<td>—</td>
+</tr>
+<tr>
+<td>QC 7</td>
+<td>Flagger</td>
+<td>assembly + HiFi + ONT + CenSat BED</td>
+<td>prediction BEDs + BAMs</td>
+<td>CenSat</td>
+</tr>
+<tr>
+<td>QC 8</td>
+<td>NucFlag</td>
+<td>Flagger BAMs</td>
+<td>nucflag.bed</td>
+<td>Flagger</td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -1138,10 +1137,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.path", "navigation.top", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
