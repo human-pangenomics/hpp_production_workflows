@@ -1,4 +1,4 @@
-site_name: HPRC Assembly Workflow
+site_name: HPP Production Workflows
 site_description: Assembly production pipeline and QC — verkko, TTT, Panpatch, and the full HPRC QC suite
 repo_url: https://github.com/human-pangenomics/hpp_production_workflows
 repo_name: human-pangenomics/hpp_production_workflows
@@ -50,9 +50,9 @@ plugins:
   - search
 
 nav:
-  - Overview: index.md
   - Data Processing: data_processing/index.md
   - Assembly Pipeline:
+    - Overview: index.md
     - "1–3 · Download & Correction": assembly/correction.md
     - "4–5 · Verkko Assembly": assembly/verkko.md
     - "6 · verkko-fillet": assembly/verkko-fillet.md
