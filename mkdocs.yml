@@ -1,0 +1,70 @@
+site_name: HPP Production Workflows
+site_description: WDL workflows for HPRC assembly production, QC, and data processing
+repo_url: https://github.com/human-pangenomics/hpp_production_workflows
+repo_name: human-pangenomics/hpp_production_workflows
+edit_uri: edit/v3/docs/
+
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.path
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+nav:
+  - Overview: index.md
+  - Assembly Pipeline:
+    - "1–3 · Download & Correction": assembly/correction.md
+    - "4–5 · Verkko Assembly": assembly/verkko.md
+    - "6 · verkko-fillet": assembly/verkko-fillet.md
+    - "7 · TTT": assembly/ttt.md
+    - "8 · Panpatch": assembly/panpatch.md
+  - QC Pipeline:
+    - Overview: qc/index.md
+    - "QC 1 · GQC": qc/gqc.md
+    - "QC 2 · CenSat": qc/censat.md
+    - "QC 3 · Compleasm": qc/compleasm.md
+    - "QC 4 · T2T": qc/t2t.md
+    - "QC 5 · Quaak": qc/quaak.md
+    - "QC 6 · assembly_qc / Yak QV": qc/assembly-qc.md
+    - "QC 7 · Flagger": qc/flagger.md
+    - "QC 8 · NucFlag": qc/nucflag.md
+  - References: references.md
