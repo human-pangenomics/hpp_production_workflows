@@ -8,7 +8,13 @@ workflow RunDownSampling{
         Float downsampledCoverage
         Float refLength = 3100000000.0
         File? referenceFasta
-        Int fileExtractionDiskSizeGB = 256
+    }
+
+    parameter_meta {
+        readFiles: "Reads files in BAM, CRAM, FASTQ, or FASTA format (optionally gzipped)",
+        downsampledCoverage: "Target coverage after downsampling",
+        refLength: "Length of reference genome in bytes",
+        referenceFasta: "Fasta of reference genome (does not override refLength)" 
     }
 
     scatter (readFile in readFiles){
