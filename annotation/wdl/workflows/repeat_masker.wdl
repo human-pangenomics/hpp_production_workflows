@@ -1,5 +1,5 @@
 version 1.0
-# WDL RepeatMasker workflow - runs each contig/chromosome individually
+# WDL RepeatMasker workflow - runs each contig/chromosome individually 
 
 import "../tasks/bed_to_bigbed.wdl" as bigbed_wf
 
@@ -16,7 +16,7 @@ workflow RepeatMasker {
     call createArray {
         input:
             fasta=fasta,
-            fName=fName
+	    fName=fName
     }
 
     scatter (subFasta in createArray.contigArray) {
@@ -110,6 +110,10 @@ task createArray {
         samtools faidx  ~{fName}.fa
         cat ~{fName}.fa.fai | awk '{print $1"\t0\t"$2}' | bedtools sort -i - > ~{fName}.bed
 
+        # this script will split the whole genome bed file into as many bed files as requested (default 16)
+        # without splitting any contig it keeps either a whole config in each bed file or none of it
+        # the total length of the output bed files are as close as possible to each other to make sure
+        # running the following tasks on one split does not take way longer than others
         mkdir -p output 
         python3 ${SPLIT_BED_CONTIG_WISE_PY} \
             --bed ~{fName}.bed  \
@@ -117,6 +121,7 @@ task createArray {
             --dir output \
             --prefix ~{fName}
 
+        # create one fasta per bed file
         for BED in $(find output)
         do
             cat ${BED} | \
@@ -144,6 +149,7 @@ task maskContig {
         File? additionalRMModels
         String subsequenceName=basename(subsequence)
 
+        # 4 threads per -pa 1 in RepeatMasker call required, recommend at least 32 threads with RM command at -pa 8
         Int threadCount = 8
         Int memSizeGB   = 16
         Int diskSize    = 32
@@ -157,6 +163,7 @@ task maskContig {
         set -u
         set -o xtrace
         
+        # each parallel job uses 4 threads, budget 4 threads per job, rounding up
         NPARALLEL=$(( (~{threadCount} + 3) / 4 ))
         
         ## If additional models are passed, append them to the Dfam database.
@@ -167,6 +174,8 @@ task maskContig {
         ##   run_args = ["--writable-tmpfs"]
         ## Without this, famdb.py will fail with "Read-only file system" and
         ## RepeatMasker will run without the additional models.
+        ## NOTE: The EMBL file must contain CC Species: <taxon> lines with a
+        ## taxon name that matches a scientific name in the Dfam taxonomy tree.
         if [ -n "~{additionalRMModels}" ]; then
             cd /opt/RepeatMasker/Libraries/
             if ! python3 ../famdb.py -i ./Dfam.h5 append ~{additionalRMModels} --name 'additional_models' 2>&1; then
@@ -191,6 +200,8 @@ task maskContig {
             -align \
             -dir .
 
+        # for small contigs - if there are no repeats found put the unmasked 
+        ## sequence in and create empty files for rest of output
         if ! test -f ~{subsequenceName}.masked; then 
             touch ~{subsequenceName}.out \
             && touch ~{subsequenceName}.tbl \
@@ -199,14 +210,18 @@ task maskContig {
             && touch ~{subsequenceName}.rmsk.bed \
             && touch ~{subsequenceName}.rmsk.align.bed
         else
+            ## Create rmsk files for better genome browser viewing
+            ## See https://genome.ucsc.edu/goldenPath/help/bigRmsk.html
             /opt/RepeatMasker/util/rmToTrackHub.pl \
                 -out ~{subsequenceName}.out \
                 -align ~{subsequenceName}.align 
 
+            ## rename to reflect bed file format
             mv ~{subsequenceName}.join.tsv  ~{subsequenceName}.rmsk.bed
             mv ~{subsequenceName}.align.tsv ~{subsequenceName}.rmsk.align.bed
         fi
 
+        ## create archive of all outputs for portability
         mkdir ~{subsequenceName}
         
         cp ~{subsequenceName}.{out,tbl,align,masked,rmsk.bed,rmsk.align.bed} ~{subsequenceName}/
@@ -291,28 +306,37 @@ task finalizeFiles {
         set -u
         set -o xtrace
 
-
+        # Extract all archives
         mkdir tar_directory
         
         for tarfile in ~{sep=' ' subseqTarGZs}; do
             tar xzf ${tarfile} -C tar_directory
         done
 
+        #concatenate the .out files 
         find ./tar_directory -name "*.out" | xargs cat > rm.tmp
         head -n 3 rm.tmp > ~{fName}_repeat_masker.out
         find ./tar_directory -name "*.out" -exec sed '1,3d' {} \; >> ~{fName}_repeat_masker.out
 
+        # concatenate the rmsk bed files
         find ./tar_directory -name "*.rmsk.bed" | xargs cat > ~{fName}.rmsk.bed
         bedtools sort -i ~{fName}.rmsk.bed > ~{fName}_repeat_masker_rmsk.bed
 
+        # concatenate the rmsk align bed files
         find ./tar_directory -name "*.rmsk.align.bed" | xargs cat > ~{fName}.rmsk.align.bed
         bedtools sort -i ~{fName}.rmsk.align.bed > ~{fName}_repeat_masker_rmsk.align.bed
 
+
+        # concatenate the masked fastas
         cat ~{sep=' ' maskedFastas} | seqkit sort --natural-order --two-pass | pigz > ~{fName}_repeat_masker_masked.fasta.gz
 
+
+        # concatenate the RM2BED bed files
         cat ~{sep=' ' bedFiles} > ~{fName}.bed
         bedtools sort -i ~{fName}.bed > ~{fName}_repeat_masker.bed
 
+
+        # Create an archive of the sequence-level tbl, out, and align files
         mkdir -p ~{fName}_repeat_masker/{out,tbl,align}
         
         find ./tar_directory -name "*.out"   -exec cp {} ~{fName}_repeat_masker/out/ \;
@@ -324,7 +348,7 @@ task finalizeFiles {
     >>> 
     output {
         File repeatMaskerBed     = "~{fName}_repeat_masker.bed"
-        File repeatMaskerOutFile = "~{fName}_repeat_masker.out"
+        File repeatMaskerOutFile = "~{fName}_repeat_masker.out"        
         File rmskBed             = "~{fName}_repeat_masker_rmsk.bed"
         File rmskAlignBed        = "~{fName}_repeat_masker_rmsk.align.bed"
         File finalMaskedFasta    = "~{fName}_repeat_masker_masked.fasta.gz"
@@ -339,4 +363,3 @@ task finalizeFiles {
         docker: "humanpangenomics/sequence_toolbox@sha256:07fd158dce6b25b1731631cec161e554d0704cbf1227edb890b778c6b6fcb39b"
     }
 }
-
