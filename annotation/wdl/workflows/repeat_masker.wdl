@@ -1,5 +1,5 @@
 version 1.0
-# WDL ReapeatMasker workflow - runs each contig/chromosome individually 
+# WDL RepeatMasker workflow - runs each contig/chromosome individually 
 
 import "../tasks/bed_to_bigbed.wdl" as bigbed_wf
 
@@ -166,14 +166,26 @@ task maskContig {
         # each parallel job uses 4 threads, budget 4 threads per job, rounding up
         NPARALLEL=$(( (~{threadCount} + 3) / 4 ))
         
-        ## If additional models are passed, add them to the Dfam DB
-        ## For example: Add new models from Primate X/Y and Human Y papers 
-        ## to Dfam 3.7 (which is included in dfam/tetools:1.85)
+        ## If additional models are passed, append them to the Dfam database.
+        ## NOTE: This requires the container filesystem to be writable.
+        ## If running via Singularity (common on HPC), you must enable writable
+        ## tmpfs by adding the following to ~/.config/miniwdl.cfg:
+        ##   [singularity]
+        ##   run_args = ["--writable-tmpfs"]
+        ## Without this, famdb.py will fail with "Read-only file system" and
+        ## RepeatMasker will run without the additional models.
+        ## NOTE: The EMBL file must contain CC Species: <taxon> lines with a
+        ## taxon name that matches a scientific name in the Dfam taxonomy tree.
         if [ -n "~{additionalRMModels}" ]; then
-            wd=$(pwd)
             cd /opt/RepeatMasker/Libraries/
-            python3 ../famdb.py -i ./RepeatMaskerLib.h5 append ~{additionalRMModels} --name 'homo_sapiens'
-            cd $wd
+            if ! python3 ../famdb.py -i ./Dfam.h5 append ~{additionalRMModels} --name 'additional_models' 2>&1; then
+                echo "ERROR: famdb.py append failed. If running with Singularity, the container" >&2
+                echo "filesystem is likely read-only. Add the following to ~/.config/miniwdl.cfg:" >&2
+                echo "  [singularity]" >&2
+                echo "  run_args = [\"--writable-tmpfs\"]" >&2
+                exit 1
+            fi
+            cd -
         fi 
 
         ## -xsmall: output soft mask
